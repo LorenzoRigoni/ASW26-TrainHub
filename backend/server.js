@@ -13,9 +13,12 @@ app.use(express.urlencoded({ extended: true }));
 
 //Routes
 app.use('/api/auth', require('./routes/auth'));
-/*app.use('/api/users', require('./routes/users'));
-app.use('/api/workouts', require('./routes/workouts'));
-app.use('/api/diary', require('./routes/diary'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/training-programs', require('./routes/trainingPrograms'));
+/*
+app.use('/api/workout-progress', require('./routes/workoutProgress'));
+app.use('/api/body-diary', require('./routes/bodyDiary'));
+app.use('/api/nutrition-plans', require('./routes/nutritionPlans'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/ai', require('./routes/ai'));*/
 
