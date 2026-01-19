@@ -1,4 +1,5 @@
 <script setup>
+import Footer from './components/Footer.vue';
 import HelloWorld from './components/HelloWorld.vue'
 import Navbar from './components/NavBar.vue'
 </script>
@@ -12,6 +13,7 @@ import Navbar from './components/NavBar.vue'
       <h1>Benvenuto in TrainHub! 💪</h1>
       <p>La tua applicazione per programmi di allenamento</p>
     </main>
+    <Footer />
   </div>
 </template>
 
