@@ -12,10 +12,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 //Routes
-/*app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
-app.use('/api/workouts', require('./routes/workouts'));
-app.use('/api/diary', require('./routes/diary'));
+app.use('/api/training-programs', require('./routes/trainingPrograms'));
+/*
+app.use('/api/workout-progress', require('./routes/workoutProgress'));
+app.use('/api/body-diary', require('./routes/bodyDiary'));
+app.use('/api/nutrition-plans', require('./routes/nutritionPlans'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/ai', require('./routes/ai'));*/
 
@@ -27,8 +30,10 @@ app.get('/', (req, res) => {
     endpoints: {
       auth: '/api/auth',
       users: '/api/users',
-      workouts: '/api/workouts',
-      diary: '/api/diary',
+      trainingPrograms: '/api/training-programs',
+      workoutProgress: '/api/workout-progress',
+      bodyDiary: '/api/body-diary',
+      nutritionPlans: '/api/nutrition-plans',
       notifications: '/api/notifications',
       ai: '/api/ai'
     }

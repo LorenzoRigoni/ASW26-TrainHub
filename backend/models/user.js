@@ -55,17 +55,16 @@ const userSchema = new mongoose.Schema({
 });
 
 //Password hashing
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function () {
     if (!this.isModified('password')) {
-        return next();
+        return;
     }
 
     try {
         const salt = await bcrypt.genSalt();
         this.password = await bcrypt.hash(this.password, salt);
-        next();
     } catch (error) {
-        next(error);
+        throw(error);
     }
 });
 
