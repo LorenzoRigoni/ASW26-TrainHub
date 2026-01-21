@@ -1,4 +1,4 @@
-const user = require('../models/user')
+const User = require('../models/user')
 
 /**
  * Register of the user.
@@ -17,7 +17,7 @@ exports.register = async (req, res) => {
             });
         }
 
-        const existingUser = await user.findOne({ username });
+        const existingUser = await User.findOne({ username });
         if (existingUser) {
             return res.status(400).json({
                 success: false,
@@ -33,7 +33,7 @@ exports.register = async (req, res) => {
             });
         }
 
-        const user = await user.create({
+        const user = await User.create({
             username,
             password,
             role: role || 'client',
@@ -78,7 +78,7 @@ exports.login = async (req, res) => {
             });
         }
 
-        const findedUser = await user.findOne({ username }).select('+password');
+        const findedUser = await User.findOne({ username }).select('+password');
 
         if (!findedUser) {
             return res.status(401).json({
@@ -116,7 +116,7 @@ exports.login = async (req, res) => {
  */
 exports.getUserInfo = async (req, res) => {
     try {
-        const loggedUser = await user.findById(req.user.id)
+        const loggedUser = await User.findById(req.user.id)
             .populate('assignedTrainerId', 'name surname username')
             .populate('assignedNutritionistId', 'name surname username');
 
@@ -160,7 +160,7 @@ exports.updateProfile = async (req, res) => {
             fieldsToUpdate[key] === undefined && delete fieldsToUpdate[key]
         );
 
-        const loggedUser = await user.findByIdAndUpdate(
+        const loggedUser = await User.findByIdAndUpdate(
             req.user.id,
             fieldsToUpdate,
             {
@@ -218,7 +218,7 @@ exports.updatePassword = async (req, res) => {
             });
         }
 
-        const loggedUser = await user.findById(req.user.id).select('+password');
+        const loggedUser = await User.findById(req.user.id).select('+password');
 
         if (!loggedUser) {
             return res.status(404).json({
@@ -239,7 +239,7 @@ exports.updatePassword = async (req, res) => {
         loggedUser.password = newPassword;
         await loggedUser.save();
 
-        sendTokenResponse(user, 200, res, 'Password updated successfully');
+        sendTokenResponse(User, 200, res, 'Password updated successfully');
 
     } catch (error) {
         console.error('Update password error:', error);
@@ -266,10 +266,10 @@ exports.logout = async (req, res) => {
 };
 
 
-const sendTokenResponse = (reqUser, statusCode, res, message) => {
-    const token = reqUser.getSignedJwtToken();
+const sendTokenResponse = (user, statusCode, res, message) => {
+    const token = user.getJwtToken(); 
 
-    const userObject = reqUser.toObject();
+    const userObject = user.toObject();
     delete userObject.password;
 
     res.status(statusCode).json({
