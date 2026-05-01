@@ -44,7 +44,7 @@ const login = () => {
             <div class="divider"></div>
 
             <div class="signup">
-                <p>Non hai un account? <a href="#">Registrati</a></p>
+                <p>Non hai un account? <router-link to="/registrazione">Registrati</router-link></p>
             </div>
 
             <p v-if="errore" class="error">{{ errore }}</p>
@@ -75,7 +75,7 @@ const login = () => {
 
 
 .logo img {
-  width: 300px;
+  width: 250px;
   margin-bottom: 25px;
 }
 
