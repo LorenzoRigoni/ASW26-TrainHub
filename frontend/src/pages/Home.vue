@@ -42,7 +42,7 @@ const listaSchede = ref([
   </div>
 </template>
 
-<style scoped>
+<style>
 *, *::before, *::after {
   margin: 0;
   padding: 0;
@@ -53,7 +53,9 @@ html, body {
   overflow-x: hidden;
   font-family: 'Century Gothic', 'Century Gothic', Futura, sans-serif;
 }
+</style>
 
+<style scoped>
 #app {
   min-height: 100vh;
 }

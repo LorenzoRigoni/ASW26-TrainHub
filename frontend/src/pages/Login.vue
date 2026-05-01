@@ -75,7 +75,7 @@ const login = () => {
 
 
 .logo img {
-  width: 180px;
+  width: 300px;
   margin-bottom: 25px;
 }
 
