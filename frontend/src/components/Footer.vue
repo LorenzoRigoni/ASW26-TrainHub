@@ -4,7 +4,6 @@
 </script>
 
 <template>
-  <!-- HTML del componente -->
    <div class="footer">
         <p class="footer-text">Progetto Applicazioni e Servizi Web 2026</p>
    </div>

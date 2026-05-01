@@ -2,48 +2,72 @@
 import { ref } from 'vue'
 import SideMenuItem from './SideMenuItem.vue'
 
-defineProps({
+const props = defineProps({
   isOpen: {
     type: Boolean,
     default: true
   }
 })
 
+const emit = defineEmits(['close'])
+
 const activeItem = ref('home')
 
+const searchQuery = ref('')
+
 const menuItems = [
-  { id: 'home', icon: 'fa fa-home', label: 'Home' },
-  { id: 'profile', icon: 'fa fa-user', label: 'Profilo' },
-  { id: 'clients', icon: 'fa fa-users', label: 'Clienti' },
-  { id: 'settings', icon: 'fa fa-cog', label: 'Impostazioni' },
-  { id: 'notifications', icon: 'fa fa-bell', label: 'Notifiche' }
+  { id: 'home',          icon: 'fa fa-home',   label: 'Home' },
+  { id: 'clients',       icon: 'fa fa-users',  label: 'Clienti' },
+  { id: 'schede',        icon: 'fa fa-list',   label: 'Schede' },
+  { id: 'richieste-nutriz', icon: 'fa fa-apple', label: 'Richieste Nutriz.' },
+  { id: 'richieste-pt',  icon: 'fa fa-heartbeat', label: 'Richieste PT' },
+  { id: 'piani-nutriz',  icon: 'fa fa-leaf',   label: 'Piani Nutrizionali' },
 ]
 
-//TODO: implementare logica componente
+const bottomItems = [
+  { id: 'notifications', icon: 'fa fa-bell',   label: 'Notifiche' },
+  { id: 'settings',      icon: 'fa fa-cog',    label: 'Impostazioni' },
+  { id: 'logout',        icon: 'fa fa-sign-out', label: 'Esci' },
+]
+
+const handleItemClick = (id) => {
+  activeItem.value = id
+}
+
+const filteredItems = () => {
+  if (!searchQuery.value) return menuItems
+  return menuItems.filter(item =>
+    item.label.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+}
 </script>
 
 <template>
-  <aside class="side-menu" :class="{ open: isOpen }">
+  <div v-if="isOpen" class="sidebar-overlay" @click="emit('close')"/>
 
-    <!-- Barra di ricerca -->
+  <aside class="side-menu" :class="{ open: isOpen }">
+    <button class="close-btn" @click="emit('close')" aria-label="Chiudi menu">
+      <i class="fa fa-times"></i>
+    </button>
+
+    
     <div class="search-container">
       <div class="search-wrapper">
         <i class="fa fa-search search-icon"></i>
-        <input 
+        <input
           v-model="searchQuery"
-          type="text" 
+          type="text"
           placeholder="Cerca..."
           class="search-input"
-          @keyup.enter="handleSearch"
         />
       </div>
     </div>
 
-    <!-- Lista voci menu -->
+    
     <nav class="menu-nav">
       <ul class="menu-list">
         <SideMenuItem
-          v-for="item in menuItems"
+          v-for="item in filteredItems()"
           :key="item.id"
           :icon="item.icon"
           :label="item.label"
@@ -52,10 +76,39 @@ const menuItems = [
         />
       </ul>
     </nav>
+
+    
+    <div class="menu-bottom">
+      <ul class="menu-list">
+        <SideMenuItem
+          v-for="item in bottomItems"
+          :key="item.id"
+          :icon="item.icon"
+          :label="item.label"
+          :active="activeItem === item.id"
+          @click="handleItemClick(item.id)"
+        />
+      </ul>
+    </div>
+
   </aside>
 </template>
 
 <style scoped>
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 150;
+}
+
+@media (max-width: 768px) {
+  .sidebar-overlay {
+    display: block;
+  }
+}
+
 
 .side-menu {
   width: 280px;
@@ -64,20 +117,64 @@ const menuItems = [
   position: fixed;
   left: 0;
   top: 0;
-  padding-top: 70px;
+  padding-top: 60px; 
   transition: transform 0.3s ease;
-  z-index: 90;
+  z-index: 160;
   overflow-y: auto;
   overflow-x: hidden;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Barra di ricerca */
+/*Sempre visibile in versione desktop*/
+@media (min-width: 769px) {
+  .side-menu {
+    transform: translateX(0);
+  }
+
+  .side-menu:not(.open) {
+    transform: translateX(-100%);
+  }
+}
+
+
+@media (max-width: 768px) {
+  .side-menu {
+    transform: translateX(-100%);
+  }
+
+  .side-menu.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.4);
+  }
+}
+
+
+.close-btn {
+  position: absolute;
+  top: 70px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+
 .search-container {
-  padding: 2pt;
-  background-color: rgba(0, 0, 0, 0.2);
-  width: 80%;
-  margin-left: 10pt;
+  padding: 0.75rem 1rem;
 }
 
 .search-wrapper {
@@ -88,69 +185,54 @@ const menuItems = [
 .search-icon {
   position: absolute;
   top: 50%;
-  right: 0;
+  right: 12px;
   transform: translateY(-50%);
   color: #999;
   pointer-events: none;
+  font-size: 0.85rem;
 }
 
 .search-input {
   width: 100%;
   border: none;
-  border-radius: 25px;
+  border-radius: 20px;
   background-color: white;
-  padding: 5pt;
+  padding: 6px 34px 6px 12px;
   outline: none;
-  height: 20px;
+  font-size: 0.875rem;
   transition: box-shadow 0.3s ease;
-  
+  box-sizing: border-box;
 }
 
 .search-input:focus {
-  box-shadow: 0 0 0 3px rgba(74, 94, 255, 0.3);
+  box-shadow: 0 0 0 3px rgba(74, 94, 255, 0.35);
 }
 
 .search-input::placeholder {
-  color: #999;
+  color: #aaa;
 }
 
-/* Menu Navigation */
+
 .menu-nav {
-  padding: 0.5rem;
+  flex: 1;
+  padding: 0.25rem 0.5rem;
 }
 
 .menu-list {
-  padding: 0;
+  list-style: none;
   margin: 0;
+  padding: 0;
 }
 
-/* Scrollbar personalizzata */
-.side-menu::-webkit-scrollbar {
-  width: 6px;
+
+.menu-bottom {
+  padding: 0.25rem 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 0.5rem;
 }
 
-.side-menu::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-}
 
-.side-menu::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-
-.side-menu::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* Responsive - Mobile */
-@media (max-width: 768px) {
-  .side-menu {
-    transform: translateX(-100%);
-  }
-  
-  .side-menu.open {
-    transform: translateX(0);
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
-  }
-}
+.side-menu::-webkit-scrollbar { width: 4px; }
+.side-menu::-webkit-scrollbar-track { background: transparent; }
+.side-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
 </style>

@@ -1,26 +1,25 @@
 <script setup>
-    import { ref } from 'vue'
-    // JavaScript/logica del componente
-    // TODO: Inserire apertura/chiusura del menù laterale
+
+const emit = defineEmits(['toggle-sidebar'])
 </script>
 
 <template>
-  <!-- HTML del componente -->
-   <nav class="navbar">
-    <button class="sideMenù" @click="">
-        <i class="fa fa-bars" aria-hidden="true"></i>
+  <nav class="navbar">
+    
+    <button class="burger-btn" @click="emit('toggle-sidebar')" aria-label="Apri/chiudi menu">
+      <i class="fa fa-bars"></i>
     </button>
 
-    <!-- Logo -->
+    
     <div class="navbar-logo">
       <img src="../assets/TrainHub - Logo.png" alt="TrainHub Logo" class="logo-icon" />
     </div>
 
-    <!-- Foto profilo utente -->
-    <button class="profile-button">
-      <img src="../assets/UserIcon.png" alt="User profile image" class="user-icon" />
+    
+    <button class="profile-button" aria-label="Profilo utente">
+      <img src="../assets/UserIcon.png" alt="User profile" class="user-icon" />
     </button>
-   </nav>
+  </nav>
 </template>
 
 <style scoped>
@@ -30,25 +29,44 @@
   justify-content: space-between;
   background-color: white;
   border-bottom: 1px solid #e0e0e0;
-  height: 5%;
-  position: sticky;
+  height: 60px;
+  position: fixed;
   top: 0;
-  z-index: 100;
-  width: 100%;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  padding: 0 1rem;
+}
+
+.burger-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #1e1548;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.burger-btn:hover {
+  background-color: #f0f0f0;
 }
 
 .navbar-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
   position: absolute;
   left: 50%;
-  transform: translateX(-50%); 
+  transform: translateX(-50%);
 }
 
 .logo-icon {
+  height: 44px;
   width: auto;
-  height: 50px;
 }
 
 .profile-button {
@@ -61,6 +79,8 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .profile-button:hover {
@@ -69,13 +89,13 @@
 }
 
 .user-icon {
-  color: #1e1548;
-  height: 35px;
+  height: 30px;
   width: auto;
 }
 
-
 @media (max-width: 768px) {
-  
+  .logo-icon {
+    height: 36px;
+  }
 }
 </style>
