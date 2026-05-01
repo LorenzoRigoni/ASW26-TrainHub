@@ -205,7 +205,7 @@ const filteredItems = () => {
 }
 
 .search-input:focus {
-  box-shadow: 0 0 0 3px rgba(74, 94, 255, 0.35);
+  box-shadow: 0 0 0 3px #4a5eff59;
 }
 
 .search-input::placeholder {
