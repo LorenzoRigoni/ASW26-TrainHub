@@ -67,8 +67,8 @@ const toggleSidebar = () => {
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="lista-programmi">
         <div class="header">
-            <h1 class="clienti-title">Elenco clienti</h1>
-            <p class="clienti-sub"></p>
+            <h1 class="programmi-title">Elenco programmi di allenamento</h1>
+            <p class="programmi-sub"></p>
         </div>
     
         <MainList>
@@ -110,14 +110,14 @@ const toggleSidebar = () => {
   gap: 1rem;
   flex-wrap: wrap;
 }
-.clienti-title { 
+.programmi-title { 
   font-size: 1.75rem; 
   font-weight: bold; 
   color: #1e1548; 
   margin: 0 0 0.25rem; 
 }
 
-.clienti-sub   { 
+.programmi-sub   { 
   margin: 0; 
   color: #6b7280; 
   font-size: 0.95rem; 

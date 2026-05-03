@@ -47,6 +47,7 @@ defineProps({
   margin-bottom: 15px;
   transition: 0.2s;
   cursor: pointer;
+  border-top: 3px solid #1e1548;
 }
 
 .list-item:hover {

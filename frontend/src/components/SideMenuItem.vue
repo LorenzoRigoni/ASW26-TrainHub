@@ -43,6 +43,7 @@
   color: #b8b4d4;
   font-size: 1rem;
   font-weight: 500;
+  text-decoration: none;
 }
 
 .item-icon {
@@ -82,4 +83,5 @@
 .side-menu-item.active .item-icon {
   color: #4a5eff;
 }
+
 </style>
