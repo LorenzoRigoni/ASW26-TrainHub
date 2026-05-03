@@ -2,6 +2,8 @@
 import { ref } from 'vue'
 import SideMenuItem from './SideMenuItem.vue'
 import { ROLES } from '../constants/roles'
+import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 
 const props = defineProps({
   isOpen: {
@@ -13,33 +15,30 @@ const props = defineProps({
     required: true
   }
 })
-
+const router = useRouter()
+const route = useRoute()
 const emit = defineEmits(['close'])
-
-const activeItem = ref('home')
-
+const isActive = (path) => route.path === path
 const searchQuery = ref('')
 
 const menuItems = [
-  { id: 'home', icon: 'fa fa-home', label: 'Home', route: '.', roles: [ROLES.PERSONAL_TRAINER,ROLES.CLIENTE,ROLES.NUTRIZIONISTA] },
-  { id: 'clients', icon: 'fa fa-users', label: 'Clienti', route: '.', roles: [ROLES.PERSONAL_TRAINER,ROLES.NUTRIZIONISTA] },
-  { id: 'schede', icon: 'fa fa-list', label: 'Schede', route: '.', roles: [ROLES.PERSONAL_TRAINER,ROLES.CLIENTE] },
-  { id: 'diario', icon: 'fa fa-book', label: 'Diario', route: '.', roles: [ROLES.CLIENTE] },
-  { id: 'esercizi', icon: 'fa fa-tasks', label: 'Elenco Esercizi', route: '/ElencoEsercizi', roles: [ROLES.PERSONAL_TRAINER] },
-  { id: 'richieste-nutriz', icon: 'fa fa-apple', label: 'Richieste Nutriz.', route: '/RichiesteNutrizionista', roles: [ROLES.PERSONAL_TRAINER,ROLES.NUTRIZIONISTA] },
-  { id: 'richieste-pt', icon: 'fa fa-heartbeat', label: 'In scadenza', route: '/Scadenze', roles: [ROLES.PERSONAL_TRAINER] },
-  { id: 'piani-nutriz', icon: 'fa fa-leaf', label: 'Piani Nutrizionali', route: '.', roles: [ROLES.CLIENTE,ROLES.NUTRIZIONISTA] },
+  { id: 'home', icon: 'fa fa-home', label: 'Home', route: '/home', roles: [ROLES.PERSONAL_TRAINER,ROLES.CLIENTE,ROLES.NUTRIZIONISTA] },
+  { id: 'clients', icon: 'fa fa-users', label: 'Clienti', route: '/clienti', roles: [ROLES.PERSONAL_TRAINER,ROLES.NUTRIZIONISTA] },
+  { id: 'schede', icon: 'fa fa-list', label: 'Schede', route: '/programmi', roles: [ROLES.PERSONAL_TRAINER,ROLES.CLIENTE] },
+  { id: 'diario', icon: 'fa fa-book', label: 'Diario', route: '/clienti/dettaglio-cliente', roles: [ROLES.CLIENTE] },
+  { id: 'esercizi', icon: 'fa fa-tasks', label: 'Elenco Esercizi', route: '/esercizi', roles: [ROLES.PERSONAL_TRAINER] },
+  { id: 'richieste-nutriz', icon: 'fa fa-apple', label: 'Richieste Nutriz.', route: '/richieste-nutrizione', roles: [ROLES.PERSONAL_TRAINER,ROLES.NUTRIZIONISTA] },
+  { id: 'richieste-pt', icon: 'fa fa-heartbeat', label: 'In scadenza', route: '/scadenze', roles: [ROLES.PERSONAL_TRAINER] },
+  { id: 'piani-nutriz', icon: 'fa fa-leaf', label: 'Piani Alimentari', route: '/piani-alimentari', roles: [ROLES.CLIENTE,ROLES.NUTRIZIONISTA] },
 ]
 
+//TODO: modificare routes
 const bottomItems = [
-  { id: 'notifications', icon: 'fa fa-bell',   label: 'Notifiche' },
-  { id: 'settings',      icon: 'fa fa-cog',    label: 'Impostazioni' },
-  { id: 'logout',        icon: 'fa fa-sign-out', label: 'Esci' },
+  { id: 'notifications', icon: 'fa fa-bell',   label: 'Notifiche', route: '/home' },
+  { id: 'settings',      icon: 'fa fa-cog',    label: 'Impostazioni', route: '/home' },
+  { id: 'logout',        icon: 'fa fa-sign-out', label: 'Esci' , route: '/home'},
 ]
 
-const handleItemClick = (id) => {
-  activeItem.value = id
-}
 
 const filteredItems = () => {
   return menuItems
@@ -75,14 +74,14 @@ const filteredItems = () => {
     
     <nav class="menu-nav">
       <ul class="menu-list">
-        <SideMenuItem
-          v-for="item in filteredItems()"
-          :key="item.id"
-          :icon="item.icon"
-          :label="item.label"
-          :active="activeItem === item.id"
-          @click="handleItemClick(item.id)"
-        />
+         <SideMenuItem
+            v-for="item in filteredItems()"
+            :key="item.id"
+            :icon="item.icon"
+            :label="item.label"
+            :to="item.route"
+            :active="isActive(item.route)"
+          />
       </ul>
     </nav>
 
@@ -94,8 +93,8 @@ const filteredItems = () => {
           :key="item.id"
           :icon="item.icon"
           :label="item.label"
-          :active="activeItem === item.id"
-          @click="handleItemClick(item.id)"
+          :to="item.route"
+          :active="isActive(item.route)"
         />
       </ul>
     </div>

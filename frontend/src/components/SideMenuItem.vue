@@ -1,17 +1,13 @@
 <script setup>
+   
     defineProps({
-    icon: {
-        type: String,
-        required: true
+    icon: String,
+    label: String,
+      to: {
+      type: [String, Object],
+      required: true
     },
-    label: {
-        type: String,
-        required: true
-    },
-    active: {
-        type: Boolean,
-        default: false
-    }
+    active: Boolean
     })
 
     const emit = defineEmits(['click'])
@@ -22,11 +18,11 @@
 </script>
 
 <template>
-  <li class="side-menu-item" :class="{ active }" @click="handleClick">
-    <div class="item-content">
+   <li class="side-menu-item" :class="{ active }">
+    <router-link :to="to" class="item-content">
       <i :class="['item-icon', icon]"></i>
       <span class="item-label">{{ label }}</span>
-    </div>
+    </router-link>
   </li>
 </template>
 
@@ -61,7 +57,6 @@
   transition: all 0.3s ease;
 }
 
-/* Hover effect */
 .side-menu-item:hover {
   background-color: rgba(255, 255, 255, 0.05);
 }
@@ -74,7 +69,6 @@
   transform: scale(1.1);
 }
 
-/* Active state */
 .side-menu-item.active {
   background-color: rgba(255, 255, 255, 0.1);
   border-left: 3px solid #4a5eff;
