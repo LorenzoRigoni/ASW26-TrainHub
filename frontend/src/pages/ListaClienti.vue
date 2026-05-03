@@ -15,7 +15,7 @@ const customers = [
     name: 'Lorenzo',
     surname: 'Rigoni',
     email: 'lorengo.rigoni@gmail.com',
-    status: 'Attivo',
+    status: 'attivo',
     birthdate: 'mm/gg/aaaa'
   },
   {
@@ -23,7 +23,7 @@ const customers = [
     name: 'Riccardo',
     surname: 'Moretti',
     email: 'riccardo.moretti@gmail.com',
-    status: 'Attivo',
+    status: 'attivo',
     birthdate: 'mm/gg/aaaa'
   },
   {
@@ -31,7 +31,7 @@ const customers = [
     name: 'Alessandro',
     surname: 'Fabbri',
     email: 'alessandro.fabbri@gmail.com',
-    status: 'Inattivo',
+    status: 'inattivo',
     birthdate: 'mm/gg/aaaa'
   },
   {
@@ -39,7 +39,7 @@ const customers = [
     name: 'Vittoria',
     surname: 'Bianchi',
     email: 'vittoria.bianchi@gmail.com',
-    status: 'Perso',
+    status: 'perso',
     birthdate: 'mm/gg/aaaa'
   }
 ]
@@ -150,4 +150,6 @@ const toggleSidebar = () => {
     margin-left: 0 !important;
   }
 }
+
+
 </style>

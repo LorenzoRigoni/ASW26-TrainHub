@@ -15,7 +15,7 @@ const programs = [
     category: 'Ipertrofia',
     duration: '6 settimane',
     date: '10 apr 2026',
-    status: 'Completata'
+    status: 'completato'
   },
   {
     id: 2,
@@ -23,7 +23,7 @@ const programs = [
     category: 'Ipertrofia',
     duration: '6 settimane',
     date: '10 apr 2026',
-    status: 'Attiva'
+    status: 'in-corso'
   },
   {
     id: 3,
@@ -31,7 +31,7 @@ const programs = [
     category: 'Ipertrofia',
     duration: '6 settimane',
     date: '10 apr 2026',
-    status: 'Attiva'
+    status: 'in-corso'
   },
   {
     id: 4,
@@ -39,7 +39,7 @@ const programs = [
     category: 'Ipertrofia',
     duration: '6 settimane',
     date: '10 apr 2026',
-    status: 'Attiva'
+    status: 'in-corso'
   }
 ]
 

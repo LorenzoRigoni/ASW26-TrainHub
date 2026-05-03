@@ -29,7 +29,7 @@ defineProps({
     <!-- STATUS -->
     <div class="item-status">
       <slot name="status">
-        <span class="status-badge">{{ status }}</span>
+        <span class="status-badge" :class ="status">{{ status }}</span>
       </slot>
     </div>
 
@@ -90,5 +90,32 @@ defineProps({
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 12px;
+}
+
+/*Stati clienti*/
+.status-badge.attivo {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.inattivo {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.status-badge.perso {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/*Stati programmi */
+.status-badge.completato {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.in-corso {
+  background: #fef9c3;
+  color: #854d0e;
 }
 </style>
