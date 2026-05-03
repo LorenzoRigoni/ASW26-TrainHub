@@ -1,11 +1,16 @@
 <script setup>
 import { ref } from 'vue'
 import SideMenuItem from './SideMenuItem.vue'
+import { ROLES } from '../constants/roles'
 
 const props = defineProps({
   isOpen: {
     type: Boolean,
     default: true
+  },
+  role: {
+    type: String,
+    required: true
   }
 })
 
@@ -16,12 +21,14 @@ const activeItem = ref('home')
 const searchQuery = ref('')
 
 const menuItems = [
-  { id: 'home',          icon: 'fa fa-home',   label: 'Home' },
-  { id: 'clients',       icon: 'fa fa-users',  label: 'Clienti' },
-  { id: 'schede',        icon: 'fa fa-list',   label: 'Schede' },
-  { id: 'richieste-nutriz', icon: 'fa fa-apple', label: 'Richieste Nutriz.' },
-  { id: 'richieste-pt',  icon: 'fa fa-heartbeat', label: 'Richieste PT' },
-  { id: 'piani-nutriz',  icon: 'fa fa-leaf',   label: 'Piani Nutrizionali' },
+  { id: 'home', icon: 'fa fa-home', label: 'Home', route: '.', roles: [ROLES.PERSONAL_TRAINER,ROLES.CLIENTE,ROLES.NUTRIZIONISTA] },
+  { id: 'clients', icon: 'fa fa-users', label: 'Clienti', route: '.', roles: [ROLES.PERSONAL_TRAINER,ROLES.NUTRIZIONISTA] },
+  { id: 'schede', icon: 'fa fa-list', label: 'Schede', route: '.', roles: [ROLES.PERSONAL_TRAINER,ROLES.CLIENTE] },
+  { id: 'diario', icon: 'fa fa-book', label: 'Diario', route: '.', roles: [ROLES.CLIENTE] },
+  { id: 'esercizi', icon: 'fa fa-tasks', label: 'Elenco Esercizi', route: '/ElencoEsercizi', roles: [ROLES.PERSONAL_TRAINER] },
+  { id: 'richieste-nutriz', icon: 'fa fa-apple', label: 'Richieste Nutriz.', route: '/RichiesteNutrizionista', roles: [ROLES.PERSONAL_TRAINER,ROLES.NUTRIZIONISTA] },
+  { id: 'richieste-pt', icon: 'fa fa-heartbeat', label: 'In scadenza', route: '/Scadenze', roles: [ROLES.PERSONAL_TRAINER] },
+  { id: 'piani-nutriz', icon: 'fa fa-leaf', label: 'Piani Nutrizionali', route: '.', roles: [ROLES.CLIENTE,ROLES.NUTRIZIONISTA] },
 ]
 
 const bottomItems = [
@@ -35,11 +42,13 @@ const handleItemClick = (id) => {
 }
 
 const filteredItems = () => {
-  if (!searchQuery.value) return menuItems
-  return menuItems.filter(item =>
-    item.label.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
+  return menuItems
+    .filter(item => item.roles.includes(props.role))
+    .filter(item =>
+      item.label.toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
 }
+
 </script>
 
 <template>
@@ -231,8 +240,16 @@ const filteredItems = () => {
   margin-bottom: 0.5rem;
 }
 
+.side-menu::-webkit-scrollbar { 
+  width: 4px; 
+}
 
-.side-menu::-webkit-scrollbar { width: 4px; }
-.side-menu::-webkit-scrollbar-track { background: transparent; }
-.side-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+.side-menu::-webkit-scrollbar-track { 
+  background: transparent; 
+}
+
+.side-menu::-webkit-scrollbar-thumb { 
+  background: rgba(255,255,255,0.15); 
+  border-radius: 2px; 
+}
 </style>

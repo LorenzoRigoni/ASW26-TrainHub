@@ -4,28 +4,31 @@ import StatCard   from './StaticCard.vue'
 import ActionCard from './ActionCard.vue'
 import PanelList  from './HomePanelList.vue'
 import ListItem   from './HomeListItem.vue'
+import { ROLES } from '../constants/roles'
 
+//TODO: valutare se sostituire v-if/else... con v-show, sa W3c sembra sia consigliato usare v-show se possibile (migliora prestazioni e UX)
 const props = defineProps({
   user: {
     type: Object,
-    default: () => ({ nome: 'Alessandra', cognome: 'Versari', ruolo: 'personalTrainer' })
+    default: () => ({ name: 'Alessandra', surname: 'Versari', role: ROLES.PERSONAL_TRAINER })
   },
 
   stats: {
     type: Object,
     default: () => ({ clientiAttivi: 2, schedeCreate: 1, richiesteNutriz: 0, inAttesa: 0 })
   },
+
   clienti: {
     type: Array,
     default: () => [
-      { id: 1, nome: 'Lorenzo',    cognome: 'Rigoni', email: 'rigoni.lorenzo.21@gmail.com',    stato: 'Attivo' },
-      { id: 2, nome: 'Alessandro', cognome: 'Fabbri', email: 'alessandro.fabbri@gmail.com',    stato: 'Attivo' }
+      { id: 1, name: 'Lorenzo',    surname: 'Rigoni', email: 'rigoni.lorenzo.21@gmail.com',    status: 'Attivo' },
+      { id: 2, name: 'Alessandro', surname: 'Fabbri', email: 'alessandro.fabbri@gmail.com',    status: 'Attivo' }
     ]
   },
   schede: {
     type: Array,
     default: () => [
-      { id: 1, titolo: 'Lorenzo Rigoni - Piano 1', categoria: 'Ipertrofia', stato: 'Assegnata' }
+      { id: 1, title: 'Lorenzo Rigoni - Piano 1', category: 'Ipertrofia', status: 'Assegnata' }
     ]
   },
   
@@ -33,11 +36,11 @@ const props = defineProps({
   ultimoAllenamento: { type: Object, default: () => ({ data: '2025-04-28' }) },
   schedeCliente: {
     type: Array,
-    default: () => [{ id: 1, titolo: 'Piano Forza - Settimana 3', categoria: 'Forza', stato: 'Attiva' }]
+    default: () => [{ id: 1, title: 'Piano Forza - Settimana 3', category: 'Forza', status: 'Attiva' }]
   },
   pianiNutrizionali: {
     type: Array,
-    default: () => [{ id: 1, titolo: 'Piano Alimentare Aprile', fileName: 'piano_aprile.pdf' }]
+    default: () => [{ id: 1, title: 'Piano Alimentare Aprile', fileName: 'piano_aprile.pdf' }]
   },
   
   statsNutrizionista: {
@@ -54,8 +57,8 @@ const props = defineProps({
   clientiNutrizionista: {
     type: Array,
     default: () => [
-      { id: 1, nome: 'Marco', cognome: 'Bianchi', email: 'marco.bianchi@gmail.com', stato: 'Attivo' },
-      { id: 2, nome: 'Sara',  cognome: 'Verdi',   email: 'sara.verdi@gmail.com',    stato: 'Attivo' }
+      { id: 1, name: 'Marco', surname: 'Bianchi', email: 'marco.bianchi@gmail.com', status: 'Attivo' },
+      { id: 2, name: 'Sara',  surname: 'Verdi',   email: 'sara.verdi@gmail.com',    status: 'Attivo' }
     ]
   }
 })
@@ -103,16 +106,16 @@ const statCardsNutri = computed(() => [
     <!--HEADER -->
     <div class="dashboard-header">
       <div>
-        <h1 class="welcome-title">{{ greeting }}, {{ user.nome }} 👋</h1>
+        <h1 class="welcome-title">{{ greeting }}, {{ user.name }}</h1>
         <p class="welcome-sub">Ecco il riepilogo della tua attività</p>
       </div>
-      <button v-if="user.ruolo === 'personalTrainer'" class="btn-primary" @click="emit('nuova-scheda')">
+      <button v-if="user.role === ROLES.PERSONAL_TRAINER" class="btn-primary" @click="emit('nuova-scheda')">
         <i class="fa fa-plus"></i> Nuova Scheda
       </button>
-      <button v-else-if="user.ruolo === 'cliente'" class="btn-primary" @click="emit('inizia-allenamento')">
+      <button v-else-if="user.role === ROLES.CLIENTE" class="btn-primary" @click="emit('inizia-allenamento')">
         <i class="fa fa-play"></i> Inizia Allenamento
       </button>
-      <button v-else-if="user.ruolo === 'nutrizionista'" class="btn-primary" @click="emit('apri-richiesta', null)">
+      <button v-else-if="user.role === ROLES.NUTRIZIONISTA" class="btn-primary" @click="emit('apri-richiesta', null)">
         <i class="fa fa-file-text-o"></i> Nuova Richiesta
       </button>
     </div>
@@ -120,7 +123,7 @@ const statCardsNutri = computed(() => [
 
 
     <!-- PERSONAL TRAINER -->
-    <template v-if="user.ruolo === 'personalTrainer'">
+    <template v-if="user.role === ROLES.PERSONAL_TRAINER">
 
       <div class="stats-grid">
         <StatCard
@@ -141,18 +144,18 @@ const statCardsNutri = computed(() => [
         >
           <ListItem
             v-for="c in clienti" :key="c.id"
-            :title="`${c.nome} ${c.cognome}`"
+            :title="`${c.name} ${c.surname}`"
             :subtitle="c.email"
             @click="emit('apri-cliente', c.id)"
           >
             <template #left>
-              <div class="avatar" :style="{ background: getAvatarColor(c.nome) }">
-                {{ getInitials(c.nome, c.cognome) }}
+              <div class="avatar" :style="{ background: getAvatarColor(c.name) }">
+                {{ getInitials(c.name, c.surname) }}
               </div>
             </template>
             <template #right>
-              <span class="badge" :class="c.stato === 'Attivo' ? 'badge-attivo' : 'badge-inattivo'">
-                {{ c.stato }}
+              <span class="badge" :class="c.status === 'Attivo' ? 'badge-attivo' : 'badge-inattivo'">
+                {{ c.status }}
               </span>
             </template>
           </ListItem>
@@ -168,8 +171,8 @@ const statCardsNutri = computed(() => [
         >
           <ListItem
             v-for="s in schede" :key="s.id"
-            :title="s.titolo"
-            :subtitle="`${s.categoria} · ${s.stato}`"
+            :title="s.title"
+            :subtitle="`${s.category} · ${s.status}`"
             @click="emit('apri-scheda', s.id)"
           >
             <template #left>
@@ -185,7 +188,7 @@ const statCardsNutri = computed(() => [
     </template>
 
     <!--  CLIENTE -->
-    <template v-else-if="user.ruolo === 'cliente'">
+    <template v-else-if="user.role === ROLES.CLIENTE">
       <div class="action-cards-grid">
         <ActionCard
           icon="fa fa-book" icon-color="#4a90d9" icon-bg="rgba(74,144,217,0.12)"
@@ -240,8 +243,8 @@ const statCardsNutri = computed(() => [
         >
           <ListItem
             v-for="s in schedeCliente" :key="s.id"
-            :title="s.titolo"
-            :subtitle="`${s.categoria} · ${s.stato}`"
+            :title="s.title"
+            :subtitle="`${s.category} · ${s.status}`"
             @click="emit('apri-scheda-cliente', s.id)"
           >
             <template #left>
@@ -280,7 +283,7 @@ const statCardsNutri = computed(() => [
     </template>
 
     <!--  NUTRIZIONISTA -->
-    <template v-else-if="user.ruolo === 'nutrizionista'">
+    <template v-else-if="user.role === ROLES.NUTRIZIONISTA">
 
       <div class="stats-grid stats-grid--3">
         <StatCard
@@ -325,17 +328,17 @@ const statCardsNutri = computed(() => [
         >
           <ListItem
             v-for="c in clientiNutrizionista" :key="c.id"
-            :title="`${c.nome} ${c.cognome}`"
+            :title="`${c.name} ${c.surname}`"
             :subtitle="c.email"
             @click="emit('apri-cliente-nutrizionista', c.id)"
           >
             <template #left>
-              <div class="avatar" :style="{ background: getAvatarColor(c.nome) }">
-                {{ getInitials(c.nome, c.cognome) }}
+              <div class="avatar" :style="{ background: getAvatarColor(c.name) }">
+                {{ getInitials(c.name, c.surname) }}
               </div>
             </template>
             <template #right>
-              <span class="badge badge-attivo">{{ c.stato }}</span>
+              <span class="badge badge-attivo">{{ c.status }}</span>
             </template>
           </ListItem>
         </PanelList>

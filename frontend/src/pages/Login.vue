@@ -48,7 +48,7 @@ const login = () => {
     </div>
 </template>
 
-<style>
+<style scoped>
 
 .login-page {
   height: 100vh;

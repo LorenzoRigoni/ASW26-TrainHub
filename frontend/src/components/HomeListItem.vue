@@ -1,7 +1,5 @@
 <script setup>
 // Singola riga di lista. 
-// Slot #left  → avatar o icona (opzionale, ha un default)
-// Slot #right → badge, freccia, bottone download, ecc.
 defineProps({
   title:    { type: String, required: true },
   subtitle: { type: String, default: '' },
@@ -42,11 +40,22 @@ const emit = defineEmits(['click'])
   transition: background-color 0.15s;
   border-bottom: 1px solid #f7f7f7;
 }
-.list-item:last-child { border-bottom: none; }
-.list-item:hover { background-color: #f8f9ff; }
 
-.list-item-left  { flex-shrink: 0; }
-.list-item-right { flex-shrink: 0; }
+.list-item:last-child { 
+    border-bottom: none; 
+}
+
+.list-item:hover { 
+    background-color: #f8f9ff; 
+}
+
+.list-item-left  { 
+    flex-shrink: 0; 
+}
+
+.list-item-right { 
+    flex-shrink: 0; 
+}
 
 .item-info {
   flex: 1;
@@ -55,6 +64,7 @@ const emit = defineEmits(['click'])
   gap: 0.15rem;
   min-width: 0;
 }
+
 .item-title {
   font-size: 0.9rem;
   font-weight: 600;
@@ -63,6 +73,7 @@ const emit = defineEmits(['click'])
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .item-sub {
   font-size: 0.78rem;
   color: #9ca3af;

@@ -1,41 +1,46 @@
 <script setup>
 import { ref } from 'vue'
+import { ROLES } from '../constants/roles.js'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import DashboardHome from '../components/DashboardHome.vue'
 
-// Stato sidebar
+//Al momento per vedere come cambiano le varie home, cambiamo ruolo: ''. I valori possibili sono personalTrainer, cliente, nutrizionista.
+const userLogged = ref({ name: 'Alessandra', surname: 'Versari', role: ROLES.PERSONAL_TRAINER })
+
+
+// Dati temporanei di test
+const customersList = ref([
+  { id: 1, name: 'Lorenzo', surname: 'Rigoni', email: 'rigoni.lorenzo.21@gmail.com', status: 'Attivo' },
+  { id: 2, name: 'Alessandro', surname: 'Fabbri', email: 'alessandro.fabbri.unibo@gmail.com', status: 'Attivo' }
+])
+
+const programsList = ref([
+  { id: 1, title: 'Lorenzo Rigoni - Piano 1', category: 'Ipertrofia', status: 'Assegnata' }
+])
+
+
 const sidebarOpen = ref(true)
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
-// Dati temporanei di test
-const listaClienti = ref([
-  { id: 1, nome: 'Lorenzo', cognome: 'Rigoni', email: 'rigoni.lorenzo.21@gmail.com', stato: 'Attivo' },
-  { id: 2, nome: 'Alessandro', cognome: 'Fabbri', email: 'alessandro.fabbri.unibo@gmail.com', stato: 'Attivo' }
-])
-
-const listaSchede = ref([
-  { id: 1, titolo: 'Lorenzo Rigoni - Piano 1', categoria: 'Ipertrofia', stato: 'Assegnata' }
-])
 </script>
 
 <template>
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu :isOpen="sidebarOpen" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen" :role = "userLogged.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
-      <!--  Al momento per vedere come cambiano le varie home, cambiamo ruolo: ''. I valori possibili sono personalTrainer, cliente, nutrizionista.-->
       <DashboardHome
-        :user="{ nome: 'Alessandra', cognome: 'Versari', ruolo: 'nutrizionista' }"  
+        :user="userLogged"  
         :stats="{ clientiAttivi: 2, schedeCreate: 1, richiesteNutriz: 0, inAttesa: 0 }"
-        :clienti="listaClienti"
-        :schede="listaSchede"
+        :clienti="customersList"
+        :schede="programsList"
       />
     </main>
 
