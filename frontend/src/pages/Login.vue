@@ -43,10 +43,6 @@ const login = () => {
 
             <div class="divider"></div>
 
-            <div class="signup">
-                <p>Non hai un account? <router-link to="/registrazione">Registrati</router-link></p>
-            </div>
-
             <p v-if="errore" class="error">{{ errore }}</p>
         </div>
     </div>
@@ -130,18 +126,6 @@ const login = () => {
   height: 1px;
   background: #aaa;
 }
-
-
-.signup {
-  font-size: 13px;
-}
-
-.signup a {
-  color: #1e1548;
-  text-decoration: none;
-  font-weight: bold;
-}
-
 
 .error {
   color: red;

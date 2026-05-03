@@ -30,8 +30,9 @@ const listaSchede = ref([
     <SideMenu :isOpen="sidebarOpen" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+      <!--  Al momento per vedere come cambiano le varie home, cambiamo ruolo: ''. I valori possibili sono personalTrainer, cliente, nutrizionista.-->
       <DashboardHome
-        :user="{ nome: 'Alessandra', cognome: 'Versari', ruolo: 'Personal Trainer' }"
+        :user="{ nome: 'Alessandra', cognome: 'Versari', ruolo: 'nutrizionista' }"  
         :stats="{ clientiAttivi: 2, schedeCreate: 1, richiesteNutriz: 0, inAttesa: 0 }"
         :clienti="listaClienti"
         :schede="listaSchede"
