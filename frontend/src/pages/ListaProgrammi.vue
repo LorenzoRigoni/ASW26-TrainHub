@@ -6,7 +6,9 @@ import { ROLES } from '../constants/roles.js'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 //Dati test
 const programs = [
   {
@@ -55,6 +57,10 @@ const sidebarOpen = ref(true)
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
+//TODO sostituire con reidirizzamento a programma in base all'id
+const goToDetail = () => {
+  router.push('/programmi/dettaglio-programma')
+}
 
 </script>
 
@@ -78,6 +84,7 @@ const toggleSidebar = () => {
             icon="fa fa-user-circle"
             :title="p.title"
             :status="p.status"
+            @click="goToDetail"
           >
             
             <!-- Info aggiuntive (valutare se ha senso inserirle nel componente riutilizzabile) -->

@@ -6,10 +6,12 @@ defineProps({
   status: String,
   icon: String
 })
+
+const emit = defineEmits(['click'])
 </script>
 
 <template>
-  <div class="list-item">
+  <div class="list-item" @click="emit('click')">
     
     <!-- ICONA/AVATAR UTENTE -->
     <div class="item-icon">
