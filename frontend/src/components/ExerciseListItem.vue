@@ -64,6 +64,7 @@ const emit = defineEmits(['click', 'edit', 'delete'])
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.15s;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .list-item:hover {

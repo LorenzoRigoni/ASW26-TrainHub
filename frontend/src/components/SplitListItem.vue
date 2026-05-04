@@ -29,6 +29,7 @@ defineProps({
   background: #f9fafb;
   border-radius: 16px;
   padding: 1rem;
+  border-top: 3px solid #0f0a2e;
   margin-bottom: 1rem;
 }
 
@@ -36,6 +37,7 @@ defineProps({
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.5rem;
+  border-bottom: 1px solid #f1f1f1;
 }
 
 .count {
@@ -47,5 +49,6 @@ defineProps({
   list-style: none;
   padding: 0;
   margin: 0;
+  border-bottom: #6b7280;
 }
 </style>
