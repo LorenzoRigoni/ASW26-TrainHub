@@ -9,7 +9,7 @@ const notificationSchema = new mongoose.Schema({
 
     type: {
         type: String,
-        enum: ['program_created', 'package_expiring', 'program_completed'],
+        enum: ['program_created', 'workout_created', 'package_expiring', 'program_completed'],
         required: true
     },
 
@@ -30,7 +30,7 @@ const notificationSchema = new mongoose.Schema({
 
     relatedEntityType: {
         type: String,
-        enum: ['TrainingProgram', 'TrainingPackage', null],
+        enum: ['TrainingProgram', 'WorkoutProgress', 'TrainingPackage', null],
         default: null
     },
 
