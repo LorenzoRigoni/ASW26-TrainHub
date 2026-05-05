@@ -1,13 +1,10 @@
 const Notification = require('../models/notification');
+const { getIO } = require('../socket');
+const { handleError, badRequest, notFound, forbidden, requiredFields, getUserResource, getUserResources } = require('./controllerHelpers');
 
-/**
- * Get all notifications for the logged-in user
- */
 exports.getAllNotifications = async (req, res) => {
     try {
-        const notifications = await Notification.find({
-            userId: req.user._id
-        }).sort({ createdAt: -1 });
+        const notifications = await getUserResources(Notification, req.user._id, {}, { createdAt: -1 }, 'userId');
 
         res.status(200).json({
             success: true,
@@ -15,23 +12,13 @@ exports.getAllNotifications = async (req, res) => {
             data: notifications
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching notifications',
-            error: error.message
-        });
+        handleError(res, error, 'Error fetching notifications');
     }
 };
 
-/**
- * Get unread notifications for the logged-in user
- */
 exports.getUnreadNotifications = async (req, res) => {
     try {
-        const notifications = await Notification.find({
-            userId: req.user._id,
-            isRead: false
-        }).sort({ createdAt: -1 });
+        const notifications = await getUserResources(Notification, req.user._id, { isRead: false }, { createdAt: -1 }, 'userId');
 
         res.status(200).json({
             success: true,
@@ -39,97 +26,48 @@ exports.getUnreadNotifications = async (req, res) => {
             data: notifications
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching unread notifications',
-            error: error.message
-        });
+        handleError(res, error, 'Error fetching unread notifications');
     }
 };
 
-/**
- * Get a specific notification by ID
- */
 exports.getNotificationById = async (req, res) => {
     try {
-        const notification = await Notification.findById(req.params.id);
+        const { resource, error } = await getUserResource(Notification, req.params.id, req.user._id, 'userId');
 
-        if (!notification) {
-            return res.status(404).json({
-                success: false,
-                message: 'Notification not found'
-            });
-        }
+        if (error === 'NOT_FOUND') return notFound(res, 'Notification not found');
+        if (error === 'FORBIDDEN') return forbidden(res);
 
-        // Check if the notification belongs to the current user
-        if (notification.userId.toString() !== req.user._id.toString()) {
-            return res.status(403).json({
-                success: false,
-                message: 'You do not have permission to access this notification'
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            data: notification
-        });
+        res.status(200).json({ success: true, data: resource });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching notification',
-            error: error.message
-        });
+        handleError(res, error, 'Error fetching notification');
     }
 };
 
-/**
- * Mark a specific notification as read
- */
 exports.markNotificationAsRead = async (req, res) => {
     try {
-        const notification = await Notification.findById(req.params.id);
+        const { resource, error } = await getUserResource(Notification, req.params.id, req.user._id, 'userId');
 
-        if (!notification) {
-            return res.status(404).json({
-                success: false,
-                message: 'Notification not found'
-            });
-        }
+        if (error === 'NOT_FOUND') return notFound(res, 'Notification not found');
+        if (error === 'FORBIDDEN') return forbidden(res);
 
-        // Check if the notification belongs to the current user
-        if (notification.userId.toString() !== req.user._id.toString()) {
-            return res.status(403).json({
-                success: false,
-                message: 'You do not have permission to update this notification'
-            });
-        }
-
-        notification.isRead = true;
-        notification.updatedAt = Date.now();
-        await notification.save();
+        resource.isRead = true;
+        await resource.save();
 
         res.status(200).json({
             success: true,
             message: 'Notification marked as read',
-            data: notification
+            data: resource
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error marking notification as read',
-            error: error.message
-        });
+        handleError(res, error, 'Error marking notification as read');
     }
 };
 
-/**
- * Mark all notifications as read for the logged-in user
- */
 exports.markAllNotificationsAsRead = async (req, res) => {
     try {
         const result = await Notification.updateMany(
             { userId: req.user._id, isRead: false },
-            { isRead: true, updatedAt: Date.now() }
+            { isRead: true }
         );
 
         res.status(200).json({
@@ -138,59 +76,31 @@ exports.markAllNotificationsAsRead = async (req, res) => {
             count: result.modifiedCount
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error marking all notifications as read',
-            error: error.message
-        });
+        handleError(res, error, 'Error marking all notifications as read');
     }
 };
 
-/**
- * Delete a specific notification
- */
 exports.deleteNotification = async (req, res) => {
     try {
-        const notification = await Notification.findById(req.params.id);
+        const { resource, error } = await getUserResource(Notification, req.params.id, req.user._id, 'userId');
 
-        if (!notification) {
-            return res.status(404).json({
-                success: false,
-                message: 'Notification not found'
-            });
-        }
+        if (error === 'NOT_FOUND') return notFound(res, 'Notification not found');
+        if (error === 'FORBIDDEN') return forbidden(res);
 
-        // Check if the notification belongs to the current user
-        if (notification.userId.toString() !== req.user._id.toString()) {
-            return res.status(403).json({
-                success: false,
-                message: 'You do not have permission to delete this notification'
-            });
-        }
-
-        await Notification.findByIdAndDelete(req.params.id);
+        await resource.deleteOne();
 
         res.status(200).json({
             success: true,
             message: 'Notification deleted successfully'
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error deleting notification',
-            error: error.message
-        });
+        handleError(res, error, 'Error deleting notification');
     }
 };
 
-/**
- * Delete all notifications for the logged-in user
- */
 exports.deleteAllNotifications = async (req, res) => {
     try {
-        const result = await Notification.deleteMany({
-            userId: req.user._id
-        });
+        const result = await Notification.deleteMany({ userId: req.user._id });
 
         res.status(200).json({
             success: true,
@@ -198,21 +108,54 @@ exports.deleteAllNotifications = async (req, res) => {
             count: result.deletedCount
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error deleting all notifications',
-            error: error.message
-        });
+        handleError(res, error, 'Error deleting all notifications');
     }
 };
 
-/**
- * Create a notification (internal use)
- * Called by other controllers to trigger notifications
- */
-exports.createNotification = async (userId, type, title, message, relatedEntityId = null, relatedEntityType = null, expirationDays = null) => {
+// =========================
+// Notification Creator
+// =========================
+
+exports.createNotification = async (
+    userId,
+    type,
+    title,
+    message,
+    relatedEntityId = null,
+    relatedEntityType = null,
+    expirationDays = null
+) => {
+    const notification = new Notification({
+        userId,
+        type,
+        title,
+        message,
+        relatedEntityId,
+        relatedEntityType,
+        expirationDays
+    });
+
+    await notification.save();
+
     try {
-        const notification = new Notification({
+        const io = getIO();
+        io.to(`user_${userId}`).emit('notification:new', notification);
+    } catch (socketError) {
+        console.error('Socket error:', socketError.message);
+    }
+
+    return notification;
+};
+
+exports.sendNotification = async (req, res) => {
+    try {
+        const { userId, type, title, message, relatedEntityId, relatedEntityType, expirationDays } = req.body;
+
+        if (!requiredFields(req.body, ['userId', 'type', 'title', 'message'])) {
+            return badRequest(res);
+        }
+
+        const notification = await exports.createNotification(
             userId,
             type,
             title,
@@ -220,20 +163,18 @@ exports.createNotification = async (userId, type, title, message, relatedEntityI
             relatedEntityId,
             relatedEntityType,
             expirationDays
-        });
+        );
 
-        await notification.save();
-        return notification;
+        res.status(201).json({
+            success: true,
+            message: 'Notification sent',
+            data: notification
+        });
     } catch (error) {
-        console.error('Error creating notification:', error.message);
-        return null;
+        handleError(res, error, 'Error creating notification');
     }
 };
 
-/**
- * Get count of unread notifications for a user
- * Useful for displaying badge in UI
- */
 exports.getUnreadCount = async (req, res) => {
     try {
         const count = await Notification.countDocuments({
@@ -246,10 +187,6 @@ exports.getUnreadCount = async (req, res) => {
             unreadCount: count
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching unread count',
-            error: error.message
-        });
+        handleError(res, error, 'Error fetching unread count');
     }
 };
