@@ -9,7 +9,8 @@ const {
     markAllNotificationsAsRead,
     deleteNotification,
     deleteAllNotifications,
-    getUnreadCount
+    getUnreadCount,
+    sendNotification
 } = require('../controllers/notificationController');
 
 // ==================== Notification Routes ====================
@@ -27,6 +28,13 @@ router.get('/', protect, getAllNotifications);
  * @access Private
  */
 router.get('/unread', protect, getUnreadNotifications);
+
+/**
+ * @route POST /api/notifications
+ * @desc Create a notification for a user
+ * @access Private
+ */
+router.post('/', protect, sendNotification);
 
 /**
  * @route GET /api/notifications/unread-count

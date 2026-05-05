@@ -1,6 +1,9 @@
 const express = require('express');
+const cors = require('cors');
+const http = require('http');
 const dotenv = require('dotenv');
-const { connectDb } = require('./config/database')
+const { connectDb } = require('./config/database');
+const { initSocket } = require('./socket');
 
 dotenv.config();
 
@@ -8,6 +11,10 @@ const app = express();
 
 connectDb();
 
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -39,7 +46,10 @@ app.get('/', (req, res) => {
   });
 });
 
-const server = app.listen(5000, () => {
+const server = http.createServer(app);
+const io = initSocket(server);
+
+server.listen(5000, () => {
     console.log('Server running on port 5000 - http://localhost:5000');
 });
 
