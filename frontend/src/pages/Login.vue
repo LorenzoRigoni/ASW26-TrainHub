@@ -1,19 +1,34 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 //variabili reattive che aggiornano UI. Quando si modifica in nome, ricordiamoci di aggiornare anche v-model nell'html
 const username = ref('')
 const password = ref('')
-const errore = ref('')
+const error = ref('')
 const router = useRouter()
 
-const login = () => {
-  // TODO: completare con check vero
-  if (username.value === 'admin' && password.value === '1234') {
-    router.push('/home') 
-  } else {
-    errore.value = 'Credenziali errate'
+const login = async () => {
+  try {
+    error.value = ''
+
+    const response = await axios.post('http://localhost:5000/api/auth/login', {
+      username: username.value,
+      password: password.value
+    })
+
+    if (response.data.success) {
+      localStorage.setItem('token', response.data.token)
+      localStorage.setItem('user', JSON.stringify(response.data.data))
+      router.push('/home')
+    }
+  } catch (err) {
+    if (err.response) {
+      error.value = err.response.data.message || 'Errore durante il login'
+    } else {
+      error.value = 'Impossibile connettersi al server'
+    }
   }
 }
 
@@ -43,7 +58,7 @@ const login = () => {
 
             <div class="divider"></div>
 
-            <p v-if="errore" class="error">{{ errore }}</p>
+            <p v-if="error" class="error">{{ error }}</p>
         </div>
     </div>
 </template>
