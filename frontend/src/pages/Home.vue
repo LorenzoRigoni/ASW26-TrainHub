@@ -5,26 +5,37 @@ import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import DashboardHome from '../components/DashboardHome.vue'
+import axios from 'axios'
 
 //Al momento per vedere come cambiano le varie home, cambiamo ruolo: ''. I valori possibili sono personalTrainer, cliente, nutrizionista.
-const userLogged = ref({ name: 'Alessandra', surname: 'Versari', role: ROLES.PERSONAL_TRAINER })
-
-
-// Dati temporanei di test
-const customersList = ref([
-  { id: 1, name: 'Lorenzo', surname: 'Rigoni', email: 'rigoni.lorenzo.21@gmail.com', status: 'Attivo' },
-  { id: 2, name: 'Alessandro', surname: 'Fabbri', email: 'alessandro.fabbri.unibo@gmail.com', status: 'Attivo' }
-])
-
-const programsList = ref([
-  { id: 1, title: 'Lorenzo Rigoni - Piano 1', category: 'Ipertrofia', status: 'Assegnata' }
-])
-
-
+const userLogged = ref({ name: '', surname: '', role: '' })
+const customersList = ref([])
+const programsList = ref([])
 const sidebarOpen = ref(true)
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
+}
+
+const fetchData = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+
+    const userRes = await axios.get('http://localhost:5000/api/auth/userinfo', config)
+    userLogged.value = userRes.data.data;
+
+    if (userLogged.value.role === 'trainer') {
+      const res = await axios.get('http://localhost:5000/api/training-programs/trainer/programs', config);
+      programsList.value = res.data.data;
+      stats.value.schedeCreate = res.data.count;
+    } else {
+      const res = await axios.get('http://localhost:5000/api/training-programs/my-programs', config);
+      programsList.value = res.data.data;
+  }
+  } catch(error){
+    console.error("Errore nel caricamento dati:", error.response?.data?.message || error.message);
+  }
 }
 
 </script>
