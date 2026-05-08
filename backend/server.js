@@ -1,9 +1,12 @@
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger');
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const dotenv = require('dotenv');
 const { connectDb } = require('./config/database');
 const { initSocket } = require('./socket');
+
 
 dotenv.config();
 
@@ -18,6 +21,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 //Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
@@ -61,6 +65,7 @@ app.use((req, res) => {
         message: 'Route not found'
     });
 });
+
 
 server.on('error', (error) => {
     console.error('Server error: ', error);
