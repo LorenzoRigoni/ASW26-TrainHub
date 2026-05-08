@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { ROLES } from '../constants/roles.js'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
@@ -38,6 +38,7 @@ const fetchData = async () => {
   }
 }
 
+onMounted(fetchData)
 </script>
 
 <template>
