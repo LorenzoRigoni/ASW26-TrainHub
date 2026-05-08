@@ -117,6 +117,7 @@ exports.login = async (req, res) => {
 exports.getUserInfo = async (req, res) => {
     try {
         const loggedUser = await User.findById(req.user.id)
+            .select('name surname role') 
             .populate('assignedTrainerId', 'name surname username')
             .populate('assignedNutritionistId', 'name surname username');
 
