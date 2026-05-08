@@ -75,9 +75,7 @@ router.post('/register', register);
  * /api/auth/login:
  *   post:
  *     summary: Login user
- *     description: Authenticate user and return token
- *     tags:
- *       - Auth
+ *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
@@ -85,18 +83,18 @@ router.post('/register', register);
  *           schema:
  *             type: object
  *             required:
- *               - email
+ *               - username
  *               - password
  *             properties:
- *               email:
+ *               username:
  *                 type: string
- *                 example: test@test.com
+ *                 example: mario.rossi
  *               password:
  *                 type: string
  *                 example: 123456
  *     responses:
  *       200:
- *         description: Login successful
+ *         description: Login successful (returns JWT token)
  *       401:
  *         description: Invalid credentials
  */
@@ -117,7 +115,11 @@ router.post('/login', login);
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: User data returned
+ *         description: User data retrieved
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
  */
 router.get('/userinfo', protect, getUserInfo);
 

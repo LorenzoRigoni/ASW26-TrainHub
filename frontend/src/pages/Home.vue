@@ -25,7 +25,7 @@ const fetchData = async () => {
     const userRes = await axios.get('http://localhost:5000/api/auth/userinfo', config)
     userLogged.value = userRes.data.data;
 
-    if (userLogged.value.role === 'trainer') {
+    if (userLogged.value.role === ROLES.PERSONAL_TRAINER) {
       const res = await axios.get('http://localhost:5000/api/training-programs/trainer/programs', config);
       programsList.value = res.data.data;
       stats.value.schedeCreate = res.data.count;
@@ -47,7 +47,7 @@ const fetchData = async () => {
     <SideMenu :isOpen="sidebarOpen" :role = "userLogged.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
-      <DashboardHome
+      <DashboardHome  v-if="user?.role"
         :user="userLogged"  
         :stats="{ clientiAttivi: 2, schedeCreate: 1, richiesteNutriz: 0, inAttesa: 0 }"
         :clienti="customersList"

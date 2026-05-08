@@ -6,6 +6,15 @@ const options = {
     info: {
       title: 'TrainHub API',
       version: '1.0.0'
+    },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        }
+      }
     }
   },
   apis: ['./routes/*.js']
