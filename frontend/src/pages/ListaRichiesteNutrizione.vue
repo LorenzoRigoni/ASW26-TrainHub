@@ -9,7 +9,6 @@ import { ref } from 'vue'
         <SideMenu :isOpen="sidebarOpen" :role = "userLogged.role" @close="sidebarOpen = false" />
         <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
         </main>
-        <Footer />
     </div>
 </template>
 
