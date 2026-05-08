@@ -10,7 +10,6 @@ import { ROLES } from '../constants/roles'
 const props = defineProps({
   user: {
     type: Object,
-    default: () => ({ name: 'Alessandra', surname: 'Versari', role: ROLES.PERSONAL_TRAINER })
   },
 
   stats: {

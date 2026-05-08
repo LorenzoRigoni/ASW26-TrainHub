@@ -47,7 +47,7 @@ const fetchData = async () => {
     <SideMenu :isOpen="sidebarOpen" :role = "userLogged.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
-      <DashboardHome  v-if="user?.role"
+      <DashboardHome
         :user="userLogged"  
         :stats="{ clientiAttivi: 2, schedeCreate: 1, richiesteNutriz: 0, inAttesa: 0 }"
         :clienti="customersList"
