@@ -10,6 +10,8 @@ import ListaProgrammi from '../pages/ListaProgrammi.vue'
 import EserciziPage from '../pages/ListaEsercizi.vue'
 import ListaRichiesteNutrizionePage from '../pages/ListaRichiesteNutrizione.vue'
 import ListaPianiAlimentariPage from '../pages/ListaPianiAlimentari.vue'
+import NotifichePage from '../pages/Notifiche.vue'
+import ImpostazioniPage from '../pages/Impostazioni.vue'
 
 
 const routes = [
@@ -22,8 +24,9 @@ const routes = [
   { path: '/programmi/dettaglio-programma/:id', component: DettaglioProgrammaPage },
   { path: '/esercizi', component: EserciziPage },
   { path: '/richieste-nutrizione', component: ListaRichiesteNutrizionePage },
-  { path: '/piani-alimentari', component: ListaPianiAlimentariPage }
-
+  { path: '/piani-alimentari', component: ListaPianiAlimentariPage },
+  { path: '/home/notifiche', component: NotifichePage },
+  { path: '/home/impostazioni', component: ImpostazioniPage }
 
 ]
 

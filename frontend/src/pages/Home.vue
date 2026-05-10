@@ -93,6 +93,9 @@ html, body {
   overflow-x: hidden;
   font-family: 'Century Gothic', 'Century Gothic', Futura, sans-serif;
 }
+.main-content{
+  background-color: #f4f6f9;
+}
 </style>
 
 <style scoped>
