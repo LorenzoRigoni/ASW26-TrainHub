@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 
-import { ROLES } from '../constants/roles.js'
+import { ROLES } from '../utils/utils.js'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'

@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import SideMenuItem from './SideMenuItem.vue'
-import { ROLES } from '../constants/roles'
+import { ROLES } from '../utils/utils'
 import { useRouter } from 'vue-router'
 import { useRoute } from 'vue-router'
 

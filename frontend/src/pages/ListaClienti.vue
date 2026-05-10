@@ -1,9 +1,10 @@
 <script setup>
 import { ref } from 'vue'
+import { getInitials, getAvatarColor, ROLES } from '../utils/utils.js'
+
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
-import { ROLES } from '../constants/roles.js'
-import Footer from '../components/Footer.vue'
+
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import { useRouter } from 'vue-router'
@@ -83,12 +84,17 @@ const goToDetail = () => {
           <MainListItem
             v-for="c in customers"
             :key="c.id"
-            icon="fa fa-user-circle"
+            :icon="null"
             :title="c.name + ' ' +  c.surname"
             :status="c.status"
              @click="goToDetail()"
           >
-           <!-- Info aggiuntive (valutare se ha senso inserirle nel componente riutilizzabile) -->
+            <template #left>
+             <div class="avatar" :style="{ background: getAvatarColor(c.name + c.surname) }">
+                {{ getInitials(c.name, c.surname) }}
+              </div>
+            </template>
+
             <template #subtitle>
               {{ c.email}} • {{ c.birthdate }}
             </template>
@@ -97,8 +103,6 @@ const goToDetail = () => {
           </MainList>
         </div>
       </main>
-
-    <Footer />
   </div>
 </template>
 
@@ -158,5 +162,17 @@ const goToDetail = () => {
   }
 }
 
-
+/*Spostare in css riutilizabile */
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-right: 10pt;
+}
 </style>
