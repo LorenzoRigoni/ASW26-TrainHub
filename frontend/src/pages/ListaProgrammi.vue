@@ -81,7 +81,7 @@ const goToDetail = (id) => {
             @click="goToDetail(p.id)"
           >
             <template #subtitle>
-              {{ p.category }} • {{ p.duration }} • {{ p.date }}
+              {{ p.category }} - {{ p.date }}
             </template>
           </MainListItem>
         </MainList>

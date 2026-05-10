@@ -19,7 +19,7 @@ const routes = [
   { path: '/clienti', component: ClientiPage },
   { path: '/clienti/dettaglio-cliente', component: DiarioPage },
   { path: '/programmi', component: ListaProgrammi },
-  { path: '/programmi/dettaglio-programma', component: DettaglioProgrammaPage },
+  { path: '/programmi/dettaglio-programma/:id', component: DettaglioProgrammaPage },
   { path: '/esercizi', component: EserciziPage },
   { path: '/richieste-nutrizione', component: ListaRichiesteNutrizionePage },
   { path: '/piani-alimentari', component: ListaPianiAlimentariPage }

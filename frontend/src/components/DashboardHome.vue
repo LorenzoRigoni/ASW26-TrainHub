@@ -351,7 +351,6 @@ const statCardsNutri = computed(() => [
   padding: 2rem 2.5rem 5rem;
   min-height: 100vh;
   background-color: #f4f6f9;
-  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .dashboard-header {
