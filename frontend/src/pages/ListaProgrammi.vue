@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
 import { ROLES } from '../constants/roles.js'
@@ -7,59 +7,52 @@ import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const router = useRouter()
-//Dati test
-const programs = [
-  {
-    id: 1,
-    title: 'Lorenzo Rigoni - Piano 1',
-    category: 'Ipertrofia',
-    duration: '6 settimane',
-    date: '10 apr 2026',
-    status: 'completato'
-  },
-  {
-    id: 2,
-    title: 'Lorenzo Rigoni - Piano 2',
-    category: 'Ipertrofia',
-    duration: '6 settimane',
-    date: '10 apr 2026',
-    status: 'in-corso'
-  },
-  {
-    id: 3,
-    title: 'Mario Rossi - Piano 1',
-    category: 'Ipertrofia',
-    duration: '6 settimane',
-    date: '10 apr 2026',
-    status: 'in-corso'
-  },
-  {
-    id: 4,
-    title: 'Gianna Bianchi - Piano 1',
-    category: 'Ipertrofia',
-    duration: '6 settimane',
-    date: '10 apr 2026',
-    status: 'in-corso'
-  }
-]
+const programs = ref([])
+const userLogged = ref({ name: '', surname: '', role: '' })
+const sidebarOpen = ref(true)
 
-const userLogged = {
-  name: 'Alessandra',
-  surname: 'Versari',
-  role: ROLES.PERSONAL_TRAINER
+const fetchData = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+
+    const userRes = await axios.get('http://localhost:5000/api/auth/userinfo', config)
+    userLogged.value = userRes.data.data
+
+    if (userLogged.value.role === ROLES.PERSONAL_TRAINER) {
+      const res = await axios.get('http://localhost:5000/api/training-programs/trainer/programs', config)
+      programs.value = res.data.data.map(p => ({
+        id: p._id,
+        title: `${p.athleteId.name} ${p.athleteId.surname}`,
+        category: p.splits[0]?.name || 'N/A',
+        date: new Date(p.createdAt).toLocaleDateString(),
+        status: p.programStatus
+      }))
+    } else {
+      const res = await axios.get('http://localhost:5000/api/training-programs/my-programs')
+      programs.value = res.data.data.map(p => ({
+        id: p._id,
+        title: `Scheda creata da ${p.trainerId.surname}`,
+        category: p.splits[0]?.name || 'Generale',
+        status: p.programStatus
+      }))
+    }
+  } catch (error) {
+    console.error("Errore caricamento programmi:", error)
+  }
 }
 
-
-const sidebarOpen = ref(true)
+onMounted(fetchData)
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
-//TODO sostituire con reidirizzamento a programma in base all'id
-const goToDetail = () => {
-  router.push('/programmi/dettaglio-programma')
+
+const goToDetail = (id) => {
+  router.push('/programmi/dettaglio-programma/{id}')
 }
 
 </script>
@@ -67,35 +60,38 @@ const goToDetail = () => {
 <template>
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen" :role = "userLogged.role" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="lista-programmi">
         <div class="header">
-            <h1 class="programmi-title">Elenco programmi di allenamento</h1>
-            <p class="programmi-sub"></p>
+          <h1 class="programmi-title">Elenco programmi di allenamento</h1>
+          <p class="programmi-sub">
+            {{ userLogged.role === ROLES.PERSONAL_TRAINER ? 'Gestisci i piani dei tuoi atleti' : 'Visualizza i tuoi progressi' }}
+          </p>
         </div>
-    
+
         <MainList>
           <MainListItem
             v-for="p in programs"
             :key="p.id"
-            icon="fa fa-user-circle"
+            icon="fa fa-file-text-o"
             :title="p.title"
-            :status="p.status"
-            @click="goToDetail"
+            :status="p.status" 
+            @click="goToDetail(p.id)"
           >
-            
-            <!-- Info aggiuntive (valutare se ha senso inserirle nel componente riutilizzabile) -->
             <template #subtitle>
               {{ p.category }} • {{ p.duration }} • {{ p.date }}
             </template>
-
           </MainListItem>
-          </MainList>
+        </MainList>
+
+        <div v-if="programs.length === 0" class="empty-state">
+           <i class="fa fa-folder-open-o"></i>
+           <p>Nessun programma trovato.</p>
         </div>
-      </main>
+      </div>
+    </main>
 
     <Footer />
   </div>

@@ -1,149 +1,76 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ROLES } from '../constants/roles.js'
+import { useRoute } from 'vue-router'
+import axios from 'axios'
 
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import WorkoutProgram from '../components/WorkoutProgram.vue'
 
-const userLogged = {
-  name: 'Alessandra',
-  surname: 'Versari',
-  role: ROLES.PERSONAL_TRAINER
+const route = useRoute()
+const userLogged = ref({ name: '', surname: '', role: '' })
+const sidebarOpen = ref(true)
+const program = ref(null)
+const loading = ref(true)
+
+const fetchData = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+    const programId = route.params.id
+
+    const userRes = await axios.get('http://localhost:5000/api/auth/userinfo', config)
+    userLogged.value = userRes.data.data
+
+    const programRes = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, config)
+    
+    const rawProgram = programRes.data.data
+    program.value = {
+      ...rawProgram, //Used Spread Operator (...) to copy all the properties of the training program
+      title: rawProgram.title || `Piano di ${rawProgram.athleteId.name}`
+    }
+  } catch (error) {
+    console.error("Errore nel caricamento del dettaglio:", error)
+  } finally {
+    loading.value = false
+  }
 }
 
-const sidebarOpen = ref(true)
+onMounted(fetchData)
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
-
-//Dati di test
-const program = {
-  title: "Upper / Lower - Ipertrofia",
-  splits: [
-    {
-      name: "Upper A",
-      exercises: [
-        {
-          name: "Panca Piana Bilanciere",
-          sets: 4,
-          reps: 8,
-          rest: 120,
-          technique: "Carico progressivo"
-        },
-        {
-          name: "Trazioni alla Sbarra",
-          sets: 3,
-          reps: 10,
-          rest: 90
-        },
-        {
-          name: "Military Press",
-          sets: 3,
-          reps: 8,
-          rest: 90,
-          technique: "Rest pause"
-        },
-        {
-          name: "Curl Bilanciere",
-          sets: 3,
-          reps: 12,
-          rest: 60
-        }
-      ]
-    },
-    {
-      name: "Lower A",
-      exercises: [
-        {
-          name: "Squat",
-          sets: 4,
-          reps: 6,
-          rest: 120,
-          technique: "Carico costante"
-        },
-        {
-          name: "Leg Press",
-          sets: 3,
-          reps: 10,
-          rest: 90
-        },
-        {
-          name: "Leg Curl",
-          sets: 3,
-          reps: 12,
-          rest: 60,
-          technique: "Drop set"
-        },
-        {
-          name: "Calf Raise",
-          sets: 4,
-          reps: 15,
-          rest: 45
-        }
-      ]
-    },
-    {
-      name: "Upper B",
-      exercises: [
-        {
-          name: "Panca Inclinata Manubri",
-          sets: 4,
-          reps: 10,
-          rest: 90
-        },
-        {
-          name: "Rematore Bilanciere",
-          sets: 4,
-          reps: 8,
-          rest: 90
-        },
-        {
-          name: "Alzate Laterali",
-          sets: 3,
-          reps: 15,
-          rest: 45,
-          technique: "Tempo controllato"
-        }
-      ]
-    },
-    {
-      name: "Lower B",
-      exercises: [
-        {
-          name: "Stacco da Terra",
-          sets: 4,
-          reps: 5,
-          rest: 150,
-          technique: "Carico progressivo"
-        },
-        {
-          name: "Affondi Camminati",
-          sets: 3,
-          reps: 12,
-          rest: 90
-        },
-        {
-          name: "Hip Thrust",
-          sets: 3,
-          reps: 10,
-          rest: 90
-        }
-      ]
-    }
-  ]
-}
 </script>
 
 <template>
-     <div id="app">
+    <div id="app">
         <Navbar @toggle-sidebar="toggleSidebar" />
-        <SideMenu :isOpen="sidebarOpen" :role = "userLogged.role" @close="sidebarOpen = false" />
+        <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
+        
         <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
-            <WorkoutProgram :program="program" />
+            <div v-if="loading" class="loader-container">
+                <i class="fa fa-spinner fa-spin"></i> Caricamento programma...
+            </div>
+
+            <template v-else-if="program">
+                <div class="header-dettaglio">
+                    <h1 class="program-title">{{ program.title }}</h1>
+                    <span class="badge-status" :class="program.programStatus">
+                        {{ program.programStatus }}
+                    </span>
+                </div>
+                
+                <WorkoutProgram :program="program" />
+            </template>
+
+            <div v-else class="error-state">
+                <p>Impossibile trovare il programma richiesto.</p>
+            </div>
         </main>
+        
         <Footer />
     </div>
 </template>
