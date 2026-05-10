@@ -1,5 +1,6 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
 import { ROLES } from '../constants/roles.js'
@@ -10,41 +11,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 //TODO: aggiungere la possibiltà di assegnare un colore al badge attivo/inattivo/perso. 
-//Dati test
-const customers = [
-  {
-    id: 1,
-    name: 'Lorenzo',
-    surname: 'Rigoni',
-    email: 'lorengo.rigoni@gmail.com',
-    status: 'attivo',
-    birthdate: 'mm/gg/aaaa'
-  },
-  {
-    id: 2,
-    name: 'Riccardo',
-    surname: 'Moretti',
-    email: 'riccardo.moretti@gmail.com',
-    status: 'attivo',
-    birthdate: 'mm/gg/aaaa'
-  },
-  {
-    id: 3,
-    name: 'Alessandro',
-    surname: 'Fabbri',
-    email: 'alessandro.fabbri@gmail.com',
-    status: 'inattivo',
-    birthdate: 'mm/gg/aaaa'
-  },
-  {
-    id: 4,
-    name: 'Vittoria',
-    surname: 'Bianchi',
-    email: 'vittoria.bianchi@gmail.com',
-    status: 'perso',
-    birthdate: 'mm/gg/aaaa'
-  }
-]
+const customers = ref([])
 
 const userLogged = {
   name: 'Alessandra',
@@ -52,16 +19,30 @@ const userLogged = {
   role: ROLES.PERSONAL_TRAINER
 }
 
-
 const sidebarOpen = ref(true)
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
-//TODO ora porta a pagina diario generica, deve essere recuperata quella del cliente selezionato
-const goToDetail = () => {
-  router.push('/clienti/dettaglio-cliente')
+const fetchClients = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+    const response = await axios.get('http://localhost:5000/api/users/my-clients', config)
+    customers.value = response.data.data || []
+  } catch (error) {
+    console.error('Errore caricamento clienti:', error.response?.data?.message || error.message)
+  }
+}
+
+onMounted(fetchClients)
+
+const goToDetail = (customer) => {
+  router.push({
+    path: '/clienti/dettaglio-cliente',
+    query: { athleteId: customer.id }
+  })
 }
 
 </script>
