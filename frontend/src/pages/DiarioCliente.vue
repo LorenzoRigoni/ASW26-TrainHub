@@ -106,6 +106,18 @@ const openModal = () => {
   showModal.value = true
 }
 
+//TODO: Aggiungere argomenti. Prendere dati da backend, serve per mostrare una registrazione passata del diario.
+const openModalCompiled = () => {
+  form.value = {
+    date: today,
+    activity: 'on',
+    adherence: 'Media',
+    steps: 0,
+    hunger: 5
+  }
+  showModal.value = true
+}
+
 const closeModal = () => {
   showModal.value = false
 }
@@ -121,6 +133,7 @@ const saveEntry = () => {
         <Navbar @toggle-sidebar="toggleSidebar" />
         <SideMenu :isOpen="sidebarOpen" :role = "user.role" @close="sidebarOpen = false" />
         <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+          <div class="diary">
             <div class = "header">
                 <h1>Diario</h1>
                 <button class="btn-primary" @click="openModal">
@@ -138,27 +151,24 @@ const saveEntry = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(entry, index) in diaryEntries" :key="index">
+                    <tr v-for="(entry, index) in diaryEntries" :key="index" @click="openModalCompiled()">
                         <td>{{ entry.date }}</td>
-
                         <td>
                         <span :class="['status', entry.activity === 'on' ? 'on' : 'off']">
                             {{ entry.activity }}
                         </span>
                         </td>
-
                         <td>
                         <span :class="['badge', entry.adherence]">
                             {{ entry.adherence }}
                         </span>
                         </td>
-
                         <td>{{ entry.steps }}</td>
-
                         <td>{{ entry.hunger }}</td>
                     </tr>
                 </tbody>
             </table>
+          </div>
         </main>
         <Footer />
     </div>
@@ -230,6 +240,12 @@ const saveEntry = () => {
 <style scoped>
 #app {
   min-height: 100vh;
+}
+
+.diary{
+  padding: 2rem 2.5rem 5rem;
+  min-height: 100vh;
+  background-color: #f4f6f9;
 }
 
 .main-content {

@@ -6,7 +6,9 @@ import { ROLES } from '../constants/roles.js'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 //TODO: aggiungere la possibiltà di assegnare un colore al badge attivo/inattivo/perso. 
 //Dati test
 const customers = [
@@ -57,6 +59,11 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
+//TODO ora porta a pagina diario generica, deve essere recuperata quella del cliente selezionato
+const goToDetail = () => {
+  router.push('/clienti/dettaglio-cliente')
+}
+
 </script>
 
 <template>
@@ -79,6 +86,7 @@ const toggleSidebar = () => {
             icon="fa fa-user-circle"
             :title="c.name + ' ' +  c.surname"
             :status="c.status"
+             @click="goToDetail()"
           >
            <!-- Info aggiuntive (valutare se ha senso inserirle nel componente riutilizzabile) -->
             <template #subtitle>
@@ -99,7 +107,6 @@ const toggleSidebar = () => {
   padding: 2rem 2.5rem 5rem;
   min-height: 100vh;
   background-color: #f4f6f9;
-  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .programmi-sub   { 
