@@ -14,14 +14,14 @@ const props = defineProps({
 
   stats: {
     type: Object,
-    default: () => ({ clientiAttivi: 2, schedeCreate: 1, richiesteNutriz: 0, inAttesa: 0 })
+    default: () => ({ clientiAttivi: 0, schedeCreate: 0, richiesteNutriz: 0, inAttesa: 0 })
   },
 
   clienti: {
     type: Array,
     default: () => [
-      { id: 1, name: 'Lorenzo',    surname: 'Rigoni', email: 'rigoni.lorenzo.21@gmail.com',    status: 'Attivo' },
-      { id: 2, name: 'Alessandro', surname: 'Fabbri', email: 'alessandro.fabbri@gmail.com',    status: 'Attivo' }
+      { id: 1, name: 'Lorenzo',    surname: 'Rigoni', status: 'Attivo' },
+      { id: 2, name: 'Alessandro', surname: 'Fabbri', status: 'Attivo' }
     ]
   },
   schede: {

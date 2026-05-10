@@ -10,6 +10,7 @@ import axios from 'axios'
 //Al momento per vedere come cambiano le varie home, cambiamo ruolo: ''. I valori possibili sono personalTrainer, cliente, nutrizionista.
 const userLogged = ref({ name: '', surname: '', role: '' })
 const customersList = ref([])
+const stats = ref({ clientiAttivi: 0, schedeCreate: 0, richiesteNutriz: 0, inAttesa: 0 })
 const programsList = ref([])
 const sidebarOpen = ref(true)
 
@@ -23,16 +24,35 @@ const fetchData = async () => {
     const config = { headers: { Authorization: `Bearer ${token}` } }
 
     const userRes = await axios.get('http://localhost:5000/api/auth/userinfo', config)
-    userLogged.value = userRes.data.data;
+    userLogged.value = userRes.data.data
 
     if (userLogged.value.role === ROLES.PERSONAL_TRAINER) {
-      const res = await axios.get('http://localhost:5000/api/training-programs/trainer/programs', config);
-      programsList.value = res.data.data;
-      stats.value.schedeCreate = res.data.count;
+      const [clientsRes, statsRes, programsRes] = await Promise.all([
+        axios.get('http://localhost:5000/api/users/my-clients', config),
+        axios.get('http://localhost:5000/api/users/trainer-stats', config),
+        axios.get('http://localhost:5000/api/users/programs-list', config)
+      ])
+
+      customersList.value = clientsRes.data.data
+      stats.value = statsRes.data.data
+      programsList.value = programsRes.data.data
     } else {
-      const res = await axios.get('http://localhost:5000/api/training-programs/my-programs', config);
-      programsList.value = res.data.data;
-  }
+      const [programsRes, activeRes] = await Promise.all([
+        axios.get('http://localhost:5000/api/training-programs/my-programs', config),
+        axios.get('http://localhost:5000/api/training-programs/active', config).catch(() => ({ data: { data: null } }))
+      ])
+
+      programsList.value = programsRes.data.data.map(p => ({
+        id: p._id,
+        title: `Scheda del ${new Date(p.createdAt).toLocaleDateString()}`,
+        category: p.splits.length > 0 ? p.splits[0].name : 'Allenamento',
+        status: p.programStatus === 'active' ? 'Attiva' : 'Archiviata'
+      }))
+
+      activeProgram.value = activeRes.data.data
+
+      //TODO: piano nutrizionale
+    }
   } catch(error){
     console.error("Errore nel caricamento dati:", error.response?.data?.message || error.message);
   }
@@ -49,10 +69,12 @@ onMounted(fetchData)
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <DashboardHome
-        :user="userLogged"  
-        :stats="{ clientiAttivi: 2, schedeCreate: 1, richiesteNutriz: 0, inAttesa: 0 }"
+        :user="userLogged"
+        :stats="stats"
         :clienti="customersList"
-        :schede="programsList"
+        :schede="programsList" 
+        :schede-cliente="programsList"
+        :ultimo-allenamento="{ data: '2025-05-01' }"
       />
     </main>
 

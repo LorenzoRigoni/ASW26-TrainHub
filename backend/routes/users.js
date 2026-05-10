@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
 const {
-  getMyAthletesWithPrograms,
+  getMyClients,
+  getTrainerStats,
+  getTrainerProgramsList,
   getAthleteDetail,
   assignTrainerToAthlete,
   assignNutritionistToAthlete,
@@ -13,11 +15,25 @@ const {
 //Routes for trainer
 
 /**
- * @route GET /api/users/my-athletes
- * @desc Get all the athletes assigned to the logged trainer
+ * @route GET /api/users/my-clients
+ * @desc Get all the clients assigned to the logged trainer
  * @access Private (trainer)
  */
-router.get('/my-athletes', protect, authorize('trainer'), getMyAthletesWithPrograms);
+router.get('/my-clients', protect, authorize('trainer'), getMyClients);
+
+/**
+ * @route GET /api/users/trainer-stats
+ * @desc Get the stats of the trainer
+ * @access Private (trainer)
+ */
+router.get('/trainer-stats', protect, authorize('trainer'), getTrainerStats);
+
+/**
+ * @route GET /api/users/programs-list
+ * @desc Get the list of the programs created by the trainer
+ * @access Private (trainer)
+ */
+router.get('/programs-list', protect, authorize('trainer'), getTrainerProgramsList);
 
 /**
  * @route PUT /api/users/:athleteId/assign-trainer
@@ -33,7 +49,7 @@ router.put('/:athleteId/assign-trainer', protect, authorize('trainer'), assignTr
  * @desc Get all the athletes assigned to the logged nutritionist
  * @access Private (nutritionist)
  */
-router.get('/my-nutrition-athletes', protect, authorize('nutritionist'), getNutritionistAthletes);
+//router.get('/my-nutrition-athletes', protect, authorize('nutritionist'), getNutritionistAthletes);
 
 /**
  * @route PUT /api/users/:athleteId/assign-nutritionist
@@ -56,6 +72,6 @@ router.get('/trainers', getAllTrainers);
  * @desc Get all the details of an athlete
  * @access Private (trainer and nutritionist)
  */
-router.get('/athlete/:athleteId', protect, authorize('trainer', 'nutritionist'), getAthleteDetail);
+//router.get('/athlete/:athleteId', protect, authorize('trainer', 'nutritionist'), getAthleteDetail);
 
 module.exports = router;

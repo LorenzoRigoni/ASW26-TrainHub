@@ -1,128 +1,106 @@
-const user = require('../models/user');
-const trainingProgram = require('../models/trainingProgram');
+const User = require('../models/user');
+const TrainingProgram = require('../models/trainingProgram');
+const NutritionPlan = require('../models/nutritionPlan')
 
-/**
- * Get all the athletes of trainer.
- * 
- * @param {*} req 
- * @param {*} res 
- */
-exports.getMyAthletesWithPrograms = async (req, res) => {
+exports.getMyClients = async (req, res) => {
     try {
-        const athletes = await user.find({
-            assignedTrainerId: req.user.id,
-            role: 'client'
-        }).select('-password');
+        const clients = await User.find({assignedTrainerId: req.user.id})
+            .select('name surname');
 
-        const athletesWithPrograms = await Promise.all(
-            athletes.map(async (athlete) => {
-                const programs = await trainingProgram.find({
-                    athleteId: athlete._id
-                }).select('status sessionPerWeek createdAt splits');
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
 
-                return {
-                    _id: athlete._id,
-                    username: athlete.username,
-                    name: athlete.name,
-                    surname: athlete.surname,
-                    dateOfBirth: athlete.dateOfBirth,
-                    programs: programs
+        const clientsWithStatus = await Promise.all(clients.map(async (client) => {
+            const activeProgram = await TrainingProgram.findOne({
+                athleteId: client._id,
+                programStatus: 'active'
+            });
+
+            let status = 'Inattivo';
+            if (activeProgram) {
+                const progDate = new Date(activeProgram.updatedAt);
+                if (progDate.getMonth() === currentMonth && progDate.getFullYear() === currentYear) {
+                    status = 'Attivo';
                 }
-            })
-        );
+            }
 
-        res.status(200).json({
-            success: true,
-            count: athletesWithPrograms.length,
-            data: athletesWithPrograms
-        });
+            return {
+                id: client._id,
+                name: client.name,
+                surname: client.surname,
+                status: status
+            };
+        }));
+        res.status(200).json({ success: true, data: clientsWithStatus });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching athletes',
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-/**
- * Get all the athletes assigned to a nutritionist.
- * 
- * @param {*} req 
- * @param {*} res 
- */
-exports.getNutritionistAthletes = async (req, res) => {
+exports.getTrainerStats = async (req, res) => {
     try {
-        const athletes = await user.find({
-            assignedNutritionistId: req.user.id,
-            role: 'client'
-        }).select('-password');
+        const trainerId = req.user.id;
 
-        res.status(200).json({
-            success: true,
-            count: athletes.length,
-            data: athletes
+        const totalPrograms = await TrainingProgram.countDocuments({ trainerId });
+
+        const pendingPrograms = await TrainingProgram.countDocuments({ 
+            trainerId, 
+            programStatus: 'draft' 
         });
 
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching athletes',
-            error: error.message
+        const clients = await User.find({ assignedTrainerId: trainerId });
+        let activeClientsCount = 0;
+        const currentMonth = new Date().getMonth();
+
+        for (const client of clients) {
+            const hasActive = await TrainingProgram.findOne({
+                athleteId: client._id,
+                programStatus: 'active',
+                updatedAt: { 
+                    $gte: new Date(new Date().getFullYear(), currentMonth, 1) 
+                }
+            });
+            if (hasActive) activeClientsCount++;
+        }
+
+        const myClients = await User.find({ assignedTrainerId: trainerId }).select('_id');
+        const clientIds = myClients.map(c => c._id);
+
+        const activeNutritionalPlans = await NutritionPlan.countDocuments({
+            athleteId: { $in: clientIds },
+            planStatus: 'active'
         });
-    }
-};
-
-/**
- * Get the detail of a single athlete.
- * 
- * @param {*} req 
- * @param {*} res 
- */
-exports.getAthleteDetail = async (req, res) => {
-    try {
-        const { athleteId } = req.params;
-
-        const athlete = await user.findById(athleteId)
-            .select('-password')
-            .populate('assignedTrainerId', 'name surname username')
-            .populate('assignedNutritionistId', 'name surname username');
-
-        if (!athlete) {
-            return res.status(404).json({
-                success: false,
-                message: 'Athlete not found'
-            });
-        }
-
-        const isTrainer = athlete.assignedTrainerId?._id.toString() === req.user.id;
-        const isNutritionist = athlete.assignedNutritionistId?._id.toString() === req.user.id;
-
-        if (!isTrainer && !isNutritionist) {
-            return res.status(403).json({
-                success: false,
-                message: 'Not authorized to view this athlete'
-            });
-        }
-
-        const programs = await trainingProgram.find({
-            athleteId: athleteId
-        }).populate('trainerId', 'name surname');
 
         res.status(200).json({
             success: true,
             data: {
-                athlete: athlete,
-                programs: programs
+                activeClientsCount,
+                totalPrograms,
+                activeNutritionalPlans,
+                pendingPrograms
             }
         });
-
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching athlete detail',
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.getTrainerProgramsList = async (req, res) => {
+    try {
+        const programs = await TrainingProgram.find({ trainerId: req.user.id })
+            .populate('athleteId', 'name surname')
+            .sort({ createdAt: -1 });
+
+        const formattedPrograms = programs.map(p => ({
+            id: p._id,
+            title: `${p.athleteId.name} ${p.athleteId.surname} - Piano`,
+            category: p.splits.length > 0 ? p.splits[0].name : 'Generale',
+            status: p.programStatus === 'active' ? 'Assegnata' : 'Bozza'
+        }));
+
+        res.status(200).json({ success: true, data: formattedPrograms });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -140,7 +118,7 @@ exports.assignTrainerToAthlete = async (req, res) => {
         //If no trainer is specified, the logged trainer is assigned
         const trainerIdToAssign = trainerId || req.user.id;
 
-        const trainer = await user.findById(trainerIdToAssign);
+        const trainer = await User.findById(trainerIdToAssign);
         if (!trainer || trainer.role !== 'trainer') {
             return res.status(404).json({
                 success: false,
@@ -148,7 +126,7 @@ exports.assignTrainerToAthlete = async (req, res) => {
             });
         }
 
-        const athlete = await user.findById(athleteId);
+        const athlete = await User.findById(athleteId);
         if (!athlete || athlete.role !== 'client') {
             return res.status(404).json({
                 success: false,
@@ -193,7 +171,7 @@ exports.assignNutritionistToAthlete = async (req, res) => {
         //If no nutritionist is specified, the logged trainer is assigned
         const nutritionistIdToAssign = nutritionistId || req.user.id;
 
-        const nutritionist = await user.findById(nutritionistIdToAssign);
+        const nutritionist = await User.findById(nutritionistIdToAssign);
         if (!nutritionist || nutritionist.role !== 'nutritionist') {
             return res.status(404).json({
                 success: false,
@@ -201,7 +179,7 @@ exports.assignNutritionistToAthlete = async (req, res) => {
             });
         }
 
-        const athlete = await user.findById(athleteId);
+        const athlete = await User.findById(athleteId);
         if (!athlete || athlete.role !== 'client') {
             return res.status(404).json({
                 success: false,
@@ -240,7 +218,7 @@ exports.assignNutritionistToAthlete = async (req, res) => {
  */
 exports.getAllTrainers = async (req, res) => {
     try {
-        const trainers = await user.find({ role: 'trainer' })
+        const trainers = await User.find({ role: 'trainer' })
             .select('name surname username');
 
         res.status(200).json({
