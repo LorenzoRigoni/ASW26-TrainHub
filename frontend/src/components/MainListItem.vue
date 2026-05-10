@@ -14,8 +14,12 @@ const emit = defineEmits(['click'])
   <div class="list-item" @click="emit('click')">
     
     <!-- ICONA/AVATAR UTENTE -->
-    <div class="item-icon">
-      <i :class="icon"></i>
+     <div class="item-left">
+      <slot name="left">
+        <div v-if="icon" class="item-icon">
+          <i :class="icon"></i>
+        </div>
+    </slot>
     </div>
 
     <!-- CONTENUTO -->
@@ -60,7 +64,7 @@ const emit = defineEmits(['click'])
   width: 45px;
   height: 45px;
   border-radius: 12px;
-  background: #d6f5ea;
+  background: #dee3e1;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { ROLES } from '../constants/roles.js'
+import { ROLES } from '../utils/utils.js'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -92,6 +92,9 @@ onMounted(fetchData)
 html, body {
   overflow-x: hidden;
   font-family: 'Century Gothic', 'Century Gothic', Futura, sans-serif;
+}
+.main-content{
+  background-color: #f4f6f9;
 }
 </style>
 

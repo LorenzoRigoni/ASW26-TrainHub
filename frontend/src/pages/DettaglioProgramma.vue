@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ROLES } from '../constants/roles.js'
+import { ROLES } from '../utils/utils.js'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
 

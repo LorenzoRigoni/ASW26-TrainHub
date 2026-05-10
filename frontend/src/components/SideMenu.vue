@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import SideMenuItem from './SideMenuItem.vue'
-import { ROLES } from '../constants/roles'
+import { ROLES } from '../utils/utils'
 import { useRouter } from 'vue-router'
 import { useRoute } from 'vue-router'
 
@@ -34,9 +34,9 @@ const menuItems = [
 
 //TODO: modificare routes
 const bottomItems = [
-  { id: 'notifications', icon: 'fa fa-bell',   label: 'Notifiche', route: '/home' },
-  { id: 'settings',      icon: 'fa fa-cog',    label: 'Impostazioni', route: '/home' },
-  { id: 'logout',        icon: 'fa fa-sign-out', label: 'Esci' , route: '/home'},
+  { id: 'notifications', icon: 'fa fa-bell',   label: 'Notifiche', route: '/home/notifiche' },
+  { id: 'settings',      icon: 'fa fa-cog',    label: 'Impostazioni', route: '/home/impostazioni' },
+  { id: 'logout',        icon: 'fa fa-sign-out', label: 'Esci' , route: '/'},
 ]
 
 

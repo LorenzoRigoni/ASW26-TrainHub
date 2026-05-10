@@ -1,10 +1,12 @@
 <script setup>
 import { computed } from 'vue'
+import { getInitials, getAvatarColor, ROLES } from '../utils/utils'
+
 import StatCard   from './StaticCard.vue'
 import ActionCard from './ActionCard.vue'
 import PanelList  from './HomePanelList.vue'
 import ListItem   from './HomeListItem.vue'
-import { ROLES } from '../constants/roles'
+
 
 //TODO: valutare se sostituire v-if/else... con v-show, sa W3c sembra sia consigliato usare v-show se possibile (migliora prestazioni e UX)
 const props = defineProps({
@@ -76,10 +78,6 @@ const greeting = computed(() => {
   return 'Buonasera'
 })
 
-
-const avatarColors = ['#2d6a4f','#1b4332','#40916c','#52b788','#1e6091','#1a759f','#168aad','#76c893']
-const getInitials   = (n, c) => `${n[0]}${c[0]}`.toUpperCase()
-const getAvatarColor = (n)   => avatarColors[n.charCodeAt(0) % avatarColors.length]
 
 const giorniDaUltimo = computed(() => {
   if (!props.ultimoAllenamento?.data) return null
@@ -351,7 +349,6 @@ const statCardsNutri = computed(() => [
   padding: 2rem 2.5rem 5rem;
   min-height: 100vh;
   background-color: #f4f6f9;
-  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .dashboard-header {
