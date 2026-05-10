@@ -40,6 +40,70 @@ router.get('/programs-list', protect, authorize('trainer'), getTrainerProgramsLi
  * @desc Assign a trainer to athlete
  * @access Private (trainer)
  */
+/**
+ * @swagger
+ * /api/users/{athleteId}/assign-trainer:
+ *   put:
+ *     summary: Assign trainer to athlete
+ *     description: Assign a trainer to an athlete. If trainerId is not provided, the authenticated trainer is assigned automatically.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: athleteId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Athlete user id
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               trainerId:
+ *                 type: string
+ *                 example: 684d4f8c999999999999999
+ *           examples:
+ *             assignLoggedTrainer:
+ *               summary: Assign authenticated trainer
+ *               value: {}
+ *             assignSpecificTrainer:
+ *               summary: Assign specific trainer
+ *               value:
+ *                 trainerId: 684d4f8c999999999999999
+ *     responses:
+ *       200:
+ *         description: Trainer assigned successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Trainer assigned successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     athleteId:
+ *                       type: string
+ *                     athleteName:
+ *                       type: string
+ *                     trainerId:
+ *                       type: string
+ *                     trainerName:
+ *                       type: string
+ *       404:
+ *         description: Trainer or athlete not found
+ *       500:
+ *         description: Server error
+ */
 router.put('/:athleteId/assign-trainer', protect, authorize('trainer'), assignTrainerToAthlete);
 
 //Routes for nutritionist
