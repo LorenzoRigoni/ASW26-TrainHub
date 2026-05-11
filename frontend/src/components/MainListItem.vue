@@ -4,7 +4,9 @@ defineProps({
   title: String,
   subtitle: String,
   status: String,
-  icon: String
+  statusClass: String,
+  icon: String,
+  iconClass: String
 })
 
 const emit = defineEmits(['click'])
@@ -16,7 +18,7 @@ const emit = defineEmits(['click'])
     <!-- ICONA/AVATAR UTENTE -->
      <div class="item-left">
       <slot name="left">
-        <div v-if="icon" class="item-icon">
+        <div v-if="icon" class="item-icon" :class="iconClass">
           <i :class="icon"></i>
         </div>
     </slot>
@@ -35,7 +37,7 @@ const emit = defineEmits(['click'])
     <!-- STATUS -->
     <div class="item-status">
       <slot name="status">
-        <span class="status-badge" :class ="status">{{ status }}</span>
+        <span class="status-badge" :class="statusClass">{{ status }}</span>
       </slot>
     </div>
 
@@ -98,7 +100,10 @@ const emit = defineEmits(['click'])
   font-size: 12px;
 }
 
-/*Stati clienti*/
+/**
+ * TODO: rimuovere con refactor
+ */
+/*Stati clienti --> fare refactor*/
 .status-badge.attivo {
   background: #d1fae5;
   color: #065f46;
@@ -114,7 +119,7 @@ const emit = defineEmits(['click'])
   color: #991b1b;
 }
 
-/*Stati programmi */
+/*Stati programmi --> Fare refactor */
 .status-badge.completato {
   background: #d1fae5;
   color: #065f46;
@@ -123,5 +128,47 @@ const emit = defineEmits(['click'])
 .status-badge.in-corso {
   background: #fef9c3;
   color: #854d0e;
+}
+
+/*Colori generici per status */
+.status-green {
+  background: #32e287;
+  color: #031913;
+}
+
+.status-yellow {
+  background: #f6eb6e;
+  color: #000000;
+}
+
+.status-orange {
+  background: #efa435;
+  color: #000000;
+}
+
+.status-red {
+  background: #e97979;
+  color: #000000;
+}
+
+/*Colori generici per icons */
+.icon-green {
+  background: #32e287;
+  color: #000000;
+}
+
+.icon-yellow {
+  background: #f6eb6e;
+  color: #000000;
+}
+
+.icon-orange{
+  background: #efa435;
+  color: #000000;
+}
+
+.icon-red {
+  background: #e97979;
+  color: #000000;
 }
 </style>
