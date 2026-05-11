@@ -7,6 +7,7 @@ import SideMenu from '../components/SideMenu.vue'
 
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
+import { useRouter } from 'vue-router'
 
 // Questa pagina è pensata per essere visibile solo al pt. 
 // In pratica quando un cliente ha compilato tutte le settimane, tranne l'ultima, viene creata automaticamente 
@@ -27,6 +28,7 @@ const showModal = ref(false)
 
 const today = new Date().toISOString().split('T')[0]
 
+const router = useRouter()
 
 
 //TODO rimuovere dopo collegamento con backend
@@ -157,7 +159,6 @@ const closeModal = () => {
 }
 
 
-
 const saveDeadline = () => {
   //TODO salvare le modifiche all'elemento aperto
   closeModal()
@@ -232,6 +233,7 @@ const saveDeadline = () => {
         <div class="modal-actions">
           <button class="btn-danger" @click="closeModal">Annulla</button>
           <button class="btn-primary" @click="saveDeadline">Salva</button>
+          <button class="btn-primary" @click="router.push('/bozze/dettaglio-bozza')">Crea Programma</button>
         </div>
       </div>
     </div>
