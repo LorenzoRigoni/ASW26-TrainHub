@@ -52,7 +52,7 @@ const toggleSidebar = () => {
 }
 
 const goToDetail = (id) => {
-  router.push('/programmi/dettaglio-programma/{id}')
+  router.push(`/programmi/dettaglio-programma/${id}`)
 }
 
 </script>

@@ -20,16 +20,22 @@ const fetchData = async () => {
     const token = localStorage.getItem('token')
     const config = { headers: { Authorization: `Bearer ${token}` } }
     const programId = route.params.id
-
     const userRes = await axios.get('http://localhost:5000/api/auth/userinfo', config)
     userLogged.value = userRes.data.data
 
     const programRes = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, config)
     
     const rawProgram = programRes.data.data
+
+    console.log("Dati ricevuti dal server: ", rawProgram)
     program.value = {
       ...rawProgram, //Used Spread Operator (...) to copy all the properties of the training program
-      title: rawProgram.title || `Piano di ${rawProgram.athleteId.name}`
+      title: rawProgram.title || `Piano di ${rawProgram.athleteId.name}`,
+      status: rawProgram.programStatus,
+        splits: rawProgram.splits.map(s => ({
+          ...s,
+          exercises: s.rows
+        }))
     }
   } catch (error) {
     console.error("Errore nel caricamento del dettaglio:", error)

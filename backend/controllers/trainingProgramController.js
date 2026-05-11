@@ -5,16 +5,21 @@ const { handleError, badRequest, forbidden, notFound, requiredFields, isOwner } 
 
 const getProgram = async (id) => {
     const program = await TrainingProgram.findById(id)
-        .populate('trainerId', 'name surname username')
-        .populate('athleteId', 'name surname username');
+        .populate('trainerId', '_id name surname username')
+        .populate('athleteId', '_id name surname username');
 
     if (!program) return { error: 'NOT_FOUND' };
     return { program };
 };
 
 const checkAccess = (program, user) => {
-    if (user.role === 'client' && !isOwner(program.athleteId._id, user.id)) return 'FORBIDDEN';
-    if (user.role === 'trainer' && !isOwner(program.trainerId._id, user.id)) return 'FORBIDDEN';
+    if (!program.athleteId || !program.trainerId) return 'DATA_ERROR';
+
+    const athleteId = program.athleteId._id || program.athleteId;
+    const trainerId = program.trainerId._id || program.trainerId;
+
+    if (user.role === 'client' && !isOwner(athleteId, user.id)) return 'FORBIDDEN';
+    if (user.role === 'trainer' && !isOwner(trainerId, user.id)) return 'FORBIDDEN';
     return null;
 };
 
@@ -53,6 +58,7 @@ exports.getTrainingProgramById = async (req, res) => {
 
         res.status(200).json({ success: true, data: program });
     } catch (error) {
+        console.error("ERRORE SERVER:", error);
         handleError(res, error, 'Error fetching program');
     }
 };
