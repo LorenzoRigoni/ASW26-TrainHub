@@ -168,10 +168,26 @@ exports.getBodyDiaryByDateRange = async (req, res) => {
 
 exports.createBodyDiary = async (req, res) => {
     try {
-        const { weight, measurements, notes, energyLevel, sleepHours } = req.body;
+        const {
+          date,
+          activity,
+          adherence,
+          steps,
+          hunger,
+          weight,
+          measurements,
+          notes,
+          energyLevel,
+          sleepHours
+        } = req.body;
 
         const diary = await BodyDiary.create({
             athleteId: req.user.id,
+            date: date ? new Date(date) : Date.now(),
+            activity: activity || 'on',
+            adherence: adherence || 'Media',
+            steps: steps ?? 0,
+            hunger: hunger ?? 5,
             weight: weight || null,
             measurements: measurements || {},
             notes: notes || '',
@@ -192,8 +208,24 @@ exports.updateBodyDiary = async (req, res) => {
         if (error === 'NOT_FOUND') return notFound(res);
         if (error === 'FORBIDDEN') return forbidden(res);
 
-        const { weight, measurements, notes, energyLevel, sleepHours } = req.body;
+        const {
+          date,
+          activity,
+          adherence,
+          steps,
+          hunger,
+          weight,
+          measurements,
+          notes,
+          energyLevel,
+          sleepHours
+        } = req.body;
 
+        if (date !== undefined) resource.date = new Date(date);
+        if (activity !== undefined) resource.activity = activity;
+        if (adherence !== undefined) resource.adherence = adherence;
+        if (steps !== undefined) resource.steps = steps;
+        if (hunger !== undefined) resource.hunger = hunger;
         if (weight !== undefined) resource.weight = weight;
         if (measurements) resource.measurements = { ...resource.measurements, ...measurements };
         if (notes !== undefined) resource.notes = notes;

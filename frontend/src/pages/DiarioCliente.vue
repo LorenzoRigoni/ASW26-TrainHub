@@ -1,6 +1,7 @@
 <script setup>
-import { ref } from 'vue'
-import { ROLES } from '../utils/utils.js'
+import { onMounted, ref } from 'vue'
+import axios from 'axios'
+import { ROLES } from '../constants/roles.js'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -21,66 +22,28 @@ const props = defineProps({
   })
 
 
-//DATI DI TEST
-//Quando ci saranno tante registrazioni di diario, mostreremo sempre solo quelle delle ultime due settimane (oppure solo quelle del mese corrente?)
-const diaryEntries = ref([
-  {
-    date: '2026-05-01',
-    activity: 'on',
-    adherence: 'Ottima',
-    steps: 9200,
-    hunger: 5
-  },
-  {
-    date: '2026-05-02',
-    activity: 'off',
-    adherence: 'Media',
-    steps: 4000,
-    hunger: 7
-  },
-  {
-    date: '2026-05-03',
-    activity: 'on',
-    adherence: 'Ottima',
-    steps: 10500,
-    hunger: 4
-  },
-  {
-    date: '2026-05-04',
-    activity: 'on',
-    adherence: 'Sgarro',
-    steps: 3000,
-    hunger: 8
-  },
-  {
-    date: '2026-05-05',
-    activity: 'off',
-    adherence: 'Media',
-    steps: 6000,
-    hunger: 6
-  },
-  {
-    date: '2026-05-06',
-    activity: 'on',
-    adherence: 'Ottima',
-    steps: 11000,
-    hunger: 3
-  },
-  {
-    date: '2026-05-07',
-    activity: 'on',
-    adherence: 'Media',
-    steps: 7500,
-    hunger: 6
-  },
-  {
-    date: '2026-05-08',
-    activity: 'off',
-    adherence: 'Sgarro',
-    steps: 2000,
-    hunger: 9
+const diaryEntries = ref([])
+
+const fetchDiaryEntries = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+    const response = await axios.get('http://localhost:5000/api/personal-diary/body-diary', config)
+
+    diaryEntries.value = (response.data.data || []).map((entry) => ({
+      date: entry.date ? new Date(entry.date).toISOString().split('T')[0] : '',
+      activity: entry.activity || 'on',
+      adherence: entry.adherence || 'Media',
+      steps: entry.steps ?? 0,
+      hunger: entry.hunger ?? 5,
+      notes: entry.notes || ''
+    }))
+  } catch (error) {
+    console.error('Errore caricamento diario:', error.response?.data?.message || error.message)
   }
-])
+}
+
+onMounted(fetchDiaryEntries)
 
 //Finestra pop up per inserimento dati
 const showModal = ref(false)
@@ -92,7 +55,8 @@ const form = ref({
   activity: 'on',
   adherence: 'Media',
   steps: 0,
-  hunger: 5
+  hunger: 5,
+  notes: ''
 })
 
 const openModal = () => {
@@ -101,7 +65,8 @@ const openModal = () => {
     activity: 'on',
     adherence: 'Media',
     steps: 0,
-    hunger: 5
+    hunger: 5,
+    notes: ''
   }
   showModal.value = true
 }
@@ -113,7 +78,8 @@ const openModalCompiled = () => {
     activity: 'on',
     adherence: 'Media',
     steps: 0,
-    hunger: 5
+    hunger: 5,
+    notes: ''
   }
   showModal.value = true
 }
@@ -122,9 +88,36 @@ const closeModal = () => {
   showModal.value = false
 }
 
-const saveEntry = () => {
-  diaryEntries.value.push({ ...form.value })
-  closeModal()
+const saveEntry = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+
+    const payload = {
+      date: form.value.date,
+      activity: form.value.activity,
+      adherence: form.value.adherence,
+      steps: form.value.steps,
+      hunger: form.value.hunger,
+      notes: form.value.notes
+    }
+
+    const response = await axios.post('http://localhost:5000/api/personal-diary/body-diary', payload, config)
+    const entry = response.data.data
+
+    diaryEntries.value.push({
+      date: entry.date ? new Date(entry.date).toISOString().split('T')[0] : form.value.date,
+      activity: entry.activity || form.value.activity,
+      adherence: entry.adherence || form.value.adherence,
+      steps: entry.steps ?? form.value.steps,
+      hunger: entry.hunger ?? form.value.hunger,
+      notes: entry.notes || form.value.notes
+    })
+
+    closeModal()
+  } catch (error) {
+    console.error('Errore salvataggio entry:', error.response?.data?.message || error.message)
+  }
 }
 </script>
 
@@ -148,6 +141,7 @@ const saveEntry = () => {
                     <th>Aderenza piano alimentare</th>
                     <th>NEAT (passi giornalieri)</th>
                     <th>Livello di fame (1-10)</th>
+                    <th>Nota</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -165,6 +159,7 @@ const saveEntry = () => {
                         </td>
                         <td>{{ entry.steps }}</td>
                         <td>{{ entry.hunger }}</td>
+                        <td>{{ entry.notes || '-' }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -226,6 +221,12 @@ const saveEntry = () => {
                     />
                     <span class="hunger-value">{{ form.hunger }}</span>
                 </div>
+            </div>
+
+            <!-- NOTA -->
+            <div class="form-row note-row">
+                <label>Nota</label>
+                <textarea v-model="form.notes" placeholder="Aggiungi una nota"></textarea>
             </div>
 
             <div class="modal-actions">
@@ -478,7 +479,8 @@ h1 {
 
 .modal input[type="date"],
 .modal input[type="number"],
-.modal select {
+.modal select,
+.modal textarea {
   flex: 1;
   border: 1px solid #d8dcf0;
   border-radius: 12px;
@@ -488,11 +490,27 @@ h1 {
   transition: all 0.2s ease;
 }
 
+.modal textarea {
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
 .modal input:focus,
-.modal select:focus {
+.modal select:focus,
+.modal textarea:focus {
   outline: none;
   border-color: #5b47c5;
   box-shadow: 0 0 0 4px rgba(91,71,197,0.12);
+}
+
+.note-row {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.note-row label {
+  min-width: auto;
 }
 
 /* RADIO */

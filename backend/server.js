@@ -28,8 +28,8 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/training-programs', require('./routes/trainingPrograms'));
 app.use('/api/personal-diary', require('./routes/personalDiary'));
 app.use('/api/notifications', require('./routes/notifications'));
-/*
 app.use('/api/nutrition-plans', require('./routes/nutritionPlans'));
+/*
 app.use('/api/ai', require('./routes/ai'));*/
 
 //Root route

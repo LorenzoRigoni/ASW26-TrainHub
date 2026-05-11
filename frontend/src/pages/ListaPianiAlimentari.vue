@@ -1,5 +1,6 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import axios from 'axios'
 
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
@@ -20,46 +21,64 @@ const userLogged = ref({
   role: 'trainer'
 })
 
-/* LISTA PIANI */
-//TODO: lo stato che mostriamo nel list item lo calcoliamo noi in base alla data di fine programma. Se è passata il programma va marcato come inattivo. 
-const nutritionPlans = ref([
-  {
-    title: 'Piano definizione maggio',
-    client: 'Marco Rossi',
-    startDate: '2026-05-01',
-    endDate: '2026-06-01',
-    status: 'attivo',
-    pdfUrl: '#'
-  },
-  {
-    title: 'Piano massa estiva',
-    client: 'Giulia Bianchi',
-    startDate: '2026-04-15',
-    endDate: '2026-05-15',
-    status: 'inattivo',
-    pdfUrl: '#'
-  }
-])
-
+const nutritionPlans = ref([])
+const clients = ref([])
 const showModal = ref(false)
 
 const today = new Date().toISOString().split('T')[0]
 
 const form = ref({
   title: '',
-  client: '',
+  athleteId: '',
+  description: '',
+  dailyCalories: '',
+  proteins: '',
+  carbs: '',
+  fats: '',
+  notes: '',
   startDate: today,
-  endDate: today,
-  file: null
+  endDate: today
+})
+
+const getAuthConfig = () => {
+  const token = localStorage.getItem('token')
+  return { headers: { Authorization: `Bearer ${token}` } }
+}
+
+const loadPlans = async () => {
+  try {
+    const response = await axios.get('http://localhost:5000/api/nutrition-plans/nutritionist/plans', getAuthConfig())
+    nutritionPlans.value = response.data.data || []
+  } catch (error) {
+    console.error('Errore caricamento piani:', error.response?.data?.message || error.message)
+  }
+}
+
+const loadClients = async () => {
+  try {
+    const response = await axios.get('http://localhost:5000/api/users/my-clients', getAuthConfig())
+    clients.value = response.data.data || []
+  } catch (error) {
+    console.error('Errore caricamento clienti:', error.response?.data?.message || error.message)
+  }
+}
+
+onMounted(async () => {
+  await Promise.all([loadPlans(), loadClients()])
 })
 
 const openModal = () => {
   form.value = {
     title: '',
-    client: '',
+    athleteId: '',
+    description: '',
+    dailyCalories: '',
+    proteins: '',
+    carbs: '',
+    fats: '',
+    notes: '',
     startDate: today,
-    endDate: today,
-    file: null
+    endDate: today
   }
 
   showModal.value = true
@@ -69,29 +88,45 @@ const closeModal = () => {
   showModal.value = false
 }
 
+const savePlan = async () => {
+  try {
+    if (!form.value.athleteId) {
+      alert('Seleziona un cliente per il piano')
+      return
+    }
 
-const handleFileUpload = (event) => {
-  form.value.file = event.target.files[0]
+    const payload = {
+      athleteId: form.value.athleteId,
+      title: form.value.title,
+      description: form.value.description,
+      dailyCalories: form.value.dailyCalories ? Number(form.value.dailyCalories) : null,
+      macros: {
+        proteins: form.value.proteins ? Number(form.value.proteins) : null,
+        carbs: form.value.carbs ? Number(form.value.carbs) : null,
+        fats: form.value.fats ? Number(form.value.fats) : null
+      },
+      notes: form.value.notes,
+      startDate: form.value.startDate,
+      endDate: form.value.endDate
+    }
+
+    const response = await axios.post('http://localhost:5000/api/nutrition-plans', payload, getAuthConfig())
+    nutritionPlans.value.unshift(response.data.data)
+    closeModal()
+  } catch (error) {
+    console.error('Errore salvataggio piano:', error.response?.data?.message || error.message)
+  }
 }
 
-
-const savePlan = () => {
-
-  nutritionPlans.value.push({
-    title: form.value.title,
-    client: form.value.client,
-    startDate: form.value.startDate,
-    endDate: form.value.endDate,
-    pdfUrl: '#'
-  })
-
-  closeModal()
+const formatStatus = (status) => {
+  if (status === 'active') return 'Attivo'
+  if (status === 'draft') return 'Bozza'
+  if (status === 'archived') return 'Archiviato'
+  return status
 }
-
-/* OPEN PDF */
 
 const openPdf = (plan) => {
-  window.open(plan.pdfUrl, '_blank')
+  alert('Dettaglio piano non ancora implementato')
 }
 </script>
 <template>
@@ -121,21 +156,24 @@ const openPdf = (plan) => {
       <!-- LISTA -->
       <MainList>
         <ListItem
-          v-for="(plan, index) in nutritionPlans"
-          :key="index"
+          v-for="plan in nutritionPlans"
+          :key="plan._id"
           :title="plan.title"
-          :status="plan.status"
-          icon="fa fa-file-pdf-o"
+          :status="formatStatus(plan.planStatus)"
+          icon="fa fa-utensils"
           @click="openPdf(plan)"
         >
 
           <template #subtitle>
-            {{ plan.client }} ·
-            {{ plan.startDate }} - {{ plan.endDate }}
+            {{ plan.athleteId?.name }} {{ plan.athleteId?.surname }} ·
+            {{ new Date(plan.startDate).toISOString().split('T')[0] }} -
+            {{ new Date(plan.endDate).toISOString().split('T')[0] }}
           </template>
         </ListItem>
       </MainList>
     </main>
+
+    <Footer />
 
     <!-- MODAL -->
     <div v-if="showModal" class="modal-overlay">
@@ -150,16 +188,42 @@ const openPdf = (plan) => {
           <input type="text" placeholder="Nome piano" v-model="form.title"/>
         </div>
 
-        <!-- CLIENTE: soluzione provvisoria, dovrà essere scelto dalle liste di richieste che arrivano dal trainer -->
+        <!-- CLIENTE -->
         <div class="form-row">
           <label>Cliente</label>
-          <input type="text" placeholder="Nome cliente" v-model="form.client"/>
+          <select v-model="form.athleteId">
+            <option value="">Seleziona cliente</option>
+            <option v-for="client in clients" :key="client.id" :value="client.id">
+              {{ client.name }} {{ client.surname }}
+            </option>
+          </select>
         </div>
 
-        <!-- FILE -->
+        <!-- DESCRIPTION -->
+        <div class="form-row full-width">
+          <label>Descrizione</label>
+          <textarea v-model="form.description" placeholder="Descrivi gli obiettivi e le indicazioni"></textarea>
+        </div>
+
+        <!-- CALORIE E MACRO -->
         <div class="form-row">
-          <label>PDF</label>
-          <input type="file" accept=".pdf" @change="handleFileUpload"/>
+          <label>Calorie giornaliere</label>
+          <input type="number" min="0" v-model.number="form.dailyCalories" />
+        </div>
+
+        <div class="form-row">
+          <label>Proteine (g)</label>
+          <input type="number" min="0" v-model.number="form.proteins" />
+        </div>
+
+        <div class="form-row">
+          <label>Carboidrati (g)</label>
+          <input type="number" min="0" v-model.number="form.carbs" />
+        </div>
+
+        <div class="form-row">
+          <label>Grassi (g)</label>
+          <input type="number" min="0" v-model.number="form.fats" />
         </div>
 
         <!-- DATE -->
@@ -173,10 +237,15 @@ const openPdf = (plan) => {
           <input type="date" v-model="form.endDate" />
         </div>
 
+        <div class="form-row full-width">
+          <label>Note</label>
+          <textarea v-model="form.notes" placeholder="Note aggiuntive per il cliente"></textarea>
+        </div>
+
         <!-- ACTIONS -->
         <div class="modal-actions">
           <button class="btn-danger" @click="closeModal">Annulla</button>
-          <button class="btn-primary" @click="savePlan"> Invia</button>
+          <button class="btn-primary" @click="savePlan">Crea piano</button>
         </div>
       </div>
     </div>
@@ -256,6 +325,7 @@ const openPdf = (plan) => {
   justify-content: center;
   align-items: center;
   z-index: 999;
+  padding: 16px;
 }
 
 .modal {
@@ -288,19 +358,36 @@ const openPdf = (plan) => {
 }
 
 .form-row input,
-.form-row select {
+.form-row select,
+.form-row textarea {
   flex: 1;
   border: 1px solid #d8dcf0;
   border-radius: 12px;
   padding: 10px 14px;
   font-size: 0.95rem;
+  background: white;
+}
+
+.form-row textarea {
+  min-height: 100px;
+  resize: vertical;
 }
 
 .form-row input:focus,
-.form-row select:focus {
+.form-row select:focus,
+.form-row textarea:focus {
   outline: none;
   border-color: #5b47c5;
   box-shadow: 0 0 0 4px rgba(91,71,197,0.12);
+}
+
+.full-width {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.full-width label {
+  width: auto;
 }
 
 .modal-actions {
@@ -310,5 +397,48 @@ const openPdf = (plan) => {
   margin-top: 10px;
 }
 
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0 !important;
+    padding: 16px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-header button {
+    width: 100%;
+    max-width: none;
+  }
+
+  .modal {
+    width: calc(100% - 24px);
+    max-width: 100%;
+    padding: 20px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .form-row label {
+    width: auto;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-primary,
+  .btn-danger {
+    width: 100%;
+    justify-content: center;
+  }
+}
 
 </style>

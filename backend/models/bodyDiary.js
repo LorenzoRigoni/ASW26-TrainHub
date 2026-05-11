@@ -12,6 +12,31 @@ const bodyDiarySchema = new mongoose.Schema({
         default: Date.now
     },
 
+    activity: {
+        type: String,
+        enum: ['on', 'off'],
+        default: 'on'
+    },
+
+    adherence: {
+        type: String,
+        enum: ['Ottima', 'Media', 'Sgarro'],
+        default: 'Media'
+    },
+
+    steps: {
+        type: Number,
+        min: 0,
+        default: 0
+    },
+
+    hunger: {
+        type: Number,
+        min: 1,
+        max: 10,
+        default: 5
+    },
+
     weight: {
         type: Number,
         min: 0,
