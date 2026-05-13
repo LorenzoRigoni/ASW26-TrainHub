@@ -37,11 +37,12 @@ const emit = defineEmits(['click'])
   border-radius: 14px;
   padding: 1.25rem 1.5rem;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   border: 1px solid #ebebeb;
   transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 15pt;
 }
 .action-card--clickable {
   cursor: pointer;
