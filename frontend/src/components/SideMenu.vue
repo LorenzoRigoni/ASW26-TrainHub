@@ -30,6 +30,8 @@ const menuItems = [
   { id: 'richieste-nutriz', icon: 'fa fa-apple', label: 'Richieste Nutriz.', route: '/richieste-nutrizione', roles: [ROLES.PERSONAL_TRAINER,ROLES.NUTRIZIONISTA] },
   { id: 'richieste-pt', icon: 'fa fa-heartbeat', label: 'In scadenza', route: '/scadenze', roles: [ROLES.PERSONAL_TRAINER] },
   { id: 'piani-nutriz', icon: 'fa fa-leaf', label: 'Piani Alimentari', route: '/piani-alimentari', roles: [ROLES.CLIENTE,ROLES.NUTRIZIONISTA] },
+  { id: 'bozze-pt', icon: 'fa fa-pencil', label: 'Bozze Programmi', route: '/bozze', roles: [ROLES.PERSONAL_TRAINER] }
+
 ]
 
 //TODO: modificare routes

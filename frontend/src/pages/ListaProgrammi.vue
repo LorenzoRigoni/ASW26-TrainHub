@@ -102,11 +102,10 @@ const goToDetail = (id) => {
   padding: 2rem 2.5rem 5rem;
   min-height: 100vh;
   background-color: #f4f6f9;
-  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .header {
-  display: flex;
+  display:flow-root;
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 2rem;

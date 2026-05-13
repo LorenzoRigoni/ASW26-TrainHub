@@ -1,3 +1,5 @@
+
+
 export const ROLES = {
   PERSONAL_TRAINER: 'trainer',
   CLIENTE: 'client',
@@ -43,5 +45,75 @@ export const statusClasses = {
   success: 'badge-success',
   info: 'badge-info'
 
+}
 
+
+//funzione per calcolo giorni mancanti alla scadenza
+export const calculateDaysLeft = (dueDate) => {
+  const today = new Date()
+  const due = new Date(dueDate)
+
+  today.setHours(0, 0, 0, 0)
+  due.setHours(0, 0, 0, 0)
+
+  const diffTime = due - today
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  return diffDays
+}
+
+//Imposta stato e colore in base ai giorni che mancano alla scadenza
+export const getStatusData = (dueDate) => {
+  const daysLeft = calculateDaysLeft(dueDate)
+
+  if (daysLeft < 5) {
+    return {
+      text: `${daysLeft} giorni`,
+      color: 'red'
+    }
+  }
+
+  if (daysLeft <= 10) {
+    return {
+      text: `${daysLeft} giorni`,
+      color: 'yellow'
+    }
+  }
+
+  return {
+    text: `${daysLeft} giorni`,
+    color: 'green'
+  }
+}
+
+//TODO: riutilizzare in scadenze page
+export const formatPrograms = (programs) => {
+  return programs.map((deadline) => {
+    const daysLeft = calculateDaysLeft(deadline.dueDate)
+
+    let statusClass = ''
+    let iconClass = ''
+
+    if (daysLeft <= 0) {
+      statusClass = 'status-orange'
+      iconClass = 'icon-orange'
+    } else if (daysLeft < 5) {
+      statusClass = 'status-red'
+      iconClass = 'icon-red'
+    } else if (daysLeft <= 10) {
+      statusClass = 'status-yellow'
+      iconClass = 'icon-yellow'
+    } else {
+      statusClass = 'status-green'
+      iconClass = 'icon-green'
+    }
+
+    return {
+      ...deadline,
+      title: `${deadline.client} - ${deadline.dueDate}`,
+      statusText: `${daysLeft} giorni`,
+      statusClass,
+      iconClass
+    }
+  })
 }
