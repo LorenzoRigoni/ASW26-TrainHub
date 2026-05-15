@@ -20,7 +20,9 @@ const login = async () => {
 
     if (response.data.success) {
       localStorage.setItem('token', response.data.token)
-      localStorage.setItem('user', JSON.stringify(response.data.data))
+      localStorage.setItem('user_name', response.data.data.name)
+      localStorage.setItem('user_surname', response.data.data.surname)
+      localStorage.setItem('user_role', response.data.data.role)
       router.push('/home')
     }
   } catch (err) {

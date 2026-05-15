@@ -48,42 +48,34 @@ const trainingProgramSchema = new mongoose.Schema({
                 type: Number,
                 required: true
             },
-
             muscleTag: {
                 type: String,
                 required: true,
             },
-
             exercise: {
-                name: {
-                    type: String,
-                    default: null
-                },
-
-                equipment: {
-                    type: String,
-                    default: null
-                }
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Exercise',
+                required: true
             },
-
+            technique: {
+                type: String,
+                default: ''
+            },
             sets: {
                 type: Number,
-                default: null,
+                default: 0,
                 min: 0
             },
-
             reps: {
                 type: Number,
-                default: null,
+                default: 0,
                 min: 0
             },
-
             rest: {
                 type: Number,
-                default: null,
+                default: 0,
                 min: 0
             },
-
             notes: {
                 type: String,
                 default: ''
@@ -93,43 +85,5 @@ const trainingProgramSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-
-//Training program's methods
-
-/**
- * Get all the split of a program.
- * 
- * @returns all the splits ordered by splitId
- */
-trainingProgramSchema.methods.getSplits = function() {
-    return this.splits.sort((a, b) => a.splitId - b.splitId);
-}
-
-/**
- * Get the split by the id.
- * 
- * @param {Number} splitId The split id 
- * @returns the single split
- */
-trainingProgramSchema.methods.getSplitById = function(splitId) {
-    return this.splits.find(split => split.splitId === splitId);
-}
-
-/**
- * Get the total number of exercises in a program.
- * 
- * @returns the total numeber. 
- */
-trainingProgramSchema.methods.getTotalExercises = function() {
-    let total = 0;
-    this.splits.forEach(split => {
-        split.rows.forEach(row => {
-            if (row.exercise && row.exercise.name) {
-                total++;
-            }
-        });
-    });
-    return total;
-};
 
 module.exports = mongoose.model('TrainingProgram', trainingProgramSchema);

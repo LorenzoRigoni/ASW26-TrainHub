@@ -4,9 +4,13 @@ const { createNotification } = require('./notificationController');
 const { handleError, badRequest, forbidden, notFound, requiredFields, isOwner } = require('./controllerHelpers');
 
 const getProgram = async (id) => {
-    const program = await TrainingProgram.findById(id)
+   const program = await TrainingProgram.findById(id)
         .populate('trainerId', '_id name surname username')
-        .populate('athleteId', '_id name surname username');
+        .populate('athleteId', '_id name surname username')
+        .populate({
+            path: 'splits.rows.exercise',
+            model: 'Exercise'
+        });
 
     if (!program) return { error: 'NOT_FOUND' };
     return { program };
