@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import axios from 'axios'
 import { fetchUserInfo, ROLES } from '../utils/utils.js'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -20,31 +21,63 @@ const userLogged = ref({
   role: ''
 })
 
+const clients = ref([])
+const nutritionists = ref([])
+const isEditMode = ref(false)
+const selectedPlanId = ref(null)
+
+const fetchClients = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+    const response = await axios.get('http://localhost:5000/api/users/my-clients', config)
+    clients.value = response.data.data || []
+  } catch (error) {
+    console.error('Errore caricamento clienti:', error)
+  }
+}
+
+const fetchNutritionists = async () => {
+  try {
+    const response = await axios.get('http://localhost:5000/api/users/nutritionists')
+    nutritionists.value = response.data.data || []
+  } catch (error) {
+    console.error('Errore caricamento nutrizionisti:', error)
+  }
+}
+
 onMounted(async () => {
   const userData = await fetchUserInfo()
   if (userData) {
     userLogged.value = userData
+    if (userData.role === ROLES.PERSONAL_TRAINER) {
+      fetchClients()
+    }
+    fetchNutritionists()
   }
 })
 
 /* LISTA RICHIESTE */
-//TODO: lo stato che mostriamo nel list item è di default in attesa appena viene aperta la richiesta. Quando il nutrizionista carica il piano, la richeista viene chiusa automaticamente. 
 const nutritionPlans = ref([
   {
+    id: 1,
     title: 'Definizione - Maggio 2026',
     client: 'Marco Rossi',
     startDate: '2026-05-01',
     endDate: '2026-06-01',
     status: 'Consegnato',
-    nutritionist: 'Paolo Verdi'
+    nutritionist: 'Paolo Verdi',
+    goal: 'Definizione'
   },
   {
+    id: 2,
     title: 'Massa - giugno 2026',
     client: 'Giulia Bianchi',
     startDate: '2026-06-15',
     endDate: '2026-07-15',
     status: 'In attesa',
-    nutritionist: 'Paolo Verdi'
+    nutritionist: 'Paolo Verdi',
+    goal: 'Massa'
   }
 ])
 
@@ -55,34 +88,38 @@ const today = new Date().toISOString().split('T')[0]
 const form = ref({
   title: '',
   client: '',
+  nutritionist: '',
+  goal: '',
   startDate: today,
   endDate: today,
   file: null
 })
 
 const openModal = () => {
+  isEditMode.value = false
+  selectedPlanId.value = null
   form.value = {
     title: '',
     client: '',
-    startDate: '',
-    endDate: ''
-
+    nutritionist: '',
+    goal: '',
+    startDate: today,
+    endDate: today
   }
-
   showModal.value = true
 }
 
-//TODO: recuperare dati richiesta da backend. Se stato = consegnato non deve più essere modificabile
-const openModalCompiled = () => {
+const openModalCompiled = (plan) => {
+  isEditMode.value = true
+  selectedPlanId.value = plan.id
   form.value = {
-    title: 'Definizione - Maggio 2026',
-    client: 'Marco Rossi',
-    startDate: '2026-05-01',
-    endDate: '2026-07-01',
-    goal: 'Definizione',
-    nutritionist: 'Nutrizionista1'
+    title: plan.title,
+    client: plan.client,
+    nutritionist: plan.nutritionist,
+    goal: plan.goal || '',
+    startDate: plan.startDate,
+    endDate: plan.endDate
   }
-
   showModal.value = true
 }
 
@@ -97,15 +134,21 @@ const handleFileUpload = (event) => {
 
 
 const savePlan = () => {
-
-  nutritionPlans.value.push({
-    title: form.value.title,
-    client: form.value.client,
-    startDate: form.value.startDate,
-    endDate: form.value.endDate,
-    pdfUrl: '#'
-  })
-
+  if (isEditMode.value) {
+    const index = nutritionPlans.value.findIndex(p => p.id === selectedPlanId.value)
+    if (index !== -1) {
+      nutritionPlans.value[index] = {
+        ...nutritionPlans.value[index],
+        ...form.value
+      }
+    }
+  } else {
+    nutritionPlans.value.push({
+      id: Date.now(),
+      ...form.value,
+      status: 'In attesa'
+    })
+  }
   closeModal()
 }
 
@@ -142,7 +185,7 @@ const savePlan = () => {
           :title="plan.title"
           :status="plan.status"
           icon="fa fa-file-pdf-o"
-          @click="openModalCompiled()"
+          @click="openModalCompiled(plan)"
         >
 
           <template #subtitle>
@@ -176,41 +219,50 @@ const savePlan = () => {
     <div v-if="showModal" class="modal-overlay">
       <div class="modal">
         <div class="modal-header">
-          <h2>Richiedi piano alimentare</h2>
+          <h2>{{ isEditMode ? 'Modifica richiesta' : 'Richiedi piano alimentare' }}</h2>
         </div>
 
-        <!-- TITOLO: sarebbe carino generarlo automaticamente -->
+        <!-- TITOLO -->
         <div class="form-row">
           <label>Titolo</label>
           <input type="text" placeholder="Nome piano" v-model="form.title"/>
         </div>
 
-        <!-- CLIENTE: soluzione provvisoria, dovrà essere scelto dalle liste di clienti del trainer -->
+        <!-- CLIENTE -->
         <div class="form-row">
             <label>Cliente</label>
             <select v-model="form.client">
-                <option value="Cliente1">Cliente1</option>
-                <option value="Cliente2">Cliente2</option>
-                <option value="Cliente3">Cliente3</option>
+                <option value="" disabled>Seleziona cliente</option>
+                <template v-if="userLogged.role === ROLES.PERSONAL_TRAINER">
+                  <option v-for="c in clients" :key="c.id" :value="c.name + ' ' + c.surname">
+                    {{ c.name }} {{ c.surname }}
+                  </option>
+                </template>
+                <template v-else>
+                   <option value="Marco Rossi">Marco Rossi</option>
+                   <option value="Giulia Bianchi">Giulia Bianchi</option>
+                </template>
             </select>
         </div>
 
         <div class="form-row">
             <label>Obiettivo</label>
             <select v-model="form.goal">
+                <option value="" disabled>Seleziona obiettivo</option>
                 <option value="Definizione">Definizione</option>
                 <option value="Mantenimento">Mantenimento</option>
                 <option value="Massa">Massa</option>
             </select>
         </div>
 
-         <!-- NUTRIZIONISTA: soluzione provvisoria, dovrà essere scelto dalla lista di nutrizionisti  -->
+         <!-- NUTRIZIONISTA -->
         <div class="form-row">
             <label>Nutrizionista</label>
             <select v-model="form.nutritionist">
-                <option value="Nutrizionista1">Nutrizionista1</option>
-                <option value="Nutrizionista2">Nutrizionista2</option>
-                <option value="Nutrizionista3">Nutrizionista3</option>
+                <option value="" disabled>Seleziona nutrizionista</option>
+                <option v-for="n in nutritionists" :key="n._id" :value="n.name + ' ' + n.surname">
+                   {{ n.name }} {{ n.surname }}
+                </option>
             </select>
         </div>
 
@@ -228,7 +280,7 @@ const savePlan = () => {
         <!-- ACTIONS -->
         <div class="modal-actions">
           <button class="btn-danger" @click="closeModal">Annulla</button>
-          <button class="btn-primary" @click="savePlan"> Invia</button>
+          <button class="btn-primary" @click="savePlan">{{ isEditMode ? 'Salva' : 'Invia' }}</button>
         </div>
       </div>
     </div>

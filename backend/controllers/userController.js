@@ -235,3 +235,29 @@ exports.getAllTrainers = async (req, res) => {
         });
     }
 };
+
+/**
+ * Get all the nutritionists.
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ */
+exports.getAllNutritionists = async (req, res) => {
+    try {
+        const nutritionists = await User.find({ role: 'nutritionist' })
+            .select('name surname username');
+
+        res.status(200).json({
+            success: true,
+            count: nutritionists.length,
+            data: nutritionists
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching nutritionists',
+            error: error.message
+        });
+    }
+};

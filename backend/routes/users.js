@@ -9,6 +9,7 @@ const {
   assignTrainerToAthlete,
   assignNutritionistToAthlete,
   getAllTrainers,
+  getAllNutritionists,
   getNutritionistAthletes
 } = require('../controllers/userController');
 
@@ -130,6 +131,13 @@ router.put('/:athleteId/assign-nutritionist', protect, authorize('nutritionist')
  * @access Public
  */
 router.get('/trainers', getAllTrainers);
+
+/**
+ * @route GET /api/users/nutritionists
+ * @desc Get all the nutritionists
+ * @access Public
+ */
+router.get('/nutritionists', getAllNutritionists);
 
 /**
  * @route GET /api/users/athlete/:athleteId
