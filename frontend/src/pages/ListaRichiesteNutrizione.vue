@@ -24,7 +24,7 @@ const userLogged = ref({
 const clients = ref([])
 const nutritionists = ref([])
 const isEditMode = ref(false)
-const selectedPlanId = ref(null)
+const selectedRequestId = ref(null)
 
 const fetchClients = async () => {
   try {
@@ -54,32 +54,23 @@ onMounted(async () => {
       fetchClients()
     }
     fetchNutritionists()
+    loadRequests()
   }
 })
 
 /* LISTA RICHIESTE */
-const nutritionPlans = ref([
-  {
-    id: 1,
-    title: 'Definizione - Maggio 2026',
-    client: 'Marco Rossi',
-    startDate: '2026-05-01',
-    endDate: '2026-06-01',
-    status: 'Consegnato',
-    nutritionist: 'Paolo Verdi',
-    goal: 'Definizione'
-  },
-  {
-    id: 2,
-    title: 'Massa - giugno 2026',
-    client: 'Giulia Bianchi',
-    startDate: '2026-06-15',
-    endDate: '2026-07-15',
-    status: 'In attesa',
-    nutritionist: 'Paolo Verdi',
-    goal: 'Massa'
+const nutritionRequests = ref([])
+
+const loadRequests = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+    const response = await axios.get('http://localhost:5000/api/nutrition-requests', config)
+    nutritionRequests.value = response.data.data || []
+  } catch (error) {
+    console.error('Errore caricamento richieste:', error.response?.data?.message || error.message)
   }
-])
+}
 
 const showModal = ref(false)
 
@@ -87,38 +78,40 @@ const today = new Date().toISOString().split('T')[0]
 
 const form = ref({
   title: '',
-  client: '',
-  nutritionist: '',
+  clientId: '',
+  nutritionistId: '',
   goal: '',
   startDate: today,
   endDate: today,
-  file: null
+  notes: ''
 })
 
 const openModal = () => {
   isEditMode.value = false
-  selectedPlanId.value = null
+  selectedRequestId.value = null
   form.value = {
     title: '',
-    client: '',
-    nutritionist: '',
+    clientId: '',
+    nutritionistId: '',
     goal: '',
     startDate: today,
-    endDate: today
+    endDate: today,
+    notes: ''
   }
   showModal.value = true
 }
 
-const openModalCompiled = (plan) => {
+const openModalCompiled = (request) => {
   isEditMode.value = true
-  selectedPlanId.value = plan.id
+  selectedRequestId.value = request._id
   form.value = {
-    title: plan.title,
-    client: plan.client,
-    nutritionist: plan.nutritionist,
-    goal: plan.goal || '',
-    startDate: plan.startDate,
-    endDate: plan.endDate
+    title: request.title,
+    clientId: request.clientId?._id || request.clientId,
+    nutritionistId: request.nutritionistId?._id || request.nutritionistId,
+    goal: request.goal || '',
+    startDate: request.startDate ? new Date(request.startDate).toISOString().split('T')[0] : today,
+    endDate: request.endDate ? new Date(request.endDate).toISOString().split('T')[0] : today,
+    notes: request.notes || ''
   }
   showModal.value = true
 }
@@ -127,29 +120,38 @@ const closeModal = () => {
   showModal.value = false
 }
 
-
-const handleFileUpload = (event) => {
-  form.value.file = event.target.files[0]
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  return new Date(dateString).toLocaleDateString('it-IT')
 }
 
+const saveRequest = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
 
-const savePlan = () => {
-  if (isEditMode.value) {
-    const index = nutritionPlans.value.findIndex(p => p.id === selectedPlanId.value)
-    if (index !== -1) {
-      nutritionPlans.value[index] = {
-        ...nutritionPlans.value[index],
-        ...form.value
-      }
+    const payload = {
+      title: form.value.title,
+      clientId: form.value.clientId,
+      nutritionistId: form.value.nutritionistId,
+      goal: form.value.goal,
+      startDate: form.value.startDate,
+      endDate: form.value.endDate,
+      notes: form.value.notes
     }
-  } else {
-    nutritionPlans.value.push({
-      id: Date.now(),
-      ...form.value,
-      status: 'In attesa'
-    })
+
+    if (isEditMode.value) {
+      await axios.put(`http://localhost:5000/api/nutrition-requests/${selectedRequestId.value}`, payload, config)
+    } else {
+      await axios.post('http://localhost:5000/api/nutrition-requests', payload, config)
+    }
+    
+    await loadRequests()
+    closeModal()
+  } catch (error) {
+    console.error('Errore salvataggio richiesta:', error.response?.data?.message || error.message)
+    alert('Errore durante il salvataggio: ' + (error.response?.data?.message || error.message))
   }
-  closeModal()
 }
 
 </script>
@@ -180,39 +182,44 @@ const savePlan = () => {
       <!-- LISTA -->
       <MainList>
         <ListItem
-          v-for="(plan, index) in nutritionPlans"
-          :key="index"
-          :title="plan.title"
-          :status="plan.status"
+          v-for="request in nutritionRequests"
+          :key="request._id"
+          :title="request.title"
+          :status="request.status"
           icon="fa fa-file-pdf-o"
-          @click="openModalCompiled(plan)"
+          @click="openModalCompiled(request)"
         >
 
           <template #subtitle>
             <div class="plan-subtitle">
                 <div class="info-row">
                     <i class="fa fa-user-circle-o"></i>
-                    <span>Cliente: {{ plan.client }}</span>
+                    <span>Cliente: {{ request.clientId?.name }} {{ request.clientId?.surname }}</span>
                 </div>
 
                 <div class="info-row"  v-if="userLogged.role === ROLES.PERSONAL_TRAINER">
                     <i class="fa fa-user-circle-o"></i>
-                    <span> Nutrizionista: {{ plan.nutritionist }}</span>
+                    <span> Nutrizionista: {{ request.nutritionistId?.name }} {{ request.nutritionistId?.surname }}</span>
                 </div>
 
                 <div class="info-row" v-if="userLogged.role === ROLES.NUTRIZIONISTA">
                     <i class="fa fa-user-circle-o"></i>
-                    <span> Trainer: {{ plan.trainer }}</span>
+                    <span> Trainer: {{ request.trainerId?.name }} {{ request.trainerId?.surname }}</span>
                 </div>
 
                 <div class="info-row">
                     <i class="fa fa-calendar-check-o"></i>
-                    <span> Periodo validità: {{ plan.startDate }} / {{ plan.endDate }}</span>
+                    <span> Periodo validità: {{ formatDate(request.startDate) }} - {{ formatDate(request.endDate) }}</span>
                 </div>
             </div>
           </template>
         </ListItem>
       </MainList>
+      
+      <div v-if="nutritionRequests.length === 0" class="empty-state" style="text-align: center; margin-top: 50px; color: #666;">
+           <i class="fa fa-folder-open-o" style="font-size: 48px; margin-bottom: 10px;"></i>
+           <p>Nessuna richiesta trovata.</p>
+      </div>
     </main>
 
     <!-- MODAL -->
@@ -231,17 +238,11 @@ const savePlan = () => {
         <!-- CLIENTE -->
         <div class="form-row">
             <label>Cliente</label>
-            <select v-model="form.client">
+            <select v-model="form.clientId" :disabled="isEditMode">
                 <option value="" disabled>Seleziona cliente</option>
-                <template v-if="userLogged.role === ROLES.PERSONAL_TRAINER">
-                  <option v-for="c in clients" :key="c.id" :value="c.name + ' ' + c.surname">
-                    {{ c.name }} {{ c.surname }}
-                  </option>
-                </template>
-                <template v-else>
-                   <option value="Marco Rossi">Marco Rossi</option>
-                   <option value="Giulia Bianchi">Giulia Bianchi</option>
-                </template>
+                <option v-for="c in clients" :key="c.id" :value="c.id">
+                  {{ c.name }} {{ c.surname }}
+                </option>
             </select>
         </div>
 
@@ -258,9 +259,9 @@ const savePlan = () => {
          <!-- NUTRIZIONISTA -->
         <div class="form-row">
             <label>Nutrizionista</label>
-            <select v-model="form.nutritionist">
+            <select v-model="form.nutritionistId">
                 <option value="" disabled>Seleziona nutrizionista</option>
-                <option v-for="n in nutritionists" :key="n._id" :value="n.name + ' ' + n.surname">
+                <option v-for="n in nutritionists" :key="n._id" :value="n._id">
                    {{ n.name }} {{ n.surname }}
                 </option>
             </select>
@@ -276,11 +277,16 @@ const savePlan = () => {
           <label>Data fine</label>
           <input type="date" v-model="form.endDate" />
         </div>
+        
+        <div class="form-row">
+          <label>Note</label>
+          <textarea v-model="form.notes" placeholder="Note aggiuntive..." style="flex: 1; border: 1px solid #d8dcf0; border-radius: 12px; padding: 10px 14px; font-size: 0.95rem; min-height: 80px;"></textarea>
+        </div>
 
         <!-- ACTIONS -->
         <div class="modal-actions">
           <button class="btn-danger" @click="closeModal">Annulla</button>
-          <button class="btn-primary" @click="savePlan">{{ isEditMode ? 'Salva' : 'Invia' }}</button>
+          <button class="btn-primary" @click="saveRequest">{{ isEditMode ? 'Salva' : 'Invia' }}</button>
         </div>
       </div>
     </div>

@@ -29,6 +29,7 @@ app.use('/api/training-programs', require('./routes/trainingPrograms'));
 app.use('/api/personal-diary', require('./routes/personalDiary'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/nutrition-plans', require('./routes/nutritionPlans'));
+app.use('/api/nutrition-requests', require('./routes/nutritionRequests'));
 /*
 app.use('/api/ai', require('./routes/ai'));*/
 
@@ -62,7 +63,7 @@ server.listen(5000, () => {
 app.use((req, res) => {
     res.status(404).json({
         success: false,
-        message: 'Route not found'
+        message: `Route not found: ${req.originalUrl}`
     });
 });
 
