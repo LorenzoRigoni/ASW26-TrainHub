@@ -6,7 +6,7 @@ const http = require('http');
 const dotenv = require('dotenv');
 const { connectDb } = require('./config/database');
 const { initSocket } = require('./socket');
-
+const path = require('path')
 
 dotenv.config();
 
@@ -20,6 +20,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 //Routes
@@ -29,6 +30,7 @@ app.use('/api/training-programs', require('./routes/trainingPrograms'));
 app.use('/api/personal-diary', require('./routes/personalDiary'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/nutrition-plans', require('./routes/nutritionPlans'));
+app.use('/api/exercises', require('./routes/exercises'))
 /*
 app.use('/api/ai', require('./routes/ai'));*/
 
@@ -45,6 +47,7 @@ app.get('/', (req, res) => {
       bodyDiary: '/api/body-diary',
       nutritionPlans: '/api/nutrition-plans',
       notifications: '/api/notifications',
+      exercises: '/api/exercises',
       ai: '/api/ai'
     }
   });

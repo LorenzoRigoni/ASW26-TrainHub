@@ -13,9 +13,9 @@ const router = useRouter()
 const customers = ref([])
 
 const userLogged = {
-  name: 'Alessandra',
-  surname: 'Versari',
-  role: ROLES.PERSONAL_TRAINER
+  name: localStorage.getItem('user_name'),
+  surname: localStorage.getItem('user_surname'),
+  role: localStorage.getItem('user_role')
 }
 
 const sidebarOpen = ref(true)
