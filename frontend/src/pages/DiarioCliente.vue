@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
-import { ROLES } from '../utils/utils.js'
+import { fetchUserInfo, ROLES } from '../utils/utils.js'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -9,6 +9,7 @@ import SideMenu from '../components/SideMenu.vue'
 //TODO Mostrare bottone registra solo a cliente
 
 const sidebarOpen = ref(true)
+const userLogged = ref({ name: '', surname: '', role: '' })
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
@@ -17,9 +18,9 @@ const toggleSidebar = () => {
 const props = defineProps({
   user: {
     type: Object,
-    default: () => ({  name: 'Alessandra', surname: 'Versari',  role: 'trainer'})
-    }
-  })
+    default: () => ({ name: '', surname: '', role: '' })
+  }
+})
 
 
 const diaryEntries = ref([])
@@ -43,7 +44,11 @@ const fetchDiaryEntries = async () => {
   }
 }
 
-onMounted(fetchDiaryEntries)
+onMounted(async () => {
+  const userData = await fetchUserInfo()
+  if (userData) userLogged.value = userData
+  fetchDiaryEntries()
+})
 
 //Finestra pop up per inserimento dati
 const showModal = ref(false)
@@ -124,12 +129,12 @@ const saveEntry = async () => {
 <template>
      <div id="app">
         <Navbar @toggle-sidebar="toggleSidebar" />
-        <SideMenu :isOpen="sidebarOpen" :role = "user.role" @close="sidebarOpen = false" />
+        <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
         <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
           <div class="diary">
             <div class = "header">
                 <h1>Diario</h1>
-                <button class="btn-primary" @click="openModal">
+                <button v-if="userLogged.role === ROLES.CLIENTE" class="btn-primary" @click="openModal">
                     <i class="fa fa-plus"></i> Registra dati
                 </button>
             </div>

@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { ROLES } from '../utils/utils.js'
+import { ref, computed, onMounted } from 'vue'
+import { fetchUserInfo, ROLES } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 import profileImage from '../assets/profileImage.png'
 
@@ -25,14 +26,20 @@ const showModal = ref(false)
 const today = new Date().toISOString().split('T')[0]
 
 const router = useRouter()
+const emit = defineEmits(['apri-richiesta'])
 
 const previewImage = ref(profileImage)
 
-//TODO rimuovere dopo collegamento con backend
 const userLogged = ref({
-  name: 'Alessandra',
-  surname: 'Versari',
-  role: 'trainer'
+  name: '',
+  surname: '',
+  role: '',
+  email: ''
+})
+
+onMounted(async () => {
+  const userData = await fetchUserInfo()
+  if (userData) userLogged.value = userData
 })
 
 </script>

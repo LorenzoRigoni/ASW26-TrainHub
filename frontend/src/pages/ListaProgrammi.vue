@@ -2,12 +2,12 @@
 import { ref, onMounted } from 'vue'
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
-import { ROLES } from '../utils/utils.js'
-import Footer from '../components/Footer.vue'
-import Navbar from '../components/NavBar.vue'
-import SideMenu from '../components/SideMenu.vue'
+import { fetchUserInfo, ROLES } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import Navbar from '../components/NavBar.vue'
+import SideMenu from '../components/SideMenu.vue'
+import Footer from '../components/Footer.vue'
 
 const router = useRouter()
 const programs = ref([])
@@ -16,11 +16,11 @@ const sidebarOpen = ref(true)
 
 const fetchData = async () => {
   try {
+    const userData = await fetchUserInfo()
+    if (userData) userLogged.value = userData
+
     const token = localStorage.getItem('token')
     const config = { headers: { Authorization: `Bearer ${token}` } }
-
-    const userRes = await axios.get('http://localhost:5000/api/auth/userinfo', config)
-    userLogged.value = userRes.data.data
 
     if (userLogged.value.role === ROLES.PERSONAL_TRAINER) {
       const res = await axios.get('http://localhost:5000/api/training-programs/trainer/programs', config)
@@ -32,7 +32,7 @@ const fetchData = async () => {
         status: p.programStatus
       }))
     } else {
-      const res = await axios.get('http://localhost:5000/api/training-programs/my-programs')
+      const res = await axios.get('http://localhost:5000/api/training-programs/my-programs', config)
       programs.value = res.data.data.map(p => ({
         id: p._id,
         title: `Scheda creata da ${p.trainerId.surname}`,

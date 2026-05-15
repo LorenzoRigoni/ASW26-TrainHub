@@ -1,13 +1,10 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { ROLES } from '../utils/utils.js'
+import { ref, onMounted } from 'vue'
+import { fetchUserInfo } from '../utils/utils.js'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
-
-import MainList from '../components/MainList.vue'
-import ListItem from '../components/MainListItem.vue'
-import { useRouter } from 'vue-router'
+import Footer from '../components/Footer.vue'
 
 
 const sidebarOpen = ref(true)
@@ -16,11 +13,16 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
-const showModal = ref(false)
+const userLogged = ref({
+  name: '',
+  surname: '',
+  role: ''
+})
 
-const today = new Date().toISOString().split('T')[0]
-
-const router = useRouter()
+onMounted(async () => {
+  const userData = await fetchUserInfo()
+  if (userData) userLogged.value = userData
+})
 
 
 </script>
@@ -32,7 +34,7 @@ const router = useRouter()
     <SideMenu :isOpen="sidebarOpen"  :role="userLogged.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }"></main>
-    
+    <Footer />
     
   </div>
 </template>

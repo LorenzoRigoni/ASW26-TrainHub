@@ -1,13 +1,11 @@
 <script setup>
-import { ref } from 'vue'
-
-import { ROLES } from '../utils/utils.js'
-
+import { ref, onMounted } from 'vue'
+import { fetchUserInfo, ROLES } from '../utils/utils.js'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
-
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
+import Footer from '../components/Footer.vue'
 
 
 const sidebarOpen = ref(true)
@@ -17,9 +15,16 @@ const toggleSidebar = () => {
 }
 
 const userLogged = ref({
-  name: 'Alessandra',
-  surname: 'Versari',
-  role: 'nutritionist'
+  name: '',
+  surname: '',
+  role: ''
+})
+
+onMounted(async () => {
+  const userData = await fetchUserInfo()
+  if (userData) {
+    userLogged.value = userData
+  }
 })
 
 /* LISTA RICHIESTE */
@@ -227,6 +232,7 @@ const savePlan = () => {
         </div>
       </div>
     </div>
+    <Footer />
   </div>
 </template>
 

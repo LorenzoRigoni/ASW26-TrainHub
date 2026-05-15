@@ -1,13 +1,12 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { ROLES } from '../utils/utils.js'
-
+import { ref, computed, onMounted } from 'vue'
+import { fetchUserInfo } from '../utils/utils.js'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
-
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
 import { useRouter } from 'vue-router'
+import Footer from '../components/Footer.vue'
 
 // Questa pagina è pensata per essere visibile solo al pt. 
 // In pratica quando un cliente ha compilato tutte le settimane, tranne l'ultima, viene creata automaticamente 
@@ -31,11 +30,17 @@ const today = new Date().toISOString().split('T')[0]
 const router = useRouter()
 
 
-//TODO rimuovere dopo collegamento con backend
 const userLogged = ref({
-  name: 'Alessandra',
-  surname: 'Versari',
-  role: 'trainer'
+  name: '',
+  surname: '',
+  role: ''
+})
+
+onMounted(async () => {
+  const userData = await fetchUserInfo()
+  if (userData) {
+    userLogged.value = userData
+  }
 })
 
 /* LISTA SCADENZE: dati di test */
@@ -237,6 +242,7 @@ const saveDeadline = () => {
         </div>
       </div>
     </div>
+    <Footer />
   </div>
 </template>
 

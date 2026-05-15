@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { ROLES } from '../utils/utils.js'
+import { fetchUserInfo, ROLES } from '../utils/utils.js'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -12,6 +12,7 @@ const userLogged = ref({ name: '', surname: '', role: '' })
 const customersList = ref([])
 const stats = ref({ clientiAttivi: 0, schedeCreate: 0, richiesteNutriz: 0, inAttesa: 0 })
 const programsList = ref([])
+const activeProgram = ref(null)
 const sidebarOpen = ref(true)
 
 const toggleSidebar = () => {
@@ -20,11 +21,11 @@ const toggleSidebar = () => {
 
 const fetchData = async () => {
   try {
+    const userData = await fetchUserInfo()
+    if (userData) userLogged.value = userData
+
     const token = localStorage.getItem('token')
     const config = { headers: { Authorization: `Bearer ${token}` } }
-
-    const userRes = await axios.get('http://localhost:5000/api/auth/userinfo', config)
-    userLogged.value = userRes.data.data
 
     if (userLogged.value.role === ROLES.PERSONAL_TRAINER) {
       const [clientsRes, statsRes, programsRes] = await Promise.all([

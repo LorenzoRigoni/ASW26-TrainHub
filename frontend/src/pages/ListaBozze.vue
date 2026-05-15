@@ -2,14 +2,13 @@
 import { ref, onMounted, computed} from 'vue'
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
-import { ROLES } from '../utils/utils.js'
+import { fetchUserInfo, ROLES, formatPrograms } from '../utils/utils.js'
 import Footer from '../components/Footer.vue'
+
+
+import { useRouter } from 'vue-router'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
-import { useRouter } from 'vue-router'
-import axios from 'axios'
-import { formatPrograms } from '../utils/utils.js'
-
 
 /**
  * L'idea è che una bozza viene creata partendo dalla scadenza.
@@ -17,12 +16,17 @@ import { formatPrograms } from '../utils/utils.js'
  */
 const router = useRouter()
 
-//TODO dati di test, sostituire
 const userLogged = ref({
-  name: 'Alessandra',
-  surname: 'Versari',
-  role: 'trainer'
+  name: '',
+  surname: '',
+  role: ''
 })
+
+onMounted(async () => {
+  const userData = await fetchUserInfo()
+  if (userData) userLogged.value = userData
+})
+
 const sidebarOpen = ref(true)
 
 

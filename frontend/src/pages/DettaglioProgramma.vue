@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ROLES } from '../utils/utils.js'
+import { fetchUserInfo, ROLES } from '../utils/utils.js'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
 
@@ -17,11 +17,12 @@ const loading = ref(true)
 
 const fetchData = async () => {
   try {
+    const userData = await fetchUserInfo()
+    if (userData) userLogged.value = userData
+
     const token = localStorage.getItem('token')
     const config = { headers: { Authorization: `Bearer ${token}` } }
     const programId = route.params.id
-    const userRes = await axios.get('http://localhost:5000/api/auth/userinfo', config)
-    userLogged.value = userRes.data.data
 
     const programRes = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, config)
     

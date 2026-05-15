@@ -1,8 +1,8 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
-import { ROLES } from '../utils/utils.js'
+import { fetchUserInfo } from '../utils/utils.js'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -44,12 +44,18 @@ const exercises = [
   }
 ]
 
-const userLogged = {
-  name: 'Alessandra',
-  surname: 'Versari',
-  role: ROLES.PERSONAL_TRAINER
-}
+const userLogged = ref({
+  name: '',
+  surname: '',
+  role: ''
+})
 
+onMounted(async () => {
+  const userData = await fetchUserInfo()
+  if (userData) {
+    userLogged.value = userData
+  }
+})
 
 const sidebarOpen = ref(true)
 
@@ -63,7 +69,7 @@ const toggleSidebar = () => {
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu :isOpen="sidebarOpen" :role = "userLogged.role" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="lista-esercizi">
@@ -109,7 +115,7 @@ const toggleSidebar = () => {
 }
 
 .header {
-  display:inline-block;
+  display: flex;
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 2rem;
