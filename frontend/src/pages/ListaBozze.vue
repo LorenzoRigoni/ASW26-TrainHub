@@ -2,13 +2,14 @@
 import { ref, onMounted, computed} from 'vue'
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
-import { ROLES, formatPrograms } from '../utils/utils.js'
+import { ROLES } from '../utils/utils.js'
 import Footer from '../components/Footer.vue'
-
-
-import { useRouter } from 'vue-router'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+import { formatPrograms } from '../utils/utils.js'
+
 
 /**
  * L'idea è che una bozza viene creata partendo dalla scadenza.
@@ -16,15 +17,12 @@ import SideMenu from '../components/SideMenu.vue'
  */
 const router = useRouter()
 
-const userLogged = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role') 
+//TODO dati di test, sostituire
+const userLogged = ref({
+  name: 'Alessandra',
+  surname: 'Versari',
+  role: 'trainer'
 })
-
-onMounted(async () => {
-})
-
 const sidebarOpen = ref(true)
 
 
@@ -94,7 +92,7 @@ const formattedPrograms = computed(() => {
             :statusClass="program.statusClass"
             :iconClass="program.iconClass"
             icon="fa fa-calendar-times-o"
-            @click="router.push('bozze/bozza-dettaglio')"
+            @click="router.push('bozze/dettaglio-bozza')"
           >
             <template #subtitle>
               {{ program.client }} - {{ program.splits }} split
