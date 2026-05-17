@@ -25,7 +25,7 @@ const menuItems = [
   { id: 'home', icon: 'fa fa-home', label: 'Home', route: '/home', roles: [ROLES.PERSONAL_TRAINER,ROLES.CLIENTE,ROLES.NUTRIZIONISTA] },
   { id: 'clients', icon: 'fa fa-users', label: 'Clienti', route: '/clienti', roles: [ROLES.PERSONAL_TRAINER,ROLES.NUTRIZIONISTA] },
   { id: 'schede', icon: 'fa fa-list', label: 'Schede', route: '/programmi', roles: [ROLES.PERSONAL_TRAINER,ROLES.CLIENTE] },
-  { id: 'diario', icon: 'fa fa-book', label: 'Diario', route: '/clienti/dettaglio-cliente', roles: [ROLES.CLIENTE] },
+  { id: 'diario', icon: 'fa fa-book', label: 'Diario', route: '/clienti/dettaglio-cliente', roles: [ROLES.CLIENTE, ROLES.PERSONAL_TRAINER] },
   { id: 'esercizi', icon: 'fa fa-tasks', label: 'Elenco Esercizi', route: '/esercizi', roles: [ROLES.PERSONAL_TRAINER] },
   { id: 'richieste-nutriz', icon: 'fa fa-apple', label: 'Richieste Nutriz.', route: '/richieste-nutrizione', roles: [ROLES.PERSONAL_TRAINER,ROLES.NUTRIZIONISTA] },
   { id: 'richieste-pt', icon: 'fa fa-heartbeat', label: 'In scadenza', route: '/scadenze', roles: [ROLES.PERSONAL_TRAINER] },

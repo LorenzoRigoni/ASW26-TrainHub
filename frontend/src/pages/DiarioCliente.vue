@@ -41,7 +41,8 @@ const fetchDiaryEntries = async () => {
       adherence: entry.adherence || 'Media',
       steps: entry.steps ?? 0,
       hunger: entry.hunger ?? 5,
-      notes: entry.notes || ''
+      notes: entry.notes || '',
+      weight: entry.weight ?? 0
     }))
   } catch (error) {
     console.error('Errore caricamento diario:', error.response?.data?.message || error.message)
@@ -73,7 +74,8 @@ const openModal = () => {
     adherence: 'Media',
     steps: 0,
     hunger: 5,
-    notes: ''
+    notes: '',
+    weight: 0
   }
   showModal.value = true
 }
@@ -86,7 +88,8 @@ const openModalCompiled = () => {
     adherence: 'Media',
     steps: 0,
     hunger: 5,
-    notes: ''
+    notes: '',
+    weight: 75
   }
   showModal.value = true
 }
@@ -106,7 +109,8 @@ const saveEntry = async () => {
       adherence: form.value.adherence,
       steps: form.value.steps,
       hunger: form.value.hunger,
-      notes: form.value.notes
+      notes: form.value.notes,
+      weight: form.value.weight
     }
 
     const response = await axios.post('http://localhost:5000/api/personal-diary/body-diary', payload, config)
@@ -118,7 +122,8 @@ const saveEntry = async () => {
       adherence: entry.adherence || form.value.adherence,
       steps: entry.steps ?? form.value.steps,
       hunger: entry.hunger ?? form.value.hunger,
-      notes: entry.notes || form.value.notes
+      notes: entry.notes || form.value.notes,
+      weight: entry.weight || form.value.weight
     })
 
     closeModal()
@@ -148,6 +153,7 @@ const saveEntry = async () => {
                     <th>Aderenza piano alimentare</th>
                     <th>NEAT (passi giornalieri)</th>
                     <th>Livello di fame (1-10)</th>
+                    <th>Peso corporeo</th>
                     <th>Nota</th>
                     </tr>
                 </thead>
@@ -166,13 +172,13 @@ const saveEntry = async () => {
                         </td>
                         <td>{{ entry.steps }}</td>
                         <td>{{ entry.hunger }}</td>
+                        <td>{{ entry.weight }}</td>
                         <td>{{ entry.notes || '-' }}</td>
                     </tr>
                 </tbody>
             </table>
           </div>
         </main>
-        <Footer />
     </div>
     <div v-if="showModal" class="modal-overlay">
         <div class="modal">
@@ -228,6 +234,15 @@ const saveEntry = async () => {
                     />
                     <span class="hunger-value">{{ form.hunger }}</span>
                 </div>
+            </div>
+
+            <div class="form-row">
+                <label>Peso corporeo</label>
+                <input
+                    type="number"
+                    placeholder="Peso corporeo"
+                    v-model.number="form.weight"
+                />
             </div>
 
             <!-- NOTA -->
