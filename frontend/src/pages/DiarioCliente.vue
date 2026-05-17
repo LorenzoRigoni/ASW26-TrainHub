@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
-import { fetchUserInfo, ROLES } from '../utils/utils.js'
+import { ROLES } from '../utils/utils.js'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -9,7 +9,11 @@ import SideMenu from '../components/SideMenu.vue'
 //TODO Mostrare bottone registra solo a cliente
 
 const sidebarOpen = ref(true)
-const userLogged = ref({ name: '', surname: '', role: '' })
+const userLogged = ref({ 
+  name: localStorage.getItem('user_name'), 
+  surname: localStorage.getItem('user_surname'), 
+  role: localStorage.getItem('user_role') 
+})
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
@@ -45,8 +49,6 @@ const fetchDiaryEntries = async () => {
 }
 
 onMounted(async () => {
-  const userData = await fetchUserInfo()
-  if (userData) userLogged.value = userData
   fetchDiaryEntries()
 })
 

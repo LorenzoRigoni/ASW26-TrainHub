@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { fetchUserInfo, ROLES } from '../utils/utils.js'
+import { ROLES } from '../utils/utils.js'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -8,7 +8,11 @@ import DashboardHome from '../components/DashboardHome.vue'
 import axios from 'axios'
 
 //Al momento per vedere come cambiano le varie home, cambiamo ruolo: ''. I valori possibili sono personalTrainer, cliente, nutrizionista.
-const userLogged = ref({ name: '', surname: '', role: '' })
+const userLogged = ref({ 
+  name: localStorage.getItem('user_name'), 
+  surname: localStorage.getItem('user_surname'), 
+  role: localStorage.getItem('user_role') 
+})
 const customersList = ref([])
 const stats = ref({ clientiAttivi: 0, schedeCreate: 0, richiesteNutriz: 0, inAttesa: 0 })
 const programsList = ref([])
@@ -21,9 +25,6 @@ const toggleSidebar = () => {
 
 const fetchData = async () => {
   try {
-    const userData = await fetchUserInfo()
-    if (userData) userLogged.value = userData
-
     const token = localStorage.getItem('token')
     const config = { headers: { Authorization: `Bearer ${token}` } }
 

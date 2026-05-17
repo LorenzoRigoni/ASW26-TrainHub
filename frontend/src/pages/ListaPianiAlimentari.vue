@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
-import { fetchUserInfo } from '../utils/utils.js'
 
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
@@ -16,10 +15,10 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
-const userLogged = ref({
-  name: '',
-  surname: '',
-  role: ''
+const userLogged = ref({ 
+  name: localStorage.getItem('user_name'), 
+  surname: localStorage.getItem('user_surname'), 
+  role: localStorage.getItem('user_role') 
 })
 
 const nutritionPlans = ref([])
@@ -65,10 +64,6 @@ const loadClients = async () => {
 }
 
 onMounted(async () => {
-  const userData = await fetchUserInfo()
-  if (userData) {
-    userLogged.value = userData
-  }
   await Promise.all([loadPlans(), loadClients()])
 })
 

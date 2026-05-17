@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { fetchUserInfo, ROLES } from '../utils/utils.js'
+import { ROLES } from '../utils/utils.js'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
 
@@ -10,22 +10,22 @@ import SideMenu from '../components/SideMenu.vue'
 import WorkoutProgram from '../components/WorkoutProgram.vue'
 
 const route = useRoute()
-const userLogged = ref({ name: '', surname: '', role: '' })
+const userLogged = ref({ 
+  name: localStorage.getItem('user_name'), 
+  surname: localStorage.getItem('user_surname'), 
+  role: localStorage.getItem('user_role') 
+})
 const sidebarOpen = ref(true)
 const program = ref(null)
 const loading = ref(true)
 
 const fetchData = async () => {
   try {
-    const userData = await fetchUserInfo()
-    if (userData) userLogged.value = userData
-
     const token = localStorage.getItem('token')
     const config = { headers: { Authorization: `Bearer ${token}` } }
     const programId = route.params.id
 
     const programRes = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, config)
-    
     const rawProgram = programRes.data.data
 
     console.log("Dati ricevuti dal server: ", rawProgram)
@@ -33,10 +33,17 @@ const fetchData = async () => {
       ...rawProgram, //Used Spread Operator (...) to copy all the properties of the training program
       title: rawProgram.title || `Piano di ${rawProgram.athleteId.name}`,
       status: rawProgram.programStatus,
-        splits: rawProgram.splits.map(s => ({
-          ...s,
-          exercises: s.rows
+      splits: rawProgram.splits.map(s => ({
+        ...s,
+        exercises: s.rows.map(row => ({
+          ...row,
+          name: row.exercise?.name || 'Esercizio rimosso',
+          image: row.exercise?.image || null,
+          muscleTag: row.muscleTag,
+          technique: row.technique,
+          notes: row.notes
         }))
+      }))
     }
   } catch (error) {
     console.error("Errore nel caricamento del dettaglio:", error)

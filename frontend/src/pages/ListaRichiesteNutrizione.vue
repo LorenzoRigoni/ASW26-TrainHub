@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import { fetchUserInfo, ROLES } from '../utils/utils.js'
+import { ROLES } from '../utils/utils.js'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
@@ -15,10 +15,10 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
-const userLogged = ref({
-  name: '',
-  surname: '',
-  role: ''
+const userLogged = ref({ 
+  name: localStorage.getItem('user_name'), 
+  surname: localStorage.getItem('user_surname'), 
+  role: localStorage.getItem('user_role') 
 })
 
 const clients = ref([])
@@ -47,15 +47,11 @@ const fetchNutritionists = async () => {
 }
 
 onMounted(async () => {
-  const userData = await fetchUserInfo()
-  if (userData) {
-    userLogged.value = userData
-    if (userData.role === ROLES.PERSONAL_TRAINER) {
-      fetchClients()
-    }
-    fetchNutritionists()
-    loadRequests()
+  if (userData.role === ROLES.PERSONAL_TRAINER) {
+    fetchClients()
   }
+  fetchNutritionists()
+  loadRequests()
 })
 
 /* LISTA RICHIESTE */

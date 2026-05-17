@@ -7,14 +7,10 @@ defineProps({
 </script>
 
 <template>
-  <div class="program">
-     <div class="header">
-        <h1 class="program-title">{{ program.title }}</h1>    
-    </div>
-
+  <div class="program-container">
     <SplitItem
       v-for="(split, i) in program.splits"
-      :key="i"
+      :key="split._id || i"
       :split="split"
     />
   </div>
@@ -29,6 +25,12 @@ defineProps({
   font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
+.program-container {
+  padding: 1rem 0; 
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
 
 .program-title {
   font-size: 1.4rem;

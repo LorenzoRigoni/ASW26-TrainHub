@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
-import { fetchUserInfo, ROLES } from '../utils/utils.js'
+import { ROLES } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
@@ -11,14 +11,15 @@ import Footer from '../components/Footer.vue'
 
 const router = useRouter()
 const programs = ref([])
-const userLogged = ref({ name: '', surname: '', role: '' })
+const userLogged = ref({ 
+  name: localStorage.getItem('user_name'), 
+  surname: localStorage.getItem('user_surname'), 
+  role: localStorage.getItem('user_role') 
+})
 const sidebarOpen = ref(true)
 
 const fetchData = async () => {
   try {
-    const userData = await fetchUserInfo()
-    if (userData) userLogged.value = userData
-
     const token = localStorage.getItem('token')
     const config = { headers: { Authorization: `Bearer ${token}` } }
 
@@ -26,7 +27,7 @@ const fetchData = async () => {
       const res = await axios.get('http://localhost:5000/api/training-programs/trainer/programs', config)
       programs.value = res.data.data.map(p => ({
         id: p._id,
-        title: `${p.athleteId.name} ${p.athleteId.surname}`,
+        title: `${p.athleteId?.name || 'Cliente'} ${p.athleteId?.surname || ''}`,
         category: p.splits[0]?.name || 'N/A',
         date: new Date(p.createdAt).toLocaleDateString(),
         status: p.programStatus
@@ -35,8 +36,9 @@ const fetchData = async () => {
       const res = await axios.get('http://localhost:5000/api/training-programs/my-programs', config)
       programs.value = res.data.data.map(p => ({
         id: p._id,
-        title: `Scheda creata da ${p.trainerId.surname}`,
+        title: `Scheda creata da ${p.trainerId?.surname || 'Trainer'}`,
         category: p.splits[0]?.name || 'Generale',
+        date: new Date(p.createdAt).toLocaleDateString(),
         status: p.programStatus
       }))
     }

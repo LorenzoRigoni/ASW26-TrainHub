@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { fetchUserInfo, ROLES } from '../utils/utils.js'
+import { ROLES } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
@@ -30,16 +30,11 @@ const emit = defineEmits(['apri-richiesta'])
 
 const previewImage = ref(profileImage)
 
-const userLogged = ref({
-  name: '',
-  surname: '',
-  role: '',
-  email: ''
-})
-
-onMounted(async () => {
-  const userData = await fetchUserInfo()
-  if (userData) userLogged.value = userData
+const userLogged = ref({ 
+  name: localStorage.getItem('user_name'), 
+  surname: localStorage.getItem('user_surname'), 
+  role: localStorage.getItem('user_role'),
+  username: localStorage.getItem('user_username')
 })
 
 </script>
@@ -107,8 +102,8 @@ onMounted(async () => {
                 </div>
 
                 <div class="form-group">
-                  <label>Email</label>
-                  <input type="email" v-model="userLogged.email" />
+                  <label>Username</label>
+                  <input type="email" v-model="userLogged.username" />
                 </div>
 
                 <div class="form-group">

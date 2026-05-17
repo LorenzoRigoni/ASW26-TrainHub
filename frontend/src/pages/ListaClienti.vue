@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
-import { fetchUserInfo, ROLES, getAvatarColor, getInitials } from '../utils/utils.js'
+import { ROLES, getAvatarColor, getInitials } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -12,10 +12,10 @@ const router = useRouter()
 //TODO: aggiungere la possibiltà di assegnare un colore al badge attivo/inattivo/perso. 
 const customers = ref([])
 
-const userLogged = ref({
-  name: '',
-  surname: '',
-  role: ''
+const userLogged = ref({ 
+  name: localStorage.getItem('user_name'), 
+  surname: localStorage.getItem('user_surname'), 
+  role: localStorage.getItem('user_role') 
 })
 
 const sidebarOpen = ref(true)
@@ -36,8 +36,6 @@ const fetchClients = async () => {
 }
 
 onMounted(async () => {
-  const userData = await fetchUserInfo()
-  if (userData) userLogged.value = userData
   fetchClients()
 })
 

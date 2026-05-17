@@ -2,7 +2,7 @@
 import { ref, onMounted, computed} from 'vue'
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
-import { fetchUserInfo, ROLES, formatPrograms } from '../utils/utils.js'
+import { ROLES, formatPrograms } from '../utils/utils.js'
 import Footer from '../components/Footer.vue'
 
 
@@ -16,15 +16,13 @@ import SideMenu from '../components/SideMenu.vue'
  */
 const router = useRouter()
 
-const userLogged = ref({
-  name: '',
-  surname: '',
-  role: ''
+const userLogged = ref({ 
+  name: localStorage.getItem('user_name'), 
+  surname: localStorage.getItem('user_surname'), 
+  role: localStorage.getItem('user_role') 
 })
 
 onMounted(async () => {
-  const userData = await fetchUserInfo()
-  if (userData) userLogged.value = userData
 })
 
 const sidebarOpen = ref(true)

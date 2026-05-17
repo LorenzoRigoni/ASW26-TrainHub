@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { fetchUserInfo } from '../utils/utils.js'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -13,15 +12,14 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
-const userLogged = ref({
-  name: '',
-  surname: '',
-  role: ''
+const userLogged = ref({ 
+  name: localStorage.getItem('user_name'), 
+  surname: localStorage.getItem('user_surname'), 
+  role: localStorage.getItem('user_role') 
 })
 
 onMounted(async () => {
-  const userData = await fetchUserInfo()
-  if (userData) userLogged.value = userData
+  
 })
 
 
