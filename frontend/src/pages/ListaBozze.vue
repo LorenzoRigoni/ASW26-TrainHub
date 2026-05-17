@@ -16,13 +16,14 @@ import { formatPrograms } from '../utils/utils.js'
  * Nel list item bozza sarebbe carino continuare a mostrare i giorni mancanti alla scadenza. 
  */
 const router = useRouter()
-
-//TODO dati di test, sostituire
-const userLogged = ref({
-  name: 'Alessandra',
-  surname: 'Versari',
-  role: 'trainer'
+const programs = ref([])
+const loading = ref(true)
+const userLogged = ref({ 
+  name: localStorage.getItem('user_name'), 
+  surname: localStorage.getItem('user_surname'), 
+  role: localStorage.getItem('user_role') 
 })
+
 const sidebarOpen = ref(true)
 
 
@@ -34,34 +35,24 @@ const goToDetail = (id) => {
   router.push(`/bozze/dettaglio-bozza`)
 }
 
+const token = localStorage.getItem('token')
+const config = { headers: { Authorization: `Bearer ${token}` } }
 
-//TODO dati di test, sostituire
-const programs = ref([
-  {
-  id: 1,
-  title: "Ipertrofia Upper/Lower",
-  client: "Mario Rossi",
-  splits: 4,
-  status: "draft",
-  dueDate: '2026-05-01'
-},
-{
-  id: 2,
-  title: "Definizione Mese ",
-  client: "Paolo Verdi",
-  splits: 3,
-  status: "draft",
-  dueDate: '2026-07-01'
-},
-{
-  id: 3,
-  title: "Hypertrophy Upper/Lower",
-  client: "Monica Bianchi",
-  splits: 2,
-  status: "draft",
-  dueDate: '2026-05-25'
+const fetchBozze = async () => {
+  loading.value = true
+  try {
+    const res = await axios.get('http://localhost:5000/api/training-programs/trainer-programs', config)
+    const allPrograms = res.data.data || res.data
+    programs.value = allPrograms.filter(p => p.programStatus === 'draft')
+    console.log(allPrograms)
+  } catch (error) {
+    console.error("Errore nel recupero delle bozze:", error)
+  } finally {
+    loading.value = false
+  }
 }
-])
+
+onMounted(fetchBozze)
 
 const formattedPrograms = computed(() => {
  return formatPrograms(programs.value)
@@ -77,36 +68,37 @@ const formattedPrograms = computed(() => {
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="lista-programmi">
         <div class="header">
-          <h1 class="programmi-title">Bozze Programmi di Allenamento</h1>
-          <p class="programmi-sub">
-            Programmi di allenamento da completare
-          </p>
+          <h1 class="programmi-title">Bozze Programmi</h1>
+          <p class="programmi-sub">Gestisci i programmi che stai preparando.</p>
         </div>
 
-        <MainList>
+        <div v-if="loading" class="loader" style="text-align: center; padding: 2rem;">
+          <i class="fa fa-spinner fa-spin"></i> Caricamento bozze...
+        </div>
+
+        <MainList v-else-if="formattedPrograms.length > 0">
           <MainListItem
-           v-for="(program, index) in formattedPrograms"
-            :key="index"
+            v-for="program in formattedPrograms"
+            :key="program._id"
             :title="program.title"
             :status="program.statusText"
             :statusClass="program.statusClass"
             :iconClass="program.iconClass"
-            icon="fa fa-calendar-times-o"
-            @click="router.push('bozze/dettaglio-bozza')"
+            icon="fa fa-pencil-square-o"
+            @click="router.push(`/bozze/dettaglio-bozza/${program._id}`)"
           >
             <template #subtitle>
-              {{ program.client }} - {{ program.splits }} split
+              {{ program.athleteId?.name }} {{ program.athleteId?.surname }} - {{ program.sessionsPerWeek }} split
             </template>
           </MainListItem>
         </MainList>
 
-        <div v-if="programs.length === 0" class="empty-state">
+        <div v-if="!loading && formattedPrograms.length === 0" class="empty-state">
            <i class="fa fa-folder-open-o"></i>
            <p>Nessun programma in stato bozza trovato.</p>
         </div>
       </div>
     </main>
-
     <Footer />
   </div>
 </template>

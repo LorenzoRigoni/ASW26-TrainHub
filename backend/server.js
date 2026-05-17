@@ -31,7 +31,8 @@ app.use('/api/personal-diary', require('./routes/personalDiary'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/nutrition-plans', require('./routes/nutritionPlans'));
 app.use('/api/nutrition-requests', require('./routes/nutritionRequests'));
-app.use('/api/exercises', require('./routes/exercises'))
+app.use('/api/exercises', require('./routes/exercises'));
+app.use('/api/deadlines', require('./routes/deadlines'))
 /*
 app.use('/api/ai', require('./routes/ai'));*/
 

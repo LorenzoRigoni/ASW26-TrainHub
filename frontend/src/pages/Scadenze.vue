@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
@@ -16,18 +17,14 @@ import Footer from '../components/Footer.vue'
 // Lasciamo la due date editable, per un qualsiasi motivo il trainer potrebbe dover posticipare la scadenza 
 // (infortunio, vacanze, malattia...)
 
+const router = useRouter()
 const sidebarOpen = ref(true)
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
-
 const showModal = ref(false)
+const loading = ref(true)
+const deadlines = ref([])
+const athletes = ref([])
 
 const today = new Date().toISOString().split('T')[0]
-
-const router = useRouter()
-
 
 const userLogged = ref({ 
   name: localStorage.getItem('user_name'), 
@@ -35,208 +32,177 @@ const userLogged = ref({
   role: localStorage.getItem('user_role') 
 })
 
-onMounted(async () => {
-})
-
-/* LISTA SCADENZE: dati di test */
-//TODO: lo stato che mostriamo nel list item è di default in attesa appena viene aperta la richiesta. Quando il nutrizionista carica il piano, la richeista viene chiusa automaticamente. 
-const programsToDo = ref([
-  {
-    client: 'Marco Rossi',
-    dueDate: '2026-05-01',
-  },
-  {
-    client: 'Lorenzo Rigoni',
-    dueDate: '2026-06-15',
-  },
-  {
-    client: 'Pippo Bianchi',
-    dueDate: '2026-05-15',
-  },
-  {
-    client: 'Bruno Viola',
-    dueDate: '2026-06-21',
-  }
-])
-
-//funzione per calcolo giorni mancanti alla scadenza
-const calculateDaysLeft = (dueDate) => {
-  const today = new Date()
-  const due = new Date(dueDate)
-
-  today.setHours(0, 0, 0, 0)
-  due.setHours(0, 0, 0, 0)
-
-  const diffTime = due - today
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-  return diffDays
-}
-
-//Imposta stato e colore in base ai giorni che mancano alla scadenza
-const getStatusData = (dueDate) => {
-  const daysLeft = calculateDaysLeft(dueDate)
-
-  if (daysLeft < 5) {
-    return {
-      text: `${daysLeft} giorni`,
-      color: 'red'
-    }
-  }
-
-  if (daysLeft <= 10) {
-    return {
-      text: `${daysLeft} giorni`,
-      color: 'yellow'
-    }
-  }
-
-  return {
-    text: `${daysLeft} giorni`,
-    color: 'green'
-  }
-}
-
-//Funzione che rielabora la lista di scadenze salvate modificando titolo e aggiungendo lo stato. Setta colore icona e colore status. 
-const formattedPrograms = computed(() => {
-  return programsToDo.value.map((deadline) => {
-    const daysLeft = calculateDaysLeft(deadline.dueDate)
-
-    let statusClass = ''
-    let iconClass = ''
-
-    if(daysLeft <= 0) {
-        statusClass = 'status-orange'
-        iconClass = 'icon-orange'
-    } else if(daysLeft < 5){
-        statusClass = 'status-red'
-        iconClass = 'icon-red'
-    } else if (daysLeft <= 10) {
-        statusClass = 'status-yellow'
-        iconClass = 'icon-yellow'
-    } else {
-        statusClass = 'status-green'
-        iconClass = 'icon-green'
-    }
-
-    return {
-      ...deadline,
-      title: `${deadline.client} - ${deadline.dueDate}`,
-      statusText: `${daysLeft} giorni`,
-      statusClass,
-      iconClass
-    }
-  })
-})
-
-const form = ref({
-  client: '',
+const newDeadline = ref({
+  athleteId: '',
+  title: 'Nuovo Programma',
   dueDate: today,
   notes: ''
 })
 
-const openModal = () => {
-  form.value = {
-    client: ' ',
-    dueDate: today,
-    notes: ' '
+const token = localStorage.getItem('token')
+const config = { headers: { Authorization: `Bearer ${token}` } }
+
+const fetchData = async () => {
+  loading.value = true
+  try {
+    const [resSca, resAth] = await Promise.all([
+      axios.get('http://localhost:5000/api/deadlines', config),
+      axios.get('http://localhost:5000/api/users/my-clients', config)
+    ])
+    deadlines.value = resSca.data.data
+    athletes.value = resAth.data.data
+  } catch (error) {
+    console.error("Errore caricamento:", error)
+  } finally {
+    loading.value = false
   }
-  showModal.value = true
 }
 
-//TODO: recuperare dati richiesta da backend. 
-const openModalCompiled = () => {
-  form.value = {
-    client: 'Mario Rossi',
-    dueDate: today,
-    notes: 'Scadenza posticipata di un mese causa infortunio.'
+onMounted(fetchData)
+
+const getPriorityClass = (dueDate) => {
+  const diffTime = new Date(dueDate) - new Date()
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  if (diffDays < 0) return 'status-expired'
+  if (diffDays <= 3) return 'status-urgent'
+  return 'status-upcoming'
+}
+
+const createProgram = async (deadline) => {
+  const sessions = prompt(`Quanti split settimanali per ${deadline.athleteId.name}?`, "3")
+  if (!sessions || isNaN(sessions)) return
+  console.log(deadline)
+  try {
+    const res = await axios.post('http://localhost:5000/api/training-programs/init', {
+      athleteId: deadline.athleteId._id,
+      deadlineId: deadline.id || deadline._id,
+      sessionsPerWeek: parseInt(sessions),
+      title: newDeadline.value.title || `Programma - ${deadline.athleteId.surname}`
+    }, config)
+
+    if (res.data.success) {
+      router.push(`/bozze/dettaglio-bozza/${res.data.data._id}`)
+    }
+  } catch (error) {
+    console.error("Errore creazione programma:", error)
+    alert("Errore nell'inizializzazione del programma.")
   }
-  showModal.value = true
 }
 
-const closeModal = () => {
-  showModal.value = false
+const saveNewDeadline = async () => {
+  console.log(newDeadline.value)
+  if (!newDeadline.value.athleteId || !newDeadline.value.dueDate) {
+    alert("Compila tutti i campi obbligatori")
+    return
+  }
+  try {
+    await axios.post('http://localhost:5000/api/deadlines', newDeadline.value, config)
+    showModal.value = false
+    fetchData()
+  } catch (error) {
+    console.error(error)
+  }
 }
 
-
-const saveDeadline = () => {
-  //TODO salvare le modifiche all'elemento aperto
-  closeModal()
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
 }
-
 </script>
 <template>
   <div id="app">
-
     <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen"  :role="userLogged.role" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
-      <!-- HEADER -->
-      <div class="page-header">
-        <div>
-          <h1>Scadenza</h1>
-          <p>Qui puoi visualizzare i programmi in scadenza nei prossimi giorni. </p>
+      <div class="lista-scadenze">
+        <div class="page-header">
+          <div class="header-text">
+            <h1 class="scadenze-title">Le mie Scadenze</h1>
+            <p class="subtitle">Gestisci i programmi in arrivo per i tuoi atleti.</p>
+          </div>
+          <button class="btn-primary" @click="showModal = true">
+            <i class="fa fa-plus"></i> Nuova Scadenza
+          </button>
         </div>
-        <button class="btn-primary" @click="openModal">
-          <i class="fa fa-plus"></i>
-           Crea Scadenza
-        </button>
+
+        <div v-if="loading" class="loader">Caricamento in corso...</div>
+
+        <MainList v-else>
+          <ListItem
+            v-for="s in deadlines"
+            :key="s.id"
+            icon="fa fa-calendar-check-o"
+            :title="`${s.athleteId?.name || ''} ${s.athleteId?.surname || ''}`"
+            :status="s.status === 'pending' ? 'In attesa' : 'Completata'"
+            :class="getPriorityClass(s.dueDate)"
+          >
+            <template #subtitle>
+              <div class="plan-subtitle">
+                <div class="info-row">
+                  <i class="fa fa-clock-o"></i>
+                  <span>Inizio previsto: <strong>{{ new Date(s.dueDate).toLocaleDateString() }}</strong></span>
+                </div>
+                
+                <div v-if="s.status === 'pending'" class="info-row" style="margin-top: 8px;">
+                  <button 
+                    @click.stop="createProgram(s)" 
+                    class="btn-primary"
+                    style="padding: 8px 14px; font-size: 0.85rem;"
+                  >
+                    <i class="fa fa-magic"></i> Crea Programma
+                  </button>
+                </div>
+              </div>
+            </template>
+          </ListItem>
+        </MainList>
+
+        <div v-if="!loading && deadlines.length === 0" class="empty-state">
+           <i class="fa fa-check-circle-o"></i>
+           <p>Nessuna scadenza pendente. Ottimo lavoro!</p>
+        </div>
       </div>
 
-      <!-- LISTA -->
-      <MainList>
-        <ListItem
-            v-for="(deadline, index) in formattedPrograms"
-            :key="index"
-            :title="deadline.title"
-            :status="deadline.statusText"
-            :statusClass="deadline.statusClass"
-            :iconClass="deadline.iconClass"
-            icon="fa fa-calendar-times-o"
-            @click="openModalCompiled"
-        >
-        </ListItem>
-      </MainList>
+      <div v-if="showModal" class="modal-overlay">
+        <div class="modal">
+          <div class="modal-header">
+            <h2>Nuova Scadenza</h2>
+            </div>
+
+          <div class="form-row">
+            <label>Titolo</label>
+            <input type="text" v-model="newDeadline.title" placeholder="Es: Nuova Scheda">
+          </div>
+          
+          <div class="form-row">
+            <label>Atleta</label>
+            <select v-model="newDeadline.athleteId">
+              <option value="" disabled>Scegli atleta...</option>
+              <option v-for="a in athletes" :key="a.id" :value="a.id">
+                {{ a.name }} {{ a.surname }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label>Data</label>
+            <input type="date" v-model="newDeadline.dueDate" :min="today">
+          </div>
+
+          <div class="form-row">
+            <label>Note</label>
+            <input type="text" v-model="newDeadline.notes" placeholder="Es: Ipertrofia">
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn-danger" @click="showModal = false" style="background: #666;">Annulla</button>
+            <button class="btn-primary" @click="saveNewDeadline">Salva Scadenza</button>
+          </div>
+        </div>
+      </div>
     </main>
 
-    <!-- MODAL -->
-    <div v-if="showModal" class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header">
-          <h2>Scadenza</h2>
-        </div>
-
-        <!-- CLIENTE: soluzione provvisoria, dovrà essere scelto dalle liste di clienti del trainer -->
-        <div class="form-row">
-            <label>Cliente</label>
-            <select v-model="form.client">
-                <option value="Cliente1">Cliente1</option>
-                <option value="Cliente2">Cliente2</option>
-                <option value="Cliente3">Cliente3</option>
-            </select>
-        </div>
-
-        
-        <!-- DATE -->
-        <div class="form-row">
-          <label>Data scadenza programma </label>
-          <input type="date" v-model="form.dueDate"/>
-        </div>
-
-        <div class="form-row">
-          <label>Note</label>
-          <input type="text" v-model="form.notes" />
-        </div>
-
-        <div class="modal-actions">
-          <button class="btn-danger" @click="closeModal">Annulla</button>
-          <button class="btn-primary" @click="saveDeadline">Salva</button>
-          <button class="btn-primary" @click="router.push('/bozze/dettaglio-bozza')">Crea Programma</button>
-        </div>
-      </div>
-    </div>
     <Footer />
   </div>
 </template>

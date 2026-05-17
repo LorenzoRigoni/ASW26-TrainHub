@@ -1,5 +1,6 @@
 const TrainingProgram = require('../models/trainingProgram');
 const User = require('../models/user');
+const Deadline = require('../models/deadline');
 const { createNotification } = require('./notificationController');
 const { handleError, badRequest, forbidden, notFound, requiredFields, isOwner } = require('./controllerHelpers');
 
@@ -67,140 +68,100 @@ exports.getTrainingProgramById = async (req, res) => {
     }
 };
 
-exports.getSplit = async (req, res) => {
+exports.getTrainerPrograms = async (req, res) => {
     try {
-        const { id, splitId } = req.params;
+        const programs = await TrainingProgram.find({ trainerId: req.user.id })
+            .populate('athleteId', 'name surname')
+            .sort({ createdAt: -1 });
 
-        const program = await TrainingProgram.findOne({ _id: id, athleteId: req.user.id });
-
-        if (!program) return notFound(res, 'Program not found');
-
-        const split = program.getSplitById(parseInt(splitId));
-        if (!split) return notFound(res, 'Split not found');
-
-        res.status(200).json({ success: true, data: { programId: program._id, split } });
+        res.status(200).json({ 
+            success: true, 
+            count: programs.length, 
+            data: programs 
+        });
     } catch (error) {
-        handleError(res, error, 'Error fetching split');
+        handleError(res, error, 'Errore nel recupero dei programmi');
     }
 };
 
-exports.createTrainingProgram = async (req, res) => {
+exports.initProgram = async (req, res) => {
     try {
-        const { athleteId, sessionsPerWeek, splits, notes } = req.body;
+        const { athleteId, deadlineId, sessionsPerWeek, title } = req.body;
 
-        if (!requiredFields(req.body, ['athleteId', 'sessionsPerWeek', 'splits'])) {
-            return badRequest(res);
+        if (!athleteId || !sessionsPerWeek) return badRequest(res, 'Dati mancanti');
+
+        const splits = [];
+        for (let i = 0; i < sessionsPerWeek; i++) {
+            splits.push({
+                splitId: i + 1,
+                name: `Giorno ${String.fromCharCode(65 + i)}`,
+                day: 'Lunedì',
+                rows: []
+            });
         }
-
-        const athlete = await User.findById(athleteId);
-        if (!athlete) return notFound(res, 'Athlete not found');
-
-        if (athlete.role !== 'client') return badRequest(res, 'User is not a client');
-        if (!isOwner(athlete.assignedTrainerId, req.user.id)) return forbidden(res, 'Not assigned athlete');
 
         const program = await TrainingProgram.create({
             athleteId,
             trainerId: req.user.id,
-            sessionsPerWeek,
-            splits,
-            notes,
-            status: 'draft'
+            title: title || "Nuovo Piano di Allenamento",
+            sessionsPerWeek: parseInt(sessionsPerWeek),
+            programStatus: 'draft',
+            splits: splits
         });
 
+        if (deadlineId) {
+            await Deadline.findByIdAndUpdate(deadlineId, { status: 'completed' });
+        }
+
+        res.status(201).json({ success: true, data: program });
+    } catch (error) {
+        console.log(error)
+        handleError(res, error, 'Errore inizializzazione');
+    }
+};
+
+exports.saveDraft = async (req, res) => {
+    try {
+        const program = await TrainingProgram.findById(req.params.id);
+        if (!program) return notFound(res);
+        if (!isOwner(program.trainerId, req.user.id)) return forbidden(res);
+        
+        if (program.programStatus !== 'draft') {
+            return res.status(400).json({ message: "Solo le bozze sono modificabili" });
+        }
+
+        const updated = await TrainingProgram.findByIdAndUpdate(
+            req.params.id, 
+            { $set: { splits: req.body.splits, notes: req.body.notes } },
+            { new: true }
+        ).populate('splits.rows.exercise');
+
+        res.status(200).json({ success: true, data: updated });
+    } catch (error) {
+        console.log(error)
+        handleError(res, error, 'Errore salvataggio bozza');
+    }
+};
+
+exports.publishProgram = async (req, res) => {
+    try {
+        const program = await TrainingProgram.findById(req.params.id);
+        if (!program) return notFound(res);
+
+        program.programStatus = 'active';
+        await program.save();
+
         await createNotification(
-            athleteId,
+            program.athleteId,
             'program_created',
-            'Nuovo programma di allenamento',
-            'Hai un nuovo programma disponibile.',
+            'Nuova scheda disponibile!',
+            'Il tuo trainer ha pubblicato il tuo nuovo piano di allenamento.',
             program._id,
             'TrainingProgram'
         );
 
-        const populated = await TrainingProgram.findById(program._id)
-            .populate('trainerId', 'name surname username')
-            .populate('athleteId', 'name surname username');
-
-        res.status(201).json({ success: true, data: populated });
+        res.status(200).json({ success: true, message: 'Programma pubblicato' });
     } catch (error) {
-        handleError(res, error, 'Error creating program');
-    }
-};
-
-exports.updateTrainingProgram = async (req, res) => {
-    try {
-        const program = await TrainingProgram.findById(req.params.id);
-
-        if (!program) return res.status(404).json({ success: false, message: 'Not found' });
-        if (!isOwner(program.trainerId, req.user.id)) return res.status(403).json({ success: false, message: 'Unauthorized' });
-
-        const updated = await TrainingProgram.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true
-        })
-            .populate('trainerId', 'name surname username')
-            .populate('athleteId', 'name surname username');
-
-        res.status(200).json({ success: true, data: updated });
-    } catch (error) {
-        handleError(res, error, 'Error updating program');
-    }
-};
-
-exports.changeStatus = async (req, res) => {
-    try {
-        const { status } = req.body;
-
-        if (!['draft', 'active', 'archived'].includes(status)) {
-            return res.status(400).json({ success: false, message: 'Invalid status' });
-        }
-
-        const program = await TrainingProgram.findById(req.params.id);
-
-        if (!program) return res.status(404).json({ success: false, message: 'Not found' });
-        if (!isOwner(program.trainerId, req.user.id)) return res.status(403).json({ success: false, message: 'Unauthorized' });
-
-        if (status === 'active') {
-            await TrainingProgram.updateMany(
-                { athleteId: program.athleteId, status: 'active', _id: { $ne: program._id } },
-                { status: 'archived' }
-            );
-        }
-
-        program.status = status;
-        await program.save();
-
-        res.status(200).json({ success: true, data: program });
-    } catch (error) {
-        handleError(res, error, 'Error changing status');
-    }
-};
-
-exports.deleteTrainingProgram = async (req, res) => {
-    try {
-        const program = await TrainingProgram.findById(req.params.id);
-
-        if (!program) return res.status(404).json({ success: false, message: 'Not found' });
-        if (!isOwner(program.trainerId, req.user.id)) return res.status(403).json({ success: false, message: 'Unauthorized' });
-
-        await program.deleteOne();
-
-        res.status(200).json({ success: true, message: 'Deleted' });
-    } catch (error) {
-        handleError(res, error, 'Error deleting program');
-    }
-};
-
-exports.getTrainerPrograms = async (req, res) => {
-    try {
-        const filters = { trainerId: req.user.id };
-        if (req.query.status) filters.status = req.query.status;
-
-        const programs = await TrainingProgram.find(filters)
-            .populate('athleteId', 'name surname username')
-            .sort({ createdAt: -1 });
-
-        res.status(200).json({ success: true, count: programs.length, data: programs });
-    } catch (error) {
-        handleError(res, error, 'Error fetching trainer programs');
+        handleError(res, error, 'Errore pubblicazione');
     }
 };

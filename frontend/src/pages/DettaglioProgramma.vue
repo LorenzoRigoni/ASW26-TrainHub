@@ -28,23 +28,28 @@ const fetchData = async () => {
     const programRes = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, config)
     const rawProgram = programRes.data.data
 
-    console.log("Dati ricevuti dal server: ", rawProgram)
+    console.log("Dati grezzi dal server:", rawProgram)
+
     program.value = {
-      ...rawProgram, //Used Spread Operator (...) to copy all the properties of the training program
-      title: rawProgram.title || `Piano di ${rawProgram.athleteId.name}`,
-      status: rawProgram.programStatus,
+      ...rawProgram,
+      title: rawProgram.title || `Piano di ${rawProgram.athleteId?.name || 'Atleta'}`,
       splits: rawProgram.splits.map(s => ({
         ...s,
-        exercises: s.rows.map(row => ({
+        exercises: (s.rows || []).map(row => ({
           ...row,
           name: row.exercise?.name || 'Esercizio rimosso',
           image: row.exercise?.image || null,
-          muscleTag: row.muscleTag,
-          technique: row.technique,
-          notes: row.notes
+          muscleTag: row.exercise?.muscleTag || '',
+          sets: row.sets || 0,
+          reps: row.reps || 0,
+          rest: row.rest || 0,
+          technique: row.technique || '',
+          notes: row.notes || ''
         }))
       }))
     }
+    
+    console.log("Dati mappati per il frontend:", program.value)
   } catch (error) {
     console.error("Errore nel caricamento del dettaglio:", error)
   } finally {

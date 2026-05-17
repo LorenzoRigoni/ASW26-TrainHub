@@ -1,158 +1,158 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ROLES } from '../utils/utils.js'
+import axios from 'axios'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
-
-const sidebarOpen = ref(true)
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
-
-const showModal = ref(false)
-
-const today = new Date().toISOString().split('T')[0]
-
+const route = useRoute()
 const router = useRouter()
 
-const program = ref({
-  id: 1,
-  title: 'Ipertrofia Upper/Lower',
-  splits: [
-    {
-      id: 1,
-      name: 'Upper A',
-      exercises: []
-    },
-    {
-      id: 2,
-      name: 'Lower A',
-      exercises: []
-    }
-  ]
+const program = ref(null)
+const exercisesDb = ref([])
+const loading = ref(true)
+const sidebarOpen = ref(true)
+const userLogged = ref({ 
+  name: localStorage.getItem('user_name'), 
+  surname: localStorage.getItem('user_surname'), 
+  role: localStorage.getItem('user_role') 
 })
 
-//TODO dati di test, sostituire
-const userLogged = ref({
-  name: 'Alessandra',
-  surname: 'Versari',
-  role: 'trainer'
-})
+const token = localStorage.getItem('token')
+const config = { headers: { Authorization: `Bearer ${token}` } }
+
+const fetchData = async () => {
+  try {
+    const programId = route.params.id
+    const resProgram = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, config)
+    program.value = resProgram.data.data
+
+    const resEx = await axios.get('http://localhost:5000/api/exercises', config)
+    exercisesDb.value = resEx.data.data
+  } catch (error) {
+    console.error("Errore caricamento dati:", error)
+    alert("Errore nel recupero della bozza")
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(fetchData)
 
 const addExercise = (split) => {
-  split.exercises.push({
-    id: Date.now(),
-    name: '',
+  split.rows.push({
+    exercise: '',
     technique: '',
-    sets: 3,
-    reps: 10,
-    rest: 60
+    sets: 0,
+    reps: 0,
+    rest: 0,
+    notes: ''
   })
+}
+
+const removeExercise = (split, index) => {
+  split.rows.splice(index, 1)
+}
+
+const saveDraft = async () => {
+  try {
+    await axios.put(`http://localhost:5000/api/training-programs/draft/${program.value._id}`, {
+      splits: program.value.splits,
+      notes: program.value.notes
+    }, config)
+    alert("Bozza salvata correttamente")
+  } catch (error) {
+    console.error("Errore salvataggio:", error)
+  }
+}
+
+const publishProgram = async () => {
+  if (!confirm("Vuoi pubblicare il programma? L'atleta riceverà una notifica e non potrai più modificare la struttura.")) return
+  
+  try {
+    await axios.patch(`http://localhost:5000/api/training-programs/publish/${program.value._id}`, {}, config)
+    router.push('/programmi')
+  } catch (error) {
+    console.error("Errore pubblicazione:", error)
+  }
+}
+
+const toggleSidebar = () => { 
+  sidebarOpen.value = !sidebarOpen.value 
 }
 
 </script>
 <template>
   <div id="app">
-
     <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen"  :role="userLogged.role" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
-      <div class="header">
-          <h1 class="title">Bozza programma</h1>
-          <p class="subtitle">
-            Aggiungi e rimuovi esercizi su ciascuna split. Per rendere il programma visibile al cliente, una volta terminata la compilazione clicca su "Consegna Programma".
-          </p>
-      </div>
-      <div v-for="split in program.splits" :key="split.id" class="split">
-        <div class="split-header">
-          <h2>{{ split.name }}</h2>
-          <button @click="addExercise(split)" class="secondary-button"> + Aggiungi esercizio</button>
-        </div>
-        <div
-          v-for="exercise in split.exercises"
-          :key="exercise.id"
-          class="exercise-card"
-        >
-          <div class="exercise-row">
+      <div v-if="loading" class="loader">Caricamento in corso...</div>
 
-            <!-- select esercizio -->
+      <template v-else-if="program">
+        <div class="header">
+          <h1 class="title">Composizione: {{ program.title }}</h1>
+          <p class="subtitle">Stai modificando la bozza per l'atleta. Ricorda di salvare prima di uscire.</p>
+        </div>
+
+        <div v-for="split in program.splits" :key="split._id" class="split-card">
+          <div class="split-header">
+            <h2>{{ split.name }}</h2>
+            <button @click="addExercise(split)" class="secondary-button">
+              <i class="fa fa-plus"></i> Aggiungi esercizio
+            </button>
+          </div>
+
+          <div v-for="(row, index) in split.rows" :key="index" class="exercise-row">
             <div class="input-group exercise-select">
               <label>Esercizio</label>
-
-              <select v-model="exercise.name">
-                <option disabled value="">
-                  Seleziona esercizio
+              <select v-model="row.exercise">
+                <option value="" disabled>Scegli...</option>
+                <option v-for="ex in exercisesDb" :key="ex._id" :value="ex._id">
+                  {{ ex.name }} ({{ ex.muscleTag }})
                 </option>
-
-                <option>Panca Piana</option>
-                <option>Lat Machine</option>
-                <option>Squat</option>
-                <option>Military Press</option>
               </select>
             </div>
 
-            <!-- tecnica -->
             <div class="input-group technique-field">
               <label>Tecnica</label>
-              <input
-                v-model="exercise.technique"
-                placeholder="Drop set"
-              />
+              <input v-model="row.technique" placeholder="es. Drop set" />
             </div>
 
-            <!-- serie -->
             <div class="input-group small-input">
               <label>Serie</label>
-              <input
-                type="number"
-                v-model="exercise.sets"
-              />
+              <input type="number" v-model.number="row.sets" />
             </div>
 
-            <!-- reps -->
             <div class="input-group small-input">
               <label>Rep</label>
-              <input
-                type="number"
-                v-model="exercise.reps"
-              />
+              <input type="number" v-model.number="row.reps" />
             </div>
 
-            <!-- recupero -->
             <div class="input-group small-input">
-              <label>Rec</label>
-              <input
-                type="number"
-                v-model="exercise.rest"
-              />
+              <label>Rest (s)</label>
+              <input type="number" v-model.number="row.rest" />
             </div>
 
-            <button class="delete-button">
+            <button @click="removeExercise(split, index)" class="delete-button">
               <i class="fa fa-trash-o"></i>
             </button>
-
           </div>
         </div>
-      </div>
-      <div class="actions">
-        <button  class="btn-primary"> Consegna Programma </button>
 
-        <button  class="btn-primary red-button" @click="router.push('/bozze')">Annulla</button>
-
-        <button class="btn-primary green-button">Salva e Chiudi</button>
-      </div>
+        <div class="actions">
+          <button @click="router.push('/programmi')" class="btn-secondary">Annulla</button>
+          <button @click="saveDraft" class="btn-primary green-button">Salva e Chiudi</button>
+          <button @click="publishProgram" class="btn-primary">Consegna Programma</button>
+        </div>
+      </template>
     </main>
-    
-    
   </div>
 </template>
 

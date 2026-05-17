@@ -86,32 +86,27 @@ export const getStatusData = (dueDate) => {
 
 //TODO: riutilizzare in scadenze page
 export const formatPrograms = (programs) => {
-  return programs.map((deadline) => {
-    const daysLeft = calculateDaysLeft(deadline.dueDate)
+  return programs.map((p) => {
+    const dateToUse = p.dueDate || p.createdAt;
+    const daysLeft = calculateDaysLeft(dateToUse);
 
-    let statusClass = ''
-    let iconClass = ''
+    const athleteName = p.athleteId?.name || '';
+    const athleteSurname = p.athleteId?.surname || '';
 
-    if (daysLeft <= 0) {
-      statusClass = 'status-orange'
-      iconClass = 'icon-orange'
-    } else if (daysLeft < 5) {
-      statusClass = 'status-red'
-      iconClass = 'icon-red'
-    } else if (daysLeft <= 10) {
-      statusClass = 'status-yellow'
-      iconClass = 'icon-yellow'
-    } else {
-      statusClass = 'status-green'
-      iconClass = 'icon-green'
-    }
+    let statusClass = '';
+    let iconClass = '';
+
+    if (daysLeft <= 0) { statusClass = 'status-orange'; iconClass = 'icon-orange'; }
+    else if (daysLeft < 5) { statusClass = 'status-red'; iconClass = 'icon-red'; }
+    else if (daysLeft <= 10) { statusClass = 'status-yellow'; iconClass = 'icon-yellow'; }
+    else { statusClass = 'status-green'; iconClass = 'icon-green'; }
 
     return {
-      ...deadline,
-      title: `${deadline.client} - ${deadline.dueDate}`,
+      ...p,
+      title: p.title || `${athleteName} ${athleteSurname}`,
       statusText: `${daysLeft} giorni`,
       statusClass,
       iconClass
-    }
+    };
   })
 }

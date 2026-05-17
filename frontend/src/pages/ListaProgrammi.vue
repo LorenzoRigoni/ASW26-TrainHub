@@ -24,7 +24,7 @@ const fetchData = async () => {
     const config = { headers: { Authorization: `Bearer ${token}` } }
 
     if (userLogged.value.role === ROLES.PERSONAL_TRAINER) {
-      const res = await axios.get('http://localhost:5000/api/training-programs/trainer/programs', config)
+      const res = await axios.get('http://localhost:5000/api/training-programs/trainer-programs', config)
       programs.value = res.data.data.map(p => ({
         id: p._id,
         title: `${p.athleteId?.name || 'Cliente'} ${p.athleteId?.surname || ''}`,
