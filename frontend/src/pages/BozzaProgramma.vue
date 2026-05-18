@@ -1,6 +1,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ROLES } from '../utils/utils.js'
+import { useRouter, useRoute } from 'vue-router'
+
 import axios from 'axios'
 
 import Navbar from '../components/NavBar.vue'
@@ -8,7 +10,7 @@ import SideMenu from '../components/SideMenu.vue'
 
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
-import { useRouter, useRoute } from 'vue-router'
+
 
 const route = useRoute()
 const router = useRouter()
@@ -110,7 +112,7 @@ const toggleSidebar = () => {
 
       <template v-else-if="program">
         <div class="header">
-          <h1 class="title">Composizione: {{ program.title }}</h1>
+          <h1 class="title">Composizione Programma di Allenamento - {{ program.title }}</h1>
           <p class="subtitle">Stai modificando la bozza per l'atleta. Ricorda di salvare prima di uscire.</p>
         </div>
 
@@ -160,7 +162,8 @@ const toggleSidebar = () => {
         </div>
 
         <div class="actions">
-          <button @click="router.push('/programmi')" class="btn-primary red-button" style="background-color: #6b7280; margin-right: 0;">Annulla</button>
+          <button @click="router.push('/programmi')" class="btn-primary red-button">
+            <i class="fa fa-close"></i>Annulla</button>
           <button @click="saveDraft" class="btn-primary green-button">
             <i class="fa fa-save"></i> Salva e Chiudi
           </button>
