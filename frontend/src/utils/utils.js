@@ -4,7 +4,7 @@ export const ROLES = {
   NUTRIZIONISTA: 'nutritionist'
 }
 
-const appPalette = {
+export const appPalette = {
   DARK_BLUE: '#0f0a2e' ,
   WHITE: '#ffffff' ,
   LIGHT_GREY: '#f4f6f9'

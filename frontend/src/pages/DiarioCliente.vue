@@ -1,18 +1,35 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import axios from 'axios'
 import { ROLES } from '../utils/utils.js'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
+import {Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend} from 'chart.js'
+import { Line } from 'vue-chartjs'
+import defaultAvatar from '../assets/profileImage.png'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+)
 
 //TODO Mostrare bottone registra solo a cliente
 
 const sidebarOpen = ref(true)
+
 const userLogged = ref({ 
   name: localStorage.getItem('user_name'), 
   surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role') 
+  role: localStorage.getItem('user_role'),
+  email: localStorage.getItem('user_email') || 'mario.rossi@gmail.com',
+  birthDate: localStorage.getItem('user_birth_date') || 'gg/mm/aaaa',
+  image: localStorage.getItem('user_image') || defaultAvatar
 })
 
 const toggleSidebar = () => {
@@ -131,6 +148,95 @@ const saveEntry = async () => {
     console.error('Errore salvataggio entry:', error.response?.data?.message || error.message)
   }
 }
+
+// ultime 7 registrazioni per tabella
+const latestEntries = computed(() => {
+  return [...diaryEntries.value]
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 7)
+})
+
+// ultime 7 per grafici (poi diventeranno 30)
+const chartEntries = computed(() => {
+  return [...diaryEntries.value]
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .slice(-7)
+})
+
+const weightChartData = computed(() => ({
+  labels: chartEntries.value.map(entry =>
+    new Date(entry.date).toLocaleDateString('it-IT', {
+      day: '2-digit',
+      month: '2-digit'
+    })
+  ),
+  datasets: [
+    {
+      label: 'Peso',
+      data: chartEntries.value.map(entry => entry.weight),
+      borderWidth: 2,
+      tension: 0.3
+    }
+  ]
+}))
+
+const adherenceMap = {
+  Ottima: 3,
+  Media: 2,
+  Sgarro: 1
+}
+
+const adherenceChartData = computed(() => ({
+  labels: chartEntries.value.map(entry =>
+    new Date(entry.date).toLocaleDateString('it-IT', {
+      day: '2-digit',
+      month: '2-digit'
+    })
+  ),
+  datasets: [
+    {
+      label: 'Aderenza',
+      data: chartEntries.value.map(
+        entry => adherenceMap[entry.adherence] || 0
+      ),
+      borderWidth: 2,
+      tension: 0.3
+    }
+  ]
+}))
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false
+    }
+  }
+}
+
+const adherenceOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false
+    }
+  },
+  scales: {
+    y: {
+      min: 1,
+      max: 3,
+      ticks: {
+        callback: value => {
+          if (value === 3) return 'Ottima'
+          if (value === 2) return 'Media'
+          if (value === 1) return 'Sgarro'
+        }
+      }
+    }
+  }
+}
 </script>
 
 <template>
@@ -139,11 +245,31 @@ const saveEntry = async () => {
         <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
         <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
           <div class="diary">
-            <div class = "header">
-                <h1>Diario</h1>
-                <button v-if="userLogged.role === ROLES.CLIENTE" class="btn-primary" @click="openModal">
-                    <i class="fa fa-plus"></i> Registra dati
-                </button>
+            <div class="diary-header">
+              <div class="client-info">
+                <div class="avatar-wrapper">
+                  <img v-if="userLogged.image" :src="userLogged.image" alt="Profilo cliente" class="avatar" />
+                  <div v-else class="avatar-placeholder"><i class="fa fa-user"></i></div>
+                </div>
+
+                <div class="client-details">
+                  <h1>{{ userLogged.name }} {{ userLogged.surname }}</h1>
+                  <div class="client-meta">
+                    <span class="header-row">
+                      <p>Data nascita: </p>
+                      {{ userLogged.birthDate || '-' }}
+                    </span>
+
+                    <span class="header-row">
+                      <p>Email: </p>
+                      {{ userLogged.email || '-' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button v-if="userLogged.role === ROLES.CLIENTE"  class="btn-primary add-btn" @click="openModal">
+                <i class="fa fa-plus"></i> Registra dati
+              </button>
             </div>
             <table class="diary-table">
                 <thead>
@@ -158,7 +284,7 @@ const saveEntry = async () => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(entry, index) in diaryEntries" :key="index" @click="openModalCompiled()">
+                    <tr v-for="(entry, index) in latestEntries" :key="index" @click="openModalCompiled()">
                         <td>{{ entry.date }}</td>
                         <td>
                         <span :class="['status', entry.activity === 'on' ? 'on' : 'off']">
@@ -177,6 +303,29 @@ const saveEntry = async () => {
                     </tr>
                 </tbody>
             </table>
+            <div class="charts-grid">
+
+              <div class="chart-card">
+                <h3>Andamento del peso</h3>
+                <p>Ultimi 7 giorni</p>
+
+                <Line
+                  :data="weightChartData"
+                  :options="chartOptions"
+                />
+              </div>
+
+              <div class="chart-card">
+                <h3>Aderenza piano alimentare</h3>
+                <p>Ultimi 7 giorni</p>
+
+                <Line
+                  :data="adherenceChartData"
+                  :options="adherenceOptions"
+                />
+              </div>
+
+            </div>
           </div>
         </main>
     </div>
@@ -638,4 +787,138 @@ h1 {
   }
 }
 
+/*STILE CHART */
+.charts-grid {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.chart-card {
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  min-height: 320px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.chart-card h3 {
+  margin: 0;
+  color: #1e1548;
+  font-size: 1.2rem;
+}
+
+.chart-card p {
+  margin-top: 6px;
+  margin-bottom: 18px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.chart-card canvas {
+  height: 220px !important;
+}
+
+/*STILE HEADER DIARIO (rimuove css vecchio) */
+.diary-header {
+  background: #1e1548;
+  border-radius: 28px;
+  padding: 28px 34px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  gap: 24px;
+}
+
+.client-info {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.avatar-wrapper {
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+}
+
+.avatar {
+  object-fit: cover;
+  border: 4px solid #f1f2f7;
+}
+
+.avatar {
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid white;
+  box-shadow:
+    0 8px 24px rgba(0,0,0,0.12),
+    0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 1rem;
+  background-color: white;
+}
+
+.client-details h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.client-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.client-meta span {
+  color: #fffdfd;
+  font-size: 1rem;
+}
+
+.add-btn {
+  align-self: flex-start;
+}
+
+/* responsive */
+@media (max-width: 768px) {
+  .diary-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .client-info {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .client-details h1 {
+    font-size: 1.6rem;
+  }
+
+  .add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+
+.header-row{
+  display: flex;
+}
+
+.client-details p{
+  font-weight: bold;
+  margin-right: 5pt;
+}
 </style>
