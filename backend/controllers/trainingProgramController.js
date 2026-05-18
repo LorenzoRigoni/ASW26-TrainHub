@@ -130,6 +130,15 @@ exports.saveDraft = async (req, res) => {
             return res.status(400).json({ message: "Solo le bozze sono modificabili" });
         }
 
+        if (req.body.splits) {
+            req.body.splits = req.body.splits.map(split => {
+                return {
+                    ...split,
+                    rows: (split.rows || []).filter(row => row.exercise && row.exercise !== "")
+                };
+            });
+        }
+
         const updated = await TrainingProgram.findByIdAndUpdate(
             req.params.id, 
             { $set: { splits: req.body.splits, notes: req.body.notes } },

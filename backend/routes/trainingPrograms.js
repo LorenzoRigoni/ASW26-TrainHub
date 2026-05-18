@@ -11,13 +11,6 @@ const {
     publishProgram
 } = require('../controllers/trainingProgramController');
 
-//Athletes routes
-
-/**
- * @route GET /api/training-programs/my-programs
- * @desc Get all the programs of the logged user
- * @access Private (client)
- */
 /**
  * @swagger
  * /api/training-programs/my-programs:
@@ -47,28 +40,7 @@ router.get('/my-programs', protect, authorize('client'), getMyTrainingPrograms);
 
 router.post('/init', protect, authorize('trainer'), initProgram);
 
-/**
- * @route GET /api/training-programs/active
- * @desc Get the actual program
- * @access Private
- */
-/**
- * @swagger
- * /api/training-programs/active:
- *   get:
- *     summary: Get active training program
- *     tags: [Training Programs]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Active program found
- *       404:
- *         description: No active program
- */
 router.get('/active', protect, authorize('client'), getActiveProgram);
-
-// Trainer routes
 
 router.get('/trainer-programs', protect, authorize('trainer'), getTrainerPrograms);
 
@@ -76,13 +48,6 @@ router.put('/draft/:id', protect, authorize('trainer'), saveDraft);
 
 router.patch('/publish/:id', protect, authorize('trainer'), publishProgram);
 
-// Athlete and trainer routes
-
-/**
- * @route GET /api/training-programs/:id
- * @desc Get a training program
- * @access Private
- */
 /**
  * @swagger
  * /api/training-programs/{id}:

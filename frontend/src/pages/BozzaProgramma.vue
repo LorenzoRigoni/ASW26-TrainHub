@@ -30,7 +30,18 @@ const fetchData = async () => {
   try {
     const programId = route.params.id
     const resProgram = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, config)
-    program.value = resProgram.data.data
+    const data = resProgram.data.data
+
+    data.splits.forEach(split => {
+      if (!split.rows) split.rows = []
+      split.rows.forEach(row => {
+        if (row.exercise && typeof row.exercise === 'object') {
+          row.exercise = row.exercise._id
+        }
+      })
+    })
+
+    program.value = data
 
     const resEx = await axios.get('http://localhost:5000/api/exercises', config)
     exercisesDb.value = resEx.data.data
@@ -46,12 +57,14 @@ onMounted(fetchData)
 
 const addExercise = (split) => {
   split.rows.push({
-    exercise: '',
-    technique: '',
+    rowId: split.rows.length + 1,
+    exercise: "",
+    muscleTag: "Generale",
     sets: 0,
     reps: 0,
     rest: 0,
-    notes: ''
+    technique: "",
+    notes: ""
   })
 }
 
@@ -101,7 +114,7 @@ const toggleSidebar = () => {
           <p class="subtitle">Stai modificando la bozza per l'atleta. Ricorda di salvare prima di uscire.</p>
         </div>
 
-        <div v-for="split in program.splits" :key="split._id" class="split-card">
+        <div v-for="split in program.splits" :key="split._id" class="split">
           <div class="split-header">
             <h2>{{ split.name }}</h2>
             <button @click="addExercise(split)" class="secondary-button">
@@ -109,7 +122,7 @@ const toggleSidebar = () => {
             </button>
           </div>
 
-          <div v-for="(row, index) in split.rows" :key="index" class="exercise-row">
+          <div v-for="(row, index) in split.rows" :key="index" class="exercise-row" style="margin-bottom: 15px;">
             <div class="input-group exercise-select">
               <label>Esercizio</label>
               <select v-model="row.exercise">
@@ -147,9 +160,13 @@ const toggleSidebar = () => {
         </div>
 
         <div class="actions">
-          <button @click="router.push('/programmi')" class="btn-secondary">Annulla</button>
-          <button @click="saveDraft" class="btn-primary green-button">Salva e Chiudi</button>
-          <button @click="publishProgram" class="btn-primary">Consegna Programma</button>
+          <button @click="router.push('/programmi')" class="btn-primary red-button" style="background-color: #6b7280; margin-right: 0;">Annulla</button>
+          <button @click="saveDraft" class="btn-primary green-button">
+            <i class="fa fa-save"></i> Salva e Chiudi
+          </button>
+          <button @click="publishProgram" class="btn-primary" style="margin-right: 0;">
+            <i class="fa fa-paper-plane"></i> Consegna Programma
+          </button>
         </div>
       </template>
     </main>

@@ -80,7 +80,7 @@ const trainingProgramSchema = new mongoose.Schema({
                 type: String,
                 default: ''
             }
-        }]
+        }], default: []
     }]
 }, {
     timestamps: true
