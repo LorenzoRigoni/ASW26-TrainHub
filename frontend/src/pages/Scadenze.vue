@@ -7,6 +7,7 @@ import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
 import { useRouter } from 'vue-router'
 import Footer from '../components/Footer.vue'
+import AppModal from '../components/Modal.vue'
 
 // Questa pagina è pensata per essere visibile solo al pt. 
 // In pratica quando un cliente ha compilato tutte le settimane, tranne l'ultima, viene creata automaticamente 
@@ -108,6 +109,30 @@ const saveNewDeadline = async () => {
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
+
+const showProgramModal = ref(false)
+const selectedDeadline = ref(null)
+
+const programForm = ref({
+  title: '',
+  sessions: 3,
+  startDate: today,
+  endDate: today
+})
+
+const openProgramModal = (deadline) => {
+  selectedDeadline.value = deadline
+
+  programForm.value = {
+    title: `Programma - ${deadline.athleteId?.surname || ''}`,
+    sessions: 3,
+    startDate: deadline.dueDate?.split('T')[0] || today,
+    endDate: today
+  }
+
+  showProgramModal.value = true
+}
+
 </script>
 <template>
   <div id="app">
@@ -149,6 +174,7 @@ const toggleSidebar = () => {
                     @click.stop="createProgram(s)" 
                     class="btn-primary"
                     style="padding: 8px 14px; font-size: 0.85rem;"
+                    @click="openProgramModal"
                   >
                     <i class="fa fa-magic"></i> Crea Programma
                   </button>
@@ -164,46 +190,137 @@ const toggleSidebar = () => {
         </div>
       </div>
 
-      <div v-if="showModal" class="modal-overlay">
-        <div class="modal">
-          <div class="modal-header">
-            <h2>Nuova Scadenza</h2>
-            </div>
+      <AppModal
+        v-model="showProgramModal"
+        title="Crea Programma"
+        width="580px"
+      >
+        <div class="form-row">
+          <label>Nome Programma</label>
 
-          <div class="form-row">
-            <label>Titolo</label>
-            <input type="text" v-model="newDeadline.title" placeholder="Es: Nuova Scheda">
-          </div>
-          
-          <div class="form-row">
-            <label>Atleta</label>
-            <select v-model="newDeadline.athleteId">
-              <option value="" disabled>Scegli atleta...</option>
-              <option v-for="a in athletes" :key="a.id" :value="a.id">
-                {{ a.name }} {{ a.surname }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-row">
-            <label>Data</label>
-            <input type="date" v-model="newDeadline.dueDate" :min="today">
-          </div>
-
-          <div class="form-row">
-            <label>Note</label>
-            <input type="text" v-model="newDeadline.notes" placeholder="Es: Ipertrofia">
-          </div>
-
-          <div class="modal-actions">
-            <button class="btn-danger" @click="showModal = false" style="background: #666;">Annulla</button>
-            <button class="btn-primary" @click="saveNewDeadline">Salva Scadenza</button>
-          </div>
+          <input
+            type="text"
+            v-model="programForm.title"
+          />
         </div>
-      </div>
-    </main>
 
-    <Footer />
+        <div class="form-row">
+          <label>Split</label>
+
+          <input
+            type="number"
+            min="1"
+            max="7"
+            v-model.number="programForm.sessions"
+          />
+        </div>
+
+        <div class="form-row">
+          <label>Data Inizio</label>
+
+          <input
+            type="date"
+            v-model="programForm.startDate"
+          />
+        </div>
+
+        <div class="form-row">
+          <label>Fine Validità</label>
+
+          <input
+            type="date"
+            v-model="programForm.endDate"
+          />
+        </div>
+
+        <template #actions>
+          <button
+            class="btn-danger"
+            @click="showProgramModal = false"
+          >
+            Annulla
+          </button>
+
+          <button
+            class="btn-primary"
+            @click="createProgram"
+          >
+            Crea Programma
+          </button>
+        </template>
+      </AppModal>
+
+      <AppModal
+        v-model="showModal"
+        title="Nuova Scadenza"
+        width="520px"
+      >
+        <div class="form-row">
+          <label>Titolo</label>
+
+          <input
+            type="text"
+            v-model="newDeadline.title"
+            placeholder="Es: Nuova Scheda"
+          />
+        </div>
+
+        <div class="form-row">
+          <label>Atleta</label>
+
+          <select v-model="newDeadline.athleteId">
+            <option disabled value="">
+              Scegli atleta...
+            </option>
+
+            <option
+              v-for="a in athletes"
+              :key="a.id"
+              :value="a.id"
+            >
+              {{ a.name }}
+              {{ a.surname }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label>Data</label>
+
+          <input
+            type="date"
+            v-model="newDeadline.dueDate"
+            :min="today"
+          />
+        </div>
+
+        <div class="form-row">
+          <label>Note</label>
+
+          <input
+            type="text"
+            v-model="newDeadline.notes"
+            placeholder="Es: Ipertrofia"
+          />
+        </div>
+
+        <template #actions>
+          <button
+            class="btn-danger"
+            @click="showModal = false"
+          >
+            Annulla
+          </button>
+
+          <button
+            class="btn-primary"
+            @click="saveNewDeadline"
+          >
+            Salva Scadenza
+          </button>
+        </template>
+      </AppModal>
+    </main>
   </div>
 </template>
 
@@ -272,34 +389,6 @@ const toggleSidebar = () => {
 }
 
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(3px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.modal {
-  width: 100%;
-  max-width: 520px;
-  background: white;
-  border-radius: 20px;
-  padding: 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-}
-
-.modal-header h2 {
-  margin: 0;
-  color: #1e1548;
-}
-
 .form-row {
   display: flex;
   align-items: center;
@@ -328,13 +417,6 @@ const toggleSidebar = () => {
   box-shadow: 0 0 0 4px rgba(91,71,197,0.12);
 }
 
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 10px;
-}
-
 .plan-subtitle {
   display: flex;
   flex-direction: column;
@@ -350,6 +432,5 @@ const toggleSidebar = () => {
   font-size: 9pt;
   line-height: 1.3;
 }
-
 
 </style>
