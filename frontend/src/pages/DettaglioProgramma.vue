@@ -48,8 +48,6 @@ const fetchData = async () => {
         }))
       }))
     }
-    
-    console.log("Dati mappati per il frontend:", program.value)
   } catch (error) {
     console.error("Errore nel caricamento del dettaglio:", error)
   } finally {

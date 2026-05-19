@@ -141,7 +141,13 @@ exports.saveDraft = async (req, res) => {
 
         const updated = await TrainingProgram.findByIdAndUpdate(
             req.params.id, 
-            { $set: { splits: req.body.splits, notes: req.body.notes } },
+            { 
+                $set: { 
+                    title: req.body.title, 
+                    splits: req.body.splits, 
+                    notes: req.body.notes 
+                } 
+            },
             { new: true }
         ).populate('splits.rows.exercise');
 

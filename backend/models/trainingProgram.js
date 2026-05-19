@@ -1,6 +1,11 @@
 const mongoose = require('mongoose')
 
 const trainingProgramSchema = new mongoose.Schema({
+    title: {
+        type: String,
+        default: ''
+    },
+
     athleteId: {
         type: mongoose.Types.ObjectId,
         ref: 'User',

@@ -25,6 +25,8 @@ const userLogged = ref({
   role: localStorage.getItem('user_role') 
 })
 
+const dayOfTheWeek = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica']
+
 const token = localStorage.getItem('token')
 const config = { headers: { Authorization: `Bearer ${token}` } }
 
@@ -32,18 +34,22 @@ const fetchData = async () => {
   try {
     const programId = route.params.id
     const resProgram = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, config)
-    const data = resProgram.data.data
+    const rawProgram = resProgram.data.data
 
-    data.splits.forEach(split => {
-      if (!split.rows) split.rows = []
-      split.rows.forEach(row => {
-        if (row.exercise && typeof row.exercise === 'object') {
-          row.exercise = row.exercise._id
-        }
+    if (rawProgram && rawProgram.splits) {
+      rawProgram.splits.forEach(split => {
+        if (!split.rows) split.rows = []
+        split.rows.forEach(row => {
+          if (row.exercise && typeof row.exercise === 'object') {
+            row.exercise = row.exercise._id
+          }
+        })
       })
-    })
-
-    program.value = data
+      
+      program.value = rawProgram
+    } else {
+      console.error("Struttura dati del programma non valida:", resProgram.data)
+    }
 
     const resEx = await axios.get('http://localhost:5000/api/exercises', config)
     exercisesDb.value = resEx.data.data
@@ -76,11 +82,16 @@ const removeExercise = (split, index) => {
 
 const saveDraft = async () => {
   try {
-    await axios.put(`http://localhost:5000/api/training-programs/draft/${program.value._id}`, {
+    const programId = route.params.id
+    
+    const payload = {
+      title: program.value.title,
       splits: program.value.splits,
       notes: program.value.notes
-    }, config)
-    alert("Bozza salvata correttamente")
+    }
+
+    await axios.put(`http://localhost:5000/api/training-programs/draft/${programId}`, payload, config)
+    router.push('/programmi')
   } catch (error) {
     console.error("Errore salvataggio:", error)
   }
@@ -112,14 +123,43 @@ const toggleSidebar = () => {
 
       <template v-else-if="program">
         <div class="header">
-          <h1 class="title">Composizione Programma di Allenamento - {{ program.title }}</h1>
+          <div class="input-group" style="flex: 1; min-width: 300px;">
+            <label for="program-title-input">Titolo del Programma</label>
+            <input 
+              id="program-title-input"
+              v-model="program.title" 
+              class="title" 
+              placeholder="Es. Scheda Forza Autunno"
+              style="font-size: 1.75rem; font-weight: bold; color: #1e1548; height: 54px; background: #fff;"
+            />
+          </div>
           <p class="subtitle">Stai modificando la bozza per l'atleta. Ricorda di salvare prima di uscire.</p>
         </div>
 
         <div v-for="split in program.splits" :key="split._id" class="split">
-          <div class="split-header">
-            <h2>{{ split.name }}</h2>
-            <button @click="addExercise(split)" class="secondary-button">
+          <div class="split-header" style="display: flex; gap: 1.5rem; align-items: flex-end; flex-wrap: wrap;">
+            <div class="input-group" style="flex: 1; max-width: 250px;">
+              <label>Nome Split</label>
+              <input 
+                v-model="split.name" 
+                placeholder="Es. Split A / Upper" 
+                style="font-size: 14pt; font-weight: bold; height: 40px; background: #fff; border-radius: 10px;"
+              />
+            </div>
+
+            <div class="input-group" style="flex: 1; max-width: 200px;">
+              <label>Giorno di Allenamento</label>
+              <select 
+                v-model="split.day"
+                style="font-size: 11pt; font-weight: bold; height: 40px; background: #fff; border-radius: 10px; width: 100%; cursor: pointer;"
+              >
+                <option v-for="day in dayOfTheWeek" :key="day" :value="day">
+                  {{ day }}
+                </option>
+              </select>
+            </div>
+
+            <button @click="addExercise(split)" class="secondary-button" style="height: 40px; margin-bottom: 0;">
               <i class="fa fa-plus"></i> Aggiungi esercizio
             </button>
           </div>

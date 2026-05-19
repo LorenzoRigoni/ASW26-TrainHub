@@ -27,7 +27,8 @@ const fetchData = async () => {
       const res = await axios.get('http://localhost:5000/api/training-programs/trainer-programs', config)
       programs.value = res.data.data.map(p => ({
         id: p._id,
-        title: `${p.athleteId?.name || 'Cliente'} ${p.athleteId?.surname || ''}`,
+        title: p.title || `Programma di ${p.athleteId?.name || 'Cliente'} ${p.athleteId?.surname || ''}`,
+        client: `${p.athleteId?.name || 'Cliente'} ${p.athleteId?.surname || ''}`,
         category: p.splits[0]?.name || 'N/A',
         date: new Date(p.createdAt).toLocaleDateString(),
         status: p.programStatus
@@ -83,7 +84,7 @@ const goToDetail = (id) => {
             @click="goToDetail(p.id)"
           >
             <template #subtitle>
-              {{ p.category }} - {{ p.date }}
+              {{p.client}} - {{ p.date }}
             </template>
           </MainListItem>
         </MainList>
