@@ -13,10 +13,9 @@ import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
 import ActionCard from '../components/ActionCard.vue'
 
-
-
 const sidebarOpen = ref(true)
-
+const loading = ref(false)
+const fileInput = ref(null)
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
@@ -29,21 +28,143 @@ const router = useRouter()
 const emit = defineEmits(['apri-richiesta'])
 
 const previewImage = ref(profileImage)
+const selectedFile = ref(null)
 
-const userLogged = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role'),
-  username: localStorage.getItem('user_username')
+const userFields = ref({
+  name: '',
+  surname: '',
+  username: '',
+  email: '',
+  role: ''
 })
 
+const passwordFields = ref({
+  newPassword: '',
+  confirmPassword: ''
+})
+const passLoading = ref(false)
+
+const token = localStorage.getItem('token')
+const config = { headers: { Authorization: `Bearer ${token}` } }
+
+const fetchUserData = async () => {
+  try {
+    const res = await axios.get('http://localhost:5000/api/auth/userinfo', config)
+    const user = res.data.data
+
+    userFields.value = {
+      name: user.name || '',
+      surname: user.surname || '',
+      username: user.username || '',
+      email: user.email || '',
+      role: user.role || ''
+    }
+
+    if (user.profilePicture) {
+      previewImage.value = `http://localhost:5000${user.profilePicture}`
+    }
+  } catch (error) {
+    console.error("Errore durante il caricamento dei dati utente:", error)
+  }
+}
+
+const triggerFileSelect = () => {
+  fileInput.value.click()
+}
+
+const onFileSelected = (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  selectedFile.value = file
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    previewImage.value = e.target.result
+  }
+  reader.readAsDataURL(file)
+}
+
+const saveSettings = async () => {
+  loading.value = true
+  try {
+    if (selectedFile.value) {
+      const formData = new FormData()
+      formData.append('avatar', selectedFile.value)
+
+      const imgRes = await axios.post('http://localhost:5000/api/users/upload-avatar', formData, {
+        headers: {
+          ...config.headers,
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      
+      localStorage.setItem('user_profile_picture', imgRes.data.profilePicture)
+      selectedFile.value = null
+    }
+
+    const payload = {
+      name: userFields.value.name,
+      surname: userFields.value.surname,
+      email: userFields.value.email
+    }
+
+    const textRes = await axios.put('http://localhost:5000/api/users/update', payload, config)
+    const updatedUser = textRes.data.data
+
+    localStorage.setItem('user_name', updatedUser.name)
+    localStorage.setItem('user_surname', updatedUser.surname)
+    localStorage.setItem('user_username', updatedUser.username)
+    localStorage.setItem('user_email', updatedUser.email)
+    console.log('Dati Salvati')
+  } catch (error) {
+    console.error("Errore durante il salvataggio dei dati:", error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const changePassword = async () => {
+  if (!passwordFields.value.newPassword) {
+    alert("Compila tutti i campi della password.")
+    return
+  }
+  if (passwordFields.value.newPassword !== passwordFields.value.confirmPassword) {
+    alert("La nuova password e la conferma non coincidono!")
+    return
+  }
+
+  passLoading.value = true
+  try {
+    const payload = {
+      newPassword: passwordFields.value.newPassword
+    }
+    
+    const res = await axios.put('http://localhost:5000/api/auth/update-password', payload, config)
+    
+    localStorage.setItem('token', res.data.data.token)
+
+    passwordFields.value = {
+      newPassword: '',
+      confirmPassword: ''
+    }
+  } catch (error) {
+    console.error("Errore durante il cambio password:", error)
+  } finally {
+    passLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchUserData()
+})
 </script>
 <template>
   <div id="app">
 
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu :isOpen="sidebarOpen"  :role="userLogged.role" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen"  :role="userFields.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="header">
@@ -51,9 +172,6 @@ const userLogged = ref({
            <h1>Impostazioni</h1>
           <p>Gestisci il tuo account</p>
         </div>
-        <button class="btn-primary" @click="emit('apri-richiesta', null)">
-          <i class="fa fa-pencil-square-o"></i> Salva modifiche
-        </button>
       </div>
 
       <div class= "cards">
@@ -75,17 +193,19 @@ const userLogged = ref({
               <!-- FOTO -->
               <div class="profile-photo-section">
 
-                <img :src="previewImage" class="avatar" />
+                <img :src="previewImage" class="avatar" style="cursor: pointer;" @click="triggerFileSelect" />
 
-                <button class="secondary-btn">
-                  Cambia foto
-                </button>
+                  <button class="secondary-btn" @click="triggerFileSelect">
+                    Cambia foto
+                  </button>
 
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                />
+                  <input
+                    type="file"
+                    ref="fileInput"
+                    accept="image/*"
+                    hidden
+                    @change="onFileSelected"
+                  />
               </div>
 
               <!-- FORM -->
@@ -93,25 +213,35 @@ const userLogged = ref({
 
                 <div class="form-group">
                   <label>Nome</label>
-                  <input type="text" v-model="userLogged.name" />
+                  <input type="text" v-model="userFields.name" />
                 </div>
 
                 <div class="form-group">
                   <label>Cognome</label>
-                  <input type="text" v-model="userLogged.surname" />
+                  <input type="text" v-model="userFields.surname" />
                 </div>
 
                 <div class="form-group">
                   <label>Username</label>
-                  <input type="email" v-model="userLogged.username" />
+                  <input type="email" v-model="userFields.username" />
+                </div>
+
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" v-model="userFields.email" />
                 </div>
 
                 <div class="form-group">
                   <label>Ruolo</label>
-                  <input type="text" v-model="userLogged.role" />
+                  <input type="text" v-model="userFields.role" disabled />
                 </div>
               </div>
-            </div>            
+            </div>   
+            <div class="form-actions">
+              <button class="btn-primary" @click="saveSettings">
+                <i class="fa fa-pencil-square-o"></i> Salva modifiche
+              </button>
+            </div>         
           </template>
         </ActionCard>
 
@@ -132,14 +262,19 @@ const userLogged = ref({
             <div class="form-grid">
               <div class="form-group">
                 <label>Nuova password</label>
-                <input type="password" />
+                <input type="password" v-model="passwordFields.newPassword" />
               </div>
 
               <div class="form-group">
                 <label>Conferma password</label>
-                <input type="password" />
+                <input type="password" v-model="passwordFields.confirmPassword" />
               </div>
-
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" @click="changePassword" :disabled="passLoading">
+                <i v-if="passLoading" class="fa fa-spinner fa-spin"></i>
+                {{ passLoading ? ' Aggiornamento...' : 'Aggiorna Password' }}
+              </button>
             </div>
           </template>
         </ActionCard>
@@ -214,6 +349,11 @@ h1 {
   font-size: 10pt;
 }
 
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 1.5rem;
+}
 
 .form-grid {
   display: grid;

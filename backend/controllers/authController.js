@@ -117,7 +117,7 @@ exports.login = async (req, res) => {
 exports.getUserInfo = async (req, res) => {
     try {
         const loggedUser = await User.findById(req.user.id)
-            .select('name surname role') 
+            .select('username name surname role email profilePicture') 
             .populate('assignedTrainerId', 'name surname username')
             .populate('assignedNutritionistId', 'name surname username');
 
@@ -210,12 +210,12 @@ exports.updateProfile = async (req, res) => {
  */
 exports.updatePassword = async (req, res) => {
     try {
-        const { currentPassword, newPassword } = req.body;
+        const { newPassword } = req.body;
 
-        if (!currentPassword || !newPassword) {
+        if (!newPassword) {
             return res.status(400).json({
                 success: false,
-                message: 'Please provide current and new password'
+                message: 'Please provide new password'
             });
         }
 
@@ -228,19 +228,10 @@ exports.updatePassword = async (req, res) => {
             });
         }
 
-        const isMatch = await loggedUser.matchPassword(currentPassword);
-
-        if (!isMatch) {
-            return res.status(401).json({
-                success: false,
-                message: 'Current password is incorrect'
-            });
-        }
-
         loggedUser.password = newPassword;
         await loggedUser.save();
 
-        sendTokenResponse(User, 200, res, 'Password updated successfully');
+        sendTokenResponse(loggedUser, 200, res, 'Password updated successfully');
 
     } catch (error) {
         console.error('Update password error:', error);

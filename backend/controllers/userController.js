@@ -1,6 +1,8 @@
 const User = require('../models/user');
 const TrainingProgram = require('../models/trainingProgram');
-const NutritionPlan = require('../models/nutritionPlan')
+const NutritionPlan = require('../models/nutritionPlan');
+const path = require('path');
+const fs = require('fs');
 
 exports.getMyClients = async (req, res) => {
     try {
@@ -259,5 +261,52 @@ exports.getAllNutritionists = async (req, res) => {
             message: 'Error fetching nutritionists',
             error: error.message
         });
+    }
+};
+
+exports.updateProfile = async (req, res) => {
+    try {
+        const { name, surname, email } = req.body;
+
+        const updatedFields = { name, surname, email };
+
+        const user = await User.findByIdAndUpdate(req.user.id, updatedFields, {
+            new: true,
+            runValidators: true
+        }).select('-password');
+
+        res.status(200).json({
+            success: true,
+            data: user
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.uploadAvatar = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Nessun file caricato o formato non valido.' });
+        }
+
+        const user = await User.findById(req.user.id);
+
+        if (user.profilePicture) {
+            const oldPath = path.join(__dirname, '..', user.profilePicture);
+            if (fs.existsSync(oldPath)) {
+                fs.unlinkSync(oldPath);
+            }
+        }
+
+        user.profilePicture = `/uploads/avatars/${req.file.filename}`;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            profilePicture: user.profilePicture
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 };

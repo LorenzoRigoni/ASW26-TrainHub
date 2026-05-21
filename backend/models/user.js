@@ -34,6 +34,16 @@ const userSchema = new mongoose.Schema({
         required: [true, 'Please provide a surname']
     },
 
+    email: {
+        type: String,
+        trim: true
+    },
+
+    profilePicture: {
+        type: String,
+        default: null
+    },
+
     dateOfBirth: {
         type: Date,
         default: null

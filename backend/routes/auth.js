@@ -160,7 +160,7 @@ router.put('/updateprofile', protect, updateProfile);
  */
 /**
  * @swagger
- * /api/auth/updatepassword:
+ * /api/auth/update-password:
  *   put:
  *     summary: Update password
  *     tags: [Auth]
@@ -184,7 +184,7 @@ router.put('/updateprofile', protect, updateProfile);
  *       200:
  *         description: Password updated
  */
-router.put('/updatepassword', protect, updatePassword);
+router.put('/update-password', protect, updatePassword);
 
 /**
  * @route   POST /api/auth/logout

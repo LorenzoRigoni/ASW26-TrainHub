@@ -24,6 +24,7 @@ const login = async () => {
       localStorage.setItem('user_surname', response.data.data.surname)
       localStorage.setItem('user_role', response.data.data.role)
       localStorage.setItem('user_username', response.data.data.username)
+      localStorage.setItem('user_email', response.data.data.email)
       router.push('/home')
     }
   } catch (err) {

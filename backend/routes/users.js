@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
+const upload = require('../middleware/upload');
 const {
   getMyClients,
   getTrainerStats,
@@ -10,7 +11,9 @@ const {
   assignNutritionistToAthlete,
   getAllTrainers,
   getAllNutritionists,
-  getNutritionistAthletes
+  getNutritionistAthletes,
+  updateProfile,
+  uploadAvatar
 } = require('../controllers/userController');
 
 //Routes for trainer
@@ -145,5 +148,10 @@ router.get('/nutritionists', getAllNutritionists);
  * @access Private (trainer and nutritionist)
  */
 //router.get('/athlete/:athleteId', protect, authorize('trainer', 'nutritionist'), getAthleteDetail);
+
+router.put('/update', protect, updateProfile);
+
+// Rotta per la foto profilo (usa lo stesso nome del campo del frontend: 'avatar')
+router.post('/upload-avatar', protect, upload.single('avatar'), uploadAvatar);
 
 module.exports = router;
