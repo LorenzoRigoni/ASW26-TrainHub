@@ -84,7 +84,7 @@ export const getStatusData = (dueDate) => {
   }
 }
 
-//TODO: riutilizzare in scadenze page
+
 export const formatPrograms = (programs) => {
   return programs.map((p) => {
     const dateToUse = p.dueDate || p.createdAt;

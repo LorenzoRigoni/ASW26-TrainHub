@@ -14,6 +14,7 @@ import NotifichePage from '../pages/Notifiche.vue'
 import ImpostazioniPage from '../pages/Impostazioni.vue'
 import BozzaProgrammaPage from '../pages/BozzaProgramma.vue'
 import ListaBozzePage from '../pages/ListaBozze.vue'
+import DettaglioRichiestaNutrizionePage from '../pages/DettaglioRichiestaNutrizionale.vue'
 
 
 const routes = [
@@ -25,7 +26,7 @@ const routes = [
   { path: '/scadenze', component: ScadenzePage },
 
   { path: '/clienti', component: ClientiPage },
-  { path: '/clienti/dettaglio-cliente', component: DiarioPage },
+  { path: '/clienti/dettaglio-cliente/:id', component: DiarioPage },
 
   { path: '/programmi', component: ListaProgrammi },
   { path: '/programmi/dettaglio-programma/:id', component: DettaglioProgrammaPage },
@@ -34,7 +35,10 @@ const routes = [
   { path: '/bozze/dettaglio-bozza/:id', component: BozzaProgrammaPage },
 
   { path: '/esercizi', component: EserciziPage },
+
   { path: '/richieste-nutrizione', component: ListaRichiesteNutrizionePage },
+  { path: '/richieste-nutrizione/dettaglio-richiesta', component: DettaglioRichiestaNutrizionePage },
+
   { path: '/piani-alimentari', component: ListaPianiAlimentariPage }
   
 
