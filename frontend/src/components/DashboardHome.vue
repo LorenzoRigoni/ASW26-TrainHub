@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { getInitials, getAvatarColor, ROLES } from '../utils/utils'
+import { useRouter } from 'vue-router'
 
 import StatCard   from './StaticCard.vue'
 import ActionCard from './ActionCard.vue'
@@ -8,68 +9,22 @@ import PanelList  from './HomePanelList.vue'
 import ListItem   from './HomeListItem.vue'
 
 
+const router = useRouter()
+
 //TODO: valutare se sostituire v-if/else... con v-show, sa W3c sembra sia consigliato usare v-show se possibile (migliora prestazioni e UX)
 const props = defineProps({
-  user: {
-    type: Object,
-  },
-
-  stats: {
-    type: Object,
-    default: () => ({ clientiAttivi: 0, schedeCreate: 0, richiesteNutriz: 0, inAttesa: 0 })
-  },
-
-  clienti: {
-    type: Array,
-    default: () => [
-      { id: 1, name: 'Lorenzo',    surname: 'Rigoni', status: 'Attivo' },
-      { id: 2, name: 'Alessandro', surname: 'Fabbri', status: 'Attivo' }
-    ]
-  },
-  schede: {
-    type: Array,
-    default: () => [
-      { id: 1, title: 'Lorenzo Rigoni - Piano 1', category: 'Ipertrofia', status: 'Assegnata' }
-    ]
-  },
-  
+  user: { type: Object, default: null },
+  stats: { type: Object , default: null},
+  clienti: { type: Array, default: null },
+  schede: {  type: Array, default: null },
   misurazionOggi:    { type: Object, default: null },
-  ultimoAllenamento: { type: Object, default: () => ({ data: '2025-04-28' }) },
-  schedeCliente: {
-    type: Array,
-    default: () => [{ id: 1, title: 'Piano Forza - Settimana 3', category: 'Forza', status: 'Attiva' }]
-  },
-  pianiNutrizionali: {
-    type: Array,
-    default: () => [{ id: 1, title: 'Piano Alimentare Aprile', fileName: 'piano_aprile.pdf' }]
-  },
-  
-  statsNutrizionista: {
-    type: Object,
-    default: () => ({ clientiAttivi: 5, richiesteInAttesa: 3, ptCollaboratori: 2 })
-  },
-  richiesteNutrizionista: {
-    type: Array,
-    default: () => [
-      { id: 1, cliente: 'Marco Bianchi', tipo: 'Nuovo piano alimentare', data: '2025-05-01' },
-      { id: 2, cliente: 'Sara Verdi',    tipo: 'Aggiornamento piano',    data: '2025-05-02' }
-    ]
-  },
-  clientiNutrizionista: {
-    type: Array,
-    default: () => [
-      { id: 1, name: 'Marco', surname: 'Bianchi', email: 'marco.bianchi@gmail.com', status: 'Attivo' },
-      { id: 2, name: 'Sara',  surname: 'Verdi',   email: 'sara.verdi@gmail.com',    status: 'Attivo' }
-    ]
-  }
+  ultimoAllenamento: { type: Object, default: null },
+  schedeCliente: { type: Array, default: null },
+  pianiNutrizionali: { type: Array, default: null },
+  statsNutrizionista: { type: Object, default: null},
+  richiesteNutrizionista: { type: Array, default: null },
+  clientiNutrizionista: { type: Array, default: null }
 })
-
-const emit = defineEmits([
-  'nuova-scheda', 'vedi-clienti', 'vedi-schede', 'apri-cliente', 'apri-scheda',
-  'aggiungi-misurazioni', 'inizia-allenamento', 'apri-scheda-cliente', 'apri-piano-nutrizionale',
-  'apri-richiesta', 'apri-cliente-nutrizionista'
-])
-
 
 const greeting = computed(() => {
   const h = new Date().getHours()
@@ -77,7 +32,6 @@ const greeting = computed(() => {
   if (h < 18) return 'Buon pomeriggio'
   return 'Buonasera'
 })
-
 
 const giorniDaUltimo = computed(() => {
   if (!props.ultimoAllenamento?.data) return null
@@ -90,38 +44,55 @@ const statCardsPT = computed(() => [
   { label: 'Richieste Nutriz.', value: props.stats.richiesteNutriz, icon: 'fa fa-apple',   color: '#e05c9a', bg: 'rgba(224,92,154,0.12)' },
   { label: 'In Attesa',         value: props.stats.inAttesa,        icon: 'fa fa-clock-o', color: '#f5a623', bg: 'rgba(245,166,35,0.12)' }
 ])
+
 const statCardsNutri = computed(() => [
   { label: 'Clienti Attivi',   value: props.statsNutrizionista.clientiAttivi,     icon: 'fa fa-users',       color: '#4a90d9', bg: 'rgba(74,144,217,0.12)' },
   { label: 'Richieste',        value: props.statsNutrizionista.richiesteInAttesa, icon: 'fa fa-inbox',       color: '#e05c9a', bg: 'rgba(224,92,154,0.12)' },
   { label: 'PT Collaboratori', value: props.statsNutrizionista.ptCollaboratori,   icon: 'fa fa-handshake-o', color: '#40916c', bg: 'rgba(64,145,108,0.12)' }
 ])
+
+
+const goToCustomerDetail = (id) => {
+  router.push(`/clienti/dettaglio-cliente/${id}`)
+}
+
+const goToProgramDetail = (id) => {
+  router.push(`/programmi/dettaglio-programma/${id}`)
+}
+
+const goToCustomersList = () => {
+  router.push(`/clienti`)
+}
+
+const goToProgramsList = () => {
+  router.push(`/programmi`)
+}
+
+//TODO: trasformare modal in pagine principali 
+const goToNutritionPlanRequestDetail = (id) => {
+  router.push(`/programmi`)
+}
+
+const goToNutritionPlanDetail = (id) => {
+  router.push(`/programmi`)
+}
 </script>
 
 <template>
   <div class="dashboard-home">
-
-    <!--HEADER -->
     <div class="dashboard-header">
       <div>
         <h1 class="welcome-title">{{ greeting }}, {{ user.name }}</h1>
         <p class="welcome-sub">Ecco il riepilogo della tua attività</p>
       </div>
-      <button v-if="user.role === ROLES.PERSONAL_TRAINER" class="btn-primary" @click="emit('nuova-scheda')">
-        <i class="fa fa-plus"></i> Nuova Scheda
-      </button>
-      <button v-else-if="user.role === ROLES.CLIENTE" class="btn-primary" @click="emit('inizia-allenamento')">
+      <!-- TODO: Al click sul pulsante si deve aprire la scheda attualmente ATTIVA-->
+      <button v-if="user.role === ROLES.CLIENTE" class="btn-primary" @click=""> 
         <i class="fa fa-play"></i> Inizia Allenamento
-      </button>
-      <button v-else-if="user.role === ROLES.NUTRIZIONISTA" class="btn-primary" @click="emit('apri-richiesta', null)">
-        <i class="fa fa-file-text-o"></i> Nuova Richiesta
       </button>
     </div>
 
-
-
     <!-- PERSONAL TRAINER -->
     <template v-if="user.role === ROLES.PERSONAL_TRAINER">
-
       <div class="stats-grid">
         <StatCard
           v-for="card in statCardsPT" :key="card.label"
@@ -137,13 +108,13 @@ const statCardsNutri = computed(() => [
           :is-empty="clienti.length === 0"
           empty-icon="fa fa-users"
           empty-text="Nessun cliente ancora"
-          @link-click="emit('vedi-clienti')"
+          @link-click="goToCustomersList"
         >
           <ListItem
             v-for="c in clienti" :key="c.id"
             :title="`${c.name} ${c.surname}`"
             :subtitle="c.email"
-            @click="emit('apri-cliente', c.id)"
+            @click="goToCustomerDetail(c.id)"
           >
             <template #left>
               <div class="avatar" :style="{ background: getAvatarColor(c.name) }">
@@ -164,13 +135,13 @@ const statCardsNutri = computed(() => [
           :is-empty="schede.length === 0"
           empty-icon="fa fa-file-text-o"
           empty-text="Nessuna scheda ancora"
-          @link-click="emit('vedi-schede')"
+          @link-click="goToProgramsList"
         >
           <ListItem
             v-for="s in schede" :key="s.id"
             :title="s.title"
             :subtitle="`${s.category} · ${s.status}`"
-            @click="emit('apri-scheda', s.id)"
+            @click="goToProgramDetail(s.id)"
           >
             <template #left>
               <div class="icon-wrap"><i class="fa fa-list" style="color:#1e1548"></i></div>
@@ -206,7 +177,7 @@ const statCardsNutri = computed(() => [
         <ActionCard
           icon="fa fa-play" icon-color="#7c6af7" icon-bg="rgba(124,106,247,0.15)"
           :highlight="true"
-          @click="emit('inizia-allenamento')"
+          @click=""
         >
           <p class="card-label">Allenamento di oggi</p>
           <p class="card-cta" style="color:#7c6af7">Inizia allenamento</p>
@@ -236,13 +207,13 @@ const statCardsNutri = computed(() => [
           :is-empty="schedeCliente.length === 0"
           empty-icon="fa fa-list"
           empty-text="Nessuna scheda assegnata"
-          @link-click="emit('vedi-schede')"
+          @link-click="goToProgramsList"
         >
           <ListItem
             v-for="s in schedeCliente" :key="s.id"
             :title="s.title"
             :subtitle="`${s.category} · ${s.status}`"
-            @click="emit('apri-scheda-cliente', s.id)"
+            @click="goToProgramDetail(s.id)"
           >
             <template #left>
               <div class="icon-wrap"><i class="fa fa-list" style="color:#1e1548"></i></div>
@@ -263,7 +234,7 @@ const statCardsNutri = computed(() => [
             v-for="p in pianiNutrizionali" :key="p.id"
             :title="p.titolo"
             :subtitle="p.fileName"
-            @click="emit('apri-piano-nutrizionale', p.id)"
+            @click="goToNutritionPlanDetail(p.id)"
           >
             <template #left>
               <div class="icon-wrap" style="background:rgba(224,92,154,0.1)">
@@ -302,7 +273,7 @@ const statCardsNutri = computed(() => [
             v-for="r in richiesteNutrizionista" :key="r.id"
             :title="r.cliente"
             :subtitle="`${r.tipo} · ${r.data}`"
-            @click="emit('apri-richiesta', r.id)"
+            @click="goToNutritionPlanRequestDetail(r.id)"
           >
             <template #left>
               <div class="icon-wrap" style="background:rgba(224,92,154,0.1)">
@@ -321,13 +292,13 @@ const statCardsNutri = computed(() => [
           :is-empty="clientiNutrizionista.length === 0"
           empty-icon="fa fa-users"
           empty-text="Nessun cliente ancora"
-          @link-click="emit('apri-cliente-nutrizionista', null)"
+          @link-click="goToCustomersList"
         >
           <ListItem
             v-for="c in clientiNutrizionista" :key="c.id"
             :title="`${c.name} ${c.surname}`"
             :subtitle="c.email"
-            @click="emit('apri-cliente-nutrizionista', c.id)"
+            @click="goToCustomerDetail(c.id)"
           >
             <template #left>
               <div class="avatar" :style="{ background: getAvatarColor(c.name) }">

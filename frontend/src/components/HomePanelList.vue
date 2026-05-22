@@ -1,12 +1,10 @@
 <script setup>
-// Pannello con header (titolo + link opzionale) e lista di ListItem nello slot.
 defineProps({
   title:     { type: String,  required: true },
-  linkLabel: { type: String,  default: '' },    // es. 'Vedi tutti' — se vuoto il link non appare
+  linkLabel: { type: String,  default: '' },   
   isEmpty:   { type: Boolean, default: false },
   emptyIcon: { type: String,  default: 'fa fa-list' },
   emptyText: { type: String,  default: 'Nessun elemento' },
-  // Badge opzionale nell'header (es. "3 nuove" per le richieste nutrizionista)
   badge:     { type: String,  default: '' },
 })
 
@@ -15,7 +13,6 @@ const emit = defineEmits(['link-click'])
 
 <template>
   <div class="panel">
-
     <div class="panel-header">
       <h2 class="panel-title">{{ title }}</h2>
 
