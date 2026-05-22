@@ -14,6 +14,9 @@ const sidebarOpen = ref(true)
 const selectedPattern = ref('')
 const showModal = ref(false)
 
+const isEditing = ref(false)
+const currentExerciseId = ref(null)
+
 const newExercise = ref({
   name: '',
   movementPattern: '',
@@ -33,6 +36,14 @@ const userLogged = {
   role: localStorage.getItem('user_role')
 }
 
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
+}
+
+const handleFileChange = (e) => {
+  newExercise.value.image = e.target.files[0]
+}
+
 const fetchData = async () => {
   loading.value = true
   try {
@@ -43,52 +54,86 @@ const fetchData = async () => {
       params
     })
     exercises.value = res.data.data
-  } catch (error) {
-    console.error("Errore:", error)
+  } catch (err) {
+    console.error("Errore nel caricamento esercizi:", err)
   } finally {
     loading.value = false
   }
 }
 
-// If the filter change, reload
-watch(selectedPattern, fetchData)
-
-onMounted(fetchData)
-
-const handleFileUpload = (event) => {
-  newExercise.value.image = event.target.files[0]
+const openCreateModal = () => {
+  isEditing.value = false
+  currentExerciseId.value = null
+  newExercise.value = { 
+    name: '', 
+    movementPattern: '', 
+    description: '', 
+    image: null 
+  }
+  showModal.value = true
 }
 
-const saveExercise = async () => {
+const openEditModal = (exercise) => {
+  isEditing.value = true
+  currentExerciseId.value = exercise._id
+  newExercise.value = {
+    name: exercise.name,
+    movementPattern: exercise.movementPattern,
+    description: exercise.description || '',
+    image: null
+  }
+  showModal.value = true
+}
+
+const handleSubmit = async () => {
   try {
     const token = localStorage.getItem('token')
     const formData = new FormData()
     formData.append('name', newExercise.value.name)
     formData.append('movementPattern', newExercise.value.movementPattern)
     formData.append('description', newExercise.value.description)
+    
     if (newExercise.value.image) {
       formData.append('image', newExercise.value.image)
     }
 
-    await axios.post('http://localhost:5000/api/exercises', formData, {
-      headers: { 
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data' 
-      }
-    })
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data'
+    }
+
+    if (isEditing.value) {
+      await axios.put(`http://localhost:5000/api/exercises/${currentExerciseId.value}`, formData, { headers })
+    } else {
+      await axios.post('http://localhost:5000/api/exercises', formData, { headers })
+    }
 
     showModal.value = false
-    newExercise.value = { name: '', movementPattern: '', description: '', image: null }
     fetchData()
-  } catch (error) {
-    alert("Errore durante il salvataggio: " + (error.response?.data?.message || error.message))
+  } catch (err) {
+    console.log(err.response?.data?.message || "Si è verificato un errore")
   }
 }
 
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
+const handleDelete = async (id) => {
+  try {
+    const token = localStorage.getItem('token')
+    await axios.delete(`http://localhost:5000/api/exercises/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    fetchData()
+  } catch (err) {
+    console.log(err.response?.data?.message || "Impossibile eliminare l'esercizio")
+  }
 }
 
+watch(selectedPattern, () => {
+  fetchData()
+})
+
+onMounted(() => {
+  fetchData()
+})
 </script>
 
 <template>
@@ -110,7 +155,7 @@ const toggleSidebar = () => {
               <option v-for="p in patterns" :key="p" :value="p">{{ p }}</option>
             </select>
             
-            <button v-if="userLogged.role === 'trainer'" @click="showModal = true" class="btn-add">
+            <button v-if="userLogged.role === 'trainer'" class="btn-add" @click="openCreateModal">
               <i class="fa fa-plus"></i> Nuovo Esercizio
             </button>
           </div>
@@ -124,24 +169,39 @@ const toggleSidebar = () => {
             :key="e._id"
             :title="e.name"
             :status="e.movementPattern"
+            :description="e.description || 'Nessuna descrizione presente.'"
+            :image="e.image ? `http://localhost:5000${e.image}` : null"
           >
             <template #subtitle>
-              <div class="exercise-row">
-                <div class="image-container">
-                  <img 
-                    v-if="e.image" 
-                    :src="`http://localhost:5000${e.image}`" 
-                    class="exercise-img"
-                    @error="(el) => el.target.src = 'https://placehold.co/60)x60?text=Error'"
-                  />
-                  <div v-else class="icon-placeholder">
-                    <i class="fa fa-dumbbell"></i>
+              <div class="exercise-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                
+                <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                  <div class="image-container">
+                    <img 
+                      v-if="e.image" 
+                      :src="`http://localhost:5000${e.image}`" 
+                      class="exercise-img"
+                      @error="(el) => el.target.src = 'https://placehold.co/60x60?text=Error'"
+                    />
+                    <div v-else class="icon-placeholder">
+                      <i class="fa fa-dumbbell"></i>
+                    </div>
+                  </div>
+
+                  <div class="text-container">
+                    {{ e.description || 'Nessuna descrizione disponibile per questo esercizio.' }}
                   </div>
                 </div>
 
-                <div class="text-container">
-                  {{ e.description || 'Nessuna descrizione disponibile per questo esercizio.' }}
+                <div v-if="userLogged.role === 'trainer'" class="exercise-actions" style="display: flex; gap: 0.5rem; flex-shrink: 0; margin-left: 1rem;">
+                  <button class="btn-action edit" @click.stop="openEditModal(e)" title="Modifica">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                  <button class="btn-action delete" @click.stop="handleDelete(e._id)" title="Elimina">
+                    <i class="fa fa-trash"></i>
+                  </button>
                 </div>
+
               </div>
             </template>
           </MainListItem>
@@ -149,10 +209,10 @@ const toggleSidebar = () => {
       </div>
     </main>
 
-    <div v-if="showModal" class="modal-overlay">
+    <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
       <div class="modal-content">
-        <h2>Crea Nuovo Esercizio</h2>
-        <form @submit.prevent="saveExercise">
+        <h2>{{ isEditing ? 'Modifica Esercizio' : 'Aggiungi Nuovo Esercizio' }}</h2>
+        <form @submit.prevent="handleSubmit">
           <div class="form-group">
             <label>Nome Esercizio*</label>
             <input v-model="newExercise.name" required type="text" placeholder="Es: Panca Piana">
@@ -340,6 +400,37 @@ const toggleSidebar = () => {
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 1.5rem;
+}
+
+.btn-action {
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.btn-action.edit {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.btn-action.edit:hover {
+  background-color: #dbeafe;
+}
+
+.btn-action.delete {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.btn-action.delete:hover {
+  background-color: #fee2e2;
 }
 
 .btn-cancel { background: #eee; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; }
