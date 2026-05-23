@@ -2,12 +2,15 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { ROLES } from '../utils/utils.js'
+import { useRouter } from 'vue-router'
+
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
 import Footer from '../components/Footer.vue'
 
+const router = useRouter()
 
 const sidebarOpen = ref(true)
 
@@ -47,7 +50,7 @@ const fetchNutritionists = async () => {
 }
 
 onMounted(async () => {
-  if (userData.role === ROLES.PERSONAL_TRAINER) {
+  if (userLogged.value.role === ROLES.PERSONAL_TRAINER) {
     fetchClients()
   }
   fetchNutritionists()
@@ -156,11 +159,7 @@ const saveRequest = async () => {
 
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu
-      :isOpen="sidebarOpen"
-      :role="userLogged.role"
-      @close="sidebarOpen = false"
-    />
+    <SideMenu :isOpen="sidebarOpen"  :role="userLogged.role"  @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <!-- HEADER -->
@@ -169,13 +168,13 @@ const saveRequest = async () => {
           <h1>Richieste piani alimentari</h1>
           <p>Richiedi al team nutrition piani alimentari per i tuoi clienti</p>
         </div>
-        <button class="btn-primary" @click="openModal" v-if="userLogged.role === ROLES.PERSONAL_TRAINER">
+        <button class="btn-primary" @click="router.push('/richieste-nutrizione/nuova-richiesta')" v-if="userLogged.role === ROLES.PERSONAL_TRAINER">
           <i class="fa fa-plus"></i>
           Crea richiesta
         </button>
       </div>
 
-      <!-- LISTA -->
+      <!-- LISTA-->
       <MainList>
         <ListItem
           v-for="request in nutritionRequests"
@@ -183,7 +182,7 @@ const saveRequest = async () => {
           :title="request.title"
           :status="request.status"
           icon="fa fa-file-pdf-o"
-          @click="openModalCompiled(request)"
+          @click="router.push(`/richieste-nutrizione/dettaglio-richiesta/${request._id}`)"
         >
 
           <template #subtitle>
@@ -217,76 +216,6 @@ const saveRequest = async () => {
            <p>Nessuna richiesta trovata.</p>
       </div>
     </main>
-
-    <!-- MODAL -->
-    <div v-if="showModal" class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header">
-          <h2>{{ isEditMode ? 'Modifica richiesta' : 'Richiedi piano alimentare' }}</h2>
-        </div>
-
-        <!-- TITOLO -->
-        <div class="form-row">
-          <label>Titolo</label>
-          <input type="text" placeholder="Nome piano" v-model="form.title"/>
-        </div>
-
-        <!-- CLIENTE -->
-        <div class="form-row">
-            <label>Cliente</label>
-            <select v-model="form.clientId" :disabled="isEditMode">
-                <option value="" disabled>Seleziona cliente</option>
-                <option v-for="c in clients" :key="c.id" :value="c.id">
-                  {{ c.name }} {{ c.surname }}
-                </option>
-            </select>
-        </div>
-
-        <div class="form-row">
-            <label>Obiettivo</label>
-            <select v-model="form.goal">
-                <option value="" disabled>Seleziona obiettivo</option>
-                <option value="Definizione">Definizione</option>
-                <option value="Mantenimento">Mantenimento</option>
-                <option value="Massa">Massa</option>
-            </select>
-        </div>
-
-         <!-- NUTRIZIONISTA -->
-        <div class="form-row">
-            <label>Nutrizionista</label>
-            <select v-model="form.nutritionistId">
-                <option value="" disabled>Seleziona nutrizionista</option>
-                <option v-for="n in nutritionists" :key="n._id" :value="n._id">
-                   {{ n.name }} {{ n.surname }}
-                </option>
-            </select>
-        </div>
-
-        <!-- DATE -->
-        <div class="form-row">
-          <label>Data inizio</label>
-          <input type="date" v-model="form.startDate"/>
-        </div>
-
-        <div class="form-row">
-          <label>Data fine</label>
-          <input type="date" v-model="form.endDate" />
-        </div>
-        
-        <div class="form-row">
-          <label>Note</label>
-          <textarea v-model="form.notes" placeholder="Note aggiuntive..." style="flex: 1; border: 1px solid #d8dcf0; border-radius: 12px; padding: 10px 14px; font-size: 0.95rem; min-height: 80px;"></textarea>
-        </div>
-
-        <!-- ACTIONS -->
-        <div class="modal-actions">
-          <button class="btn-danger" @click="closeModal">Annulla</button>
-          <button class="btn-primary" @click="saveRequest">{{ isEditMode ? 'Salva' : 'Invia' }}</button>
-        </div>
-      </div>
-    </div>
-    <Footer />
   </div>
 </template>
 

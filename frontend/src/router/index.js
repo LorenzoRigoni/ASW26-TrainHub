@@ -37,7 +37,8 @@ const routes = [
   { path: '/esercizi', component: EserciziPage },
 
   { path: '/richieste-nutrizione', component: ListaRichiesteNutrizionePage },
-  { path: '/richieste-nutrizione/dettaglio-richiesta', component: DettaglioRichiestaNutrizionePage },
+  { path: '/richieste-nutrizione/nuova-richiesta', component: DettaglioRichiestaNutrizionePage },
+  { path: '/richieste-nutrizione/dettaglio-richiesta/:id?', component: DettaglioRichiestaNutrizionePage },
 
   { path: '/piani-alimentari', component: ListaPianiAlimentariPage }
   
