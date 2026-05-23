@@ -7,7 +7,7 @@ import axios from 'axios'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
-import WorkoutProgram from '../components/WorkoutProgram.vue'
+import SplitListItem from '../components/SplitListItem.vue'
 
 const route = useRoute()
 const userLogged = ref({ 
@@ -80,7 +80,19 @@ const toggleSidebar = () => {
                     </span>
                 </div>
                 
-                <WorkoutProgram :program="program" />
+                <div class="program-container">
+                  <div v-for="(split, i) in program.splits" :key="split._id || i" class="program">
+                    <h2 class="split-title">{{ split.name }} - {{ split.day }}</h2>
+                    
+                    <ul class="exercise-list">
+                      <SplitListItem
+                        v-for="(ex, j) in split.exercises"
+                        :key="j"
+                        v-bind="ex"
+                      />
+                    </ul>
+                  </div>
+                </div>
             </template>
 
             <div v-else class="error-state">
@@ -93,40 +105,124 @@ const toggleSidebar = () => {
 </template>
 
 <style scoped>
-.header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.program-title { 
-  font-size: 1.75rem; 
-  font-weight: bold; 
-  color: #1e1548; 
-  margin: 0 0 0.25rem; 
-}
-
 .main-content {
-  margin-top: 60px;      
-  margin-left: 0;
-  padding-bottom: 50px;   
-  transition: margin-left 0.3s ease;
+  margin-top: 60px;
+  padding: 24px;
+  padding-bottom: 60px;
+
   min-height: calc(100vh - 60px);
+  background: #f4f6f9;
+
+  transition: margin-left 0.3s ease;
   overflow-x: hidden;
 }
 
+/* sidebar desktop */
 @media (min-width: 769px) {
   .main-content.sidebar-open {
     margin-left: 280px;
   }
 }
 
-/*Sidebar in mobile*/
+/* mobile safety */
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0 !important;
+    padding: 16px;
   }
+}
+
+
+.header-dettaglio {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+h1 {
+  font-size: 24pt; 
+  font-weight: bold; 
+  color: #1e1548; 
+  margin: 0 0 0.25rem; 
+}
+
+.badge-status {
+  padding: 6px 12px;
+  border-radius: 999px;
+
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.badge-status.active {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.badge-status.draft {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.badge-status.completed {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.loader-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+  padding: 40px;
+
+  font-size: 1rem;
+  color: #555;
+}
+
+.error-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 40px;
+  color: #b00020;
+  font-weight: 500;
+}
+
+
+.program {
+  background-color: #ffffff;
+  padding: 20pt;
+  border-radius: 20pt;
+}
+
+.program-container {
+  padding: 1rem 0; 
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.split-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.exercise-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 </style>
