@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ROLES } from '../utils/utils.js'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter} from 'vue-router'
 import axios from 'axios'
 
 import Footer from '../components/Footer.vue'
@@ -10,6 +10,7 @@ import SideMenu from '../components/SideMenu.vue'
 import SplitListItem from '../components/SplitListItem.vue'
 
 const route = useRoute()
+const router = useRouter()
 const userLogged = ref({ 
   name: localStorage.getItem('user_name'), 
   surname: localStorage.getItem('user_surname'), 
@@ -60,6 +61,10 @@ onMounted(fetchData)
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
+
+const goToSplit = (split) => {
+  router.push('/programmi/dettaglio-programma/:id/dettaglio-split/${split.id}')
+}
 </script>
 
 <template>
@@ -89,6 +94,7 @@ const toggleSidebar = () => {
                         v-for="(ex, j) in split.exercises"
                         :key="j"
                         v-bind="ex"
+                        @click="goToSplit(split)"
                       />
                     </ul>
                   </div>
@@ -202,6 +208,13 @@ h1 {
   background-color: #ffffff;
   padding: 20pt;
   border-radius: 20pt;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.program:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
 
 .program-container {

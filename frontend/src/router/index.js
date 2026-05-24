@@ -15,6 +15,7 @@ import ImpostazioniPage from '../pages/Impostazioni.vue'
 import BozzaProgrammaPage from '../pages/BozzaProgramma.vue'
 import ListaBozzePage from '../pages/ListaBozze.vue'
 import DettaglioRichiestaNutrizionePage from '../pages/DettaglioRichiestaNutrizionale.vue'
+import DettaglioSplitPage from '../pages/DettaglioSplit.vue'
 
 
 const routes = [
@@ -30,6 +31,7 @@ const routes = [
 
   { path: '/programmi', component: ListaProgrammi },
   { path: '/programmi/dettaglio-programma/:id', component: DettaglioProgrammaPage },
+  { path: '/programmi/dettaglio-programma/:id/dettaglio-split/:id', component: DettaglioSplitPage },
 
   { path: '/bozze', component: ListaBozzePage },
   { path: '/bozze/dettaglio-bozza/:id', component: BozzaProgrammaPage },
