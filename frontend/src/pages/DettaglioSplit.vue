@@ -21,7 +21,6 @@ onMounted(() => {
 const isClient = computed(() => userLogged.value.role === 'client')
 const isTrainer = computed(() => userLogged.value.role === 'trainer')
 
-/**************** */
 
 const loading = ref(false)
 const todayDate = computed(() =>
@@ -37,6 +36,9 @@ const userLogged = ref({
   surname: 'Versari', 
   role: 'trainer' 
 })
+
+/**************** */
+
 
 const router = useRouter()
 const exerciseLogs = ref({

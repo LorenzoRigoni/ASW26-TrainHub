@@ -146,7 +146,7 @@ onMounted(() => {
         <div class="header-container">
           <div class="header-text">
             <h1 class="title">Esercizi</h1>
-            <p class="subtitle">Database degli esercizi utilizzabili nei programmi.</p>
+            <p class="subtitle">Elenco degli esercizi utilizzabili nei programmi.</p>
           </div>
           
           <div class="actions">
@@ -173,13 +173,13 @@ onMounted(() => {
             :image="e.image ? `http://localhost:5000${e.image}` : null"
           >
             <template #subtitle>
-              <div class="exercise-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                
-                <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+              <div class="exercise-row">
+
+                <div class="exercise-content">
                   <div class="image-container">
-                    <img 
-                      v-if="e.image" 
-                      :src="`http://localhost:5000${e.image}`" 
+                    <img
+                      v-if="e.image"
+                      :src="`http://localhost:5000${e.image}`"
                       class="exercise-img"
                       @error="(el) => el.target.src = 'https://placehold.co/60x60?text=Error'"
                     />
@@ -188,18 +188,32 @@ onMounted(() => {
                     </div>
                   </div>
 
-                  <div class="text-container">
-                    {{ e.description || 'Nessuna descrizione disponibile per questo esercizio.' }}
-                  </div>
-                </div>
+                  <div class="exercise-info">
+                    <div class="text-container">
+                      {{ e.description || 'Nessuna descrizione disponibile per questo esercizio.' }}
+                    </div>
 
-                <div v-if="userLogged.role === 'trainer'" class="exercise-actions" style="display: flex; gap: 0.5rem; flex-shrink: 0; margin-left: 1rem;">
-                  <button class="btn-action edit" @click.stop="openEditModal(e)" title="Modifica">
-                    <i class="fa fa-edit"></i>
-                  </button>
-                  <button class="btn-action delete" @click.stop="handleDelete(e._id)" title="Elimina">
-                    <i class="fa fa-trash"></i>
-                  </button>
+                    <div
+                      v-if="userLogged.role === 'trainer'"
+                      class="exercise-actions"
+                    >
+                      <button
+                        class="btn-action edit"
+                        @click.stop="openEditModal(e)"
+                        title="Modifica"
+                      >
+                        <i class="fa fa-edit"></i>
+                      </button>
+
+                      <button
+                        class="btn-action delete"
+                        @click.stop="handleDelete(e._id)"
+                        title="Elimina"
+                      >
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
               </div>
@@ -243,8 +257,6 @@ onMounted(() => {
         </form>
       </div>
     </div>
-
-    <Footer />
   </div>
 </template>
 
@@ -253,7 +265,6 @@ onMounted(() => {
   padding: 2rem 2.5rem 5rem;
   min-height: 100vh;
   background-color: #f4f6f9;
-  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .subtitle   { 
@@ -298,6 +309,20 @@ onMounted(() => {
   align-items: flex-start;
   gap: 1.5rem;
   margin-top: 12px;
+  width: 100%;
+}
+
+.exercise-content {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.exercise-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .image-container {
@@ -321,11 +346,16 @@ onMounted(() => {
 }
 
 .text-container {
-  flex: 1;
-  font-size: 0.85rem;
+  font-size: 10pt;
   color: #4b5563;
   line-height: 1.5;
   text-transform: uppercase;
+}
+
+.exercise-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 .header-container {
@@ -337,17 +367,13 @@ onMounted(() => {
   gap: 1rem;
 }
 
-.actions {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
 .filter-select {
   padding: 0.6rem;
   border-radius: 8px;
   border: 1px solid #d1d5db;
   outline: none;
+  font-family: 'Century Gothic', 'Century Gothic', Futura, sans-serif;
+  margin-right: 5pt;
 }
 
 .btn-add {
