@@ -14,7 +14,7 @@ const userLogged = ref({
   role: localStorage.getItem('user_role') 
 })
 const customersList = ref([])
-const stats = ref({ clientiAttivi: 0, schedeCreate: 0, richiesteNutriz: 0, inAttesa: 0 })
+const stats = ref({ activeClientsCount: 0, totalPrograms: 0, activeNutritionalPlans: 0, pendingPrograms: 0 })
 const programsList = ref([])
 const recentNotifications = ref([])
 const activeProgram = ref(null)
@@ -48,7 +48,7 @@ const fetchData = async () => {
       ])
 
       customersList.value = clientsRes.data?.data || []
-      stats.value = statsRes.data?.data || { clientiAttivi: 0, schedeCreate: 0, richiesteNutriz: 0, inAttesa: 0 }
+      stats.value = statsRes.data?.data || { activeClientsCount: 0, totalPrograms: 0, activeNutritionalPlans: 0, pendingPrograms: 0 }
       programsList.value = programsRes.data?.data || []
     } else if (userLogged.value.role === 'client' || userLogged.value.role === 'cliente') {
       const [programsRes, activeRes] = await Promise.all([

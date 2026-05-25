@@ -46,16 +46,16 @@ const giorniDaUltimo = computed(() => {
 })
 
 const statCardsPT = computed(() => [
-  { label: 'Clienti Attivi',    value: props.stats.clientiAttivi,   icon: 'fa fa-users',   color: '#4a90d9', bg: 'rgba(74,144,217,0.12)' },
-  { label: 'Schede Create',     value: props.stats.schedeCreate,    icon: 'fa fa-list',    color: '#7c6af7', bg: 'rgba(124,106,247,0.12)' },
-  { label: 'Richieste Nutriz.', value: props.stats.richiesteNutriz, icon: 'fa fa-apple',   color: '#e05c9a', bg: 'rgba(224,92,154,0.12)' },
-  { label: 'In Attesa',         value: props.stats.inAttesa,        icon: 'fa fa-clock-o', color: '#f5a623', bg: 'rgba(245,166,35,0.12)' }
+  { label: 'Clienti Attivi',    value: props.stats?.activeClientsCount,   icon: 'fa fa-users',   color: '#4a90d9', bg: 'rgba(74,144,217,0.12)' },
+  { label: 'Schede Create',     value: props.stats?.totalPrograms,    icon: 'fa fa-list',    color: '#7c6af7', bg: 'rgba(124,106,247,0.12)' },
+  { label: 'Richieste Nutriz.', value: props.stats?.activeNutritionalPlans, icon: 'fa fa-apple',   color: '#e05c9a', bg: 'rgba(224,92,154,0.12)' },
+  { label: 'In Attesa',         value: props.stats?.pendingPrograms,        icon: 'fa fa-clock-o', color: '#f5a623', bg: 'rgba(245,166,35,0.12)' }
 ])
 
 const statCardsNutri = computed(() => [
-  { label: 'Clienti Attivi',   value: props.statsNutrizionista.clientiAttivi,     icon: 'fa fa-users',       color: '#4a90d9', bg: 'rgba(74,144,217,0.12)' },
-  { label: 'Richieste',        value: props.statsNutrizionista.richiesteInAttesa, icon: 'fa fa-inbox',       color: '#e05c9a', bg: 'rgba(224,92,154,0.12)' },
-  { label: 'PT Collaboratori', value: props.statsNutrizionista.ptCollaboratori,   icon: 'fa fa-handshake-o', color: '#40916c', bg: 'rgba(64,145,108,0.12)' }
+  { label: 'Clienti Attivi',   value: props.statsNutrizionista?.clientiAttivi || 0,     icon: 'fa fa-users',       color: '#4a90d9', bg: 'rgba(74,144,217,0.12)' },
+  { label: 'Richieste',        value: props.statsNutrizionista?.richiesteInAttesa || 0, icon: 'fa fa-inbox',       color: '#e05c9a', bg: 'rgba(224,92,154,0.12)' },
+  { label: 'PT Collaboratori', value: props.statsNutrizionista?.ptCollaboratori || 0,   icon: 'fa fa-handshake-o', color: '#40916c', bg: 'rgba(64,145,108,0.12)' }
 ])
 
 const getNotifIcon = (type) => {
