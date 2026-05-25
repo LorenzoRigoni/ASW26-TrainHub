@@ -188,3 +188,47 @@ exports.publishProgram = async (req, res) => {
         handleError(res, error, 'Errore pubblicazione');
     }
 };
+
+exports.archiveProgram = async (req, res) => {
+    try {
+        const program = await TrainingProgram.findById(req.params.id);
+        if (!program) return notFound(res);
+
+        if (req.user.role === 'trainer' && !isOwner(program.trainerId, req.user.id)) {
+            return forbidden(res);
+        }
+        
+        if (req.user.role === 'client' && !isOwner(program.athleteId, req.user.id)) {
+            return forbidden(res);
+        }
+
+        program.programStatus = 'archived';
+        await program.save();
+
+        // Notify the trainer if the client archives it
+        if (req.user.role === 'client') {
+            await createNotification(
+                program.trainerId,
+                'program_completed',
+                'Programma completato',
+                `L'atleta ha completato il programma: ${program.title}`,
+                program._id,
+                'TrainingProgram'
+            );
+        } else {
+            // Notify the client if the trainer archives it
+            await createNotification(
+                program.athleteId,
+                'program_archived',
+                'Programma archiviato',
+                `Il tuo trainer ha archiviato il programma: ${program.title}`,
+                program._id,
+                'TrainingProgram'
+            );
+        }
+
+        res.status(200).json({ success: true, message: 'Programma archiviato' });
+    } catch (error) {
+        handleError(res, error, 'Errore archiviazione');
+    }
+};

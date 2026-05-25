@@ -8,7 +8,8 @@ const {
     getTrainerPrograms,
     initProgram,
     saveDraft,
-    publishProgram
+    publishProgram,
+    archiveProgram
 } = require('../controllers/trainingProgramController');
 
 /**
@@ -47,6 +48,8 @@ router.get('/trainer-programs', protect, authorize('trainer'), getTrainerProgram
 router.put('/draft/:id', protect, authorize('trainer'), saveDraft);
 
 router.patch('/publish/:id', protect, authorize('trainer'), publishProgram);
+
+router.patch('/archive/:id', protect, archiveProgram);
 
 /**
  * @swagger
