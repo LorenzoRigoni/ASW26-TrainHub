@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ROLES } from '../utils/utils.js'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -9,18 +9,15 @@ import SideMenu from '../components/SideMenu.vue'
 //Spostare qqesto blocco a livello globale così di default per mobile il menù sarà chiuso, per il desktop sarà aperto
 const sidebarOpen = ref(false)
 
+const router = useRouter()
+const route = useRoute()
+
 const handleResize = () => {
   sidebarOpen.value = window.innerWidth >= 769
 }
 
-onMounted(() => {
-  handleResize()
-  window.addEventListener('resize', handleResize)
-})
-
 const isClient = computed(() => userLogged.value.role === 'client')
 const isTrainer = computed(() => userLogged.value.role === 'trainer')
-
 
 const loading = ref(false)
 const todayDate = computed(() =>
@@ -32,68 +29,96 @@ const toggleSidebar = () => {
 }
 
 const userLogged = ref({ 
-  name: 'Alessandra', 
-  surname: 'Versari', 
-  role: 'trainer' 
+  name: localStorage.getItem('user_name'), 
+  surname: localStorage.getItem('user_surname'), 
+  role: localStorage.getItem('user_role') 
 })
 
-/**************** */
+const programId = route.params.programId
+const splitId = route.params.splitId
+const athleteId = route.params.athleteId || ''
 
+const exerciseLogs = ref({})
+const currentWeekInput = ref({})
+const splitExercises = ref([])
 
-const router = useRouter()
-const exerciseLogs = ref({
-  bench_press: [
-    {
-      date: '2026-05-15',
-      weight: 75,
-      reps: 10
-    },
-    {
-      date: '2026-05-15',
-      weight: 75,
-      reps: 9
-    },
-    {
-      date: '2026-05-15',
-      weight: 75,
-      reps: 9
+const fetchData = async () => {
+  loading.value = true
+  try {
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+
+    const programRes = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, config)
+    const currentSplit = programRes.data.data.splits.find(s => s._id === splitId)
+
+    if (currentSplit && currentSplit.rows) {
+      splitExercises.value = currentSplit.rows
+
+      currentSplit.rows.forEach(row => {
+        const exId = row.exercise._id || row.exercise
+        if (!exerciseLogs.value[exId]) exerciseLogs.value[exId] = []
+        if (!currentWeekInput.value[exId]) {
+          currentWeekInput.value[exId] = { load: '', reps: '', notes: '' }
+        }
+      })
     }
-  ],
 
-  squat: [
-    {
-      date: '2026-05-18',
-      weight: 120,
-      reps: 5
-    }
-  ]
-})
+    const urlParamAthlete = isTrainer.value ? `/${athleteId}` : ''
+    const logsRes = await axios.get(`http://localhost:5000/api/exercise-logs/${programId}/${splitId}${urlParamAthlete}`, config)
 
-const splitExercises = ref([
-  {
-    id: 'bench_press',
-    name: 'Panca Piana',
-    sets: 3,
-    reps: 10,
-    rest: 90,
-    logs: exerciseLogs.value.bench_press
-  },
-  {
-    id: 'squat',
-    name: 'Squat',
-    sets: 4,
-    reps: 5,
-    rest: 120,
-    logs: exerciseLogs.value.squat
+    Object.keys(exerciseLogs.value).forEach(key => exerciseLogs.value[key] = [])
+
+    logsRes.data.data.forEach(log => {
+      if (exerciseLogs.value[log.exerciseId]) {
+        exerciseLogs.value[log.exerciseId].push({
+          date: new Date(log.date).toISOString().split('T')[0],
+          load: log.load,
+          reps: log.reps,
+          notes: log.notes
+        })
+      }
+    })
+  } catch (err) {
+    console.error("Errore nel caricamento dei dati di split:", err)
+  } finally {
+    loading.value = false
   }
-])
-
-const getTodayRows = (exercise) => {
-  return Array.from({ length: exercise.sets }, () => ({
-    weight: '',
-    reps: ''
-  }))
 }
+
+const saveAllProgress = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+
+    const savePromises = Object.keys(currentWeekInput.value).map(async (exId) => {
+      const input = currentWeekInput.value[exId]
+      if (input.load !== '' || input.reps !== '') {
+        return axios.post(`http://localhost:5000/api/exercise-logs/${programId}/${splitId}`, {
+          exerciseId: exId,
+          load: Number(input.load),
+          reps: Number(input.reps),
+          notes: input.notes
+        }, config)
+      }
+    })
+
+    await Promise.all(savePromises)
+    
+    Object.keys(currentWeekInput.value).forEach(key => {
+      currentWeekInput.value[key] = { load: '', reps: '', notes: '' }
+    })
+
+    await fetchData()
+  } catch (err) {
+    console.error(err.response?.data?.message || "Errore durante il salvataggio dei dati")
+  }
+}
+
+onMounted(() => {
+  handleResize()
+  window.addEventListener('resize', handleResize)
+  fetchData()
+})
 
 const currentSession = ref({})
 
@@ -109,6 +134,10 @@ const goBack = () => {
     <SideMenu :isOpen="sidebarOpen" :role="userLogged.role"  @close="sidebarOpen = false"/>
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }" >
+      <div v-if="loading" class="loader-container">
+        <i class="fa fa-spinner fa-spin"></i> Caricamento dati...
+      </div>
+
       <div class="split-page">
         <div class="split-header">
             <div class="header-left">
@@ -116,27 +145,27 @@ const goBack = () => {
                     <i class="fa fa-arrow-left"></i>
                 </button>
                 <div>
-                    <h1>SPLIT A - PUSH</h1>
+                    <h1>{{ currentSplitName || 'Dettaglio Allenamento' }}</h1>
                     <p class="split-subtitle">  Storico allenamenti e compilazione sessione </p>
                 </div>
             </div>
         </div>
 
         <!-- Lista di esercizi dello split selezioanto -->
-        <section v-for="exercise in splitExercises" :key="exercise.id" class="exercise-card">
+        <section v-for="row in splitExercises" :key="row.exercise._id || row.exercise" class="exercise-card">
 
         <div class="exercise-title">
             <div>
-                <h2>{{ exercise.name }}</h2>
+                <h2>{{ row.exercise.name }}</h2>
                 <p class="exercise-info">
-                    {{ exercise.sets }} set × {{ exercise.reps }} rep · {{ exercise.rest }}'' recupero
+                    {{ row.sets }} set × {{ row.reps }} rep · {{ row.rest }}'' recupero
                 </p>
             </div>
 
             <div class="last-session">
             Ultima sessione:
                 <strong>
-                    {{ exercise.logs?.[0]?.date }}
+                    {{ exerciseLogs[row.exercise._id || row.exercise]?.[exerciseLogs[row.exercise._id || row.exercise].length - 1]?.date || 'Nessuna' }}
                 </strong>
             </div>
         </div>
@@ -148,25 +177,35 @@ const goBack = () => {
             <span>Reps</span>
             </div>
 
-            <div v-for="(log, i) in exercise.logs" :key="i" class="table-row" >
+            <div v-for="(log, i) in exerciseLogs[row.exercise._id || row.exercise]" :key="i" class="table-row" >
             <span>
                 {{new Date(log.date).toLocaleDateString('it-IT') }}
             </span>
-            <span>{{ log.weight }} kg</span>
+            <span>{{ log.load }} kg</span>
             <span>{{ log.reps }}</span>
             </div>
 
             
-            <div  v-if="isClient" v-for="(set, i) in getTodayRows(exercise)" :key="'today-' + i"  class="table-row current-session" >
-            <span>{{ todayDate }}</span>
-            <input type="number"  placeholder="Kg"  :disabled="isTrainer"/>
-            <input type="number" placeholder="Reps":disabled="isTrainer" />
+            <div  v-if="isClient" :key="'today-' + i"  class="table-row current-session" >
+              <span>{{ todayDate }}</span>
+              <input 
+                type="number" 
+                placeholder="Kg" 
+                v-model="currentWeekInput[row.exercise._id || row.exercise].load"
+                :disabled="isTrainer"
+              />
+              <input 
+                type="number" 
+                placeholder="Reps"
+                v-model="currentWeekInput[row.exercise._id || row.exercise].reps"
+                :disabled="isTrainer" 
+              />
             </div>
         </div>
         </section>
 
         <div v-if="isClient" class="save-container">
-           <button class="save-btn">
+           <button class="save-btn" @click="saveAllProgress">
                 <i class="fa fa-save"></i>
                 <span> Salva</span>
             </button>
@@ -400,4 +439,8 @@ const goBack = () => {
   gap: 10px;
 }
 
+.loader-container {
+  text-align: center; 
+  padding: 2rem;
+}
 </style>
