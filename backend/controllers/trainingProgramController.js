@@ -30,7 +30,10 @@ const checkAccess = (program, user) => {
 
 exports.getMyTrainingPrograms = async (req, res) => {
     try {
-        const programs = await TrainingProgram.find({ athleteId: req.user.id })
+        const programs = await TrainingProgram.find({ 
+            athleteId: req.user.id,
+            programStatus: 'active'
+        })
             .populate('trainerId', 'name surname username')
             .sort({ createdAt: -1 });
 
@@ -72,7 +75,10 @@ exports.getTrainingProgramById = async (req, res) => {
 
 exports.getTrainerPrograms = async (req, res) => {
     try {
-        const programs = await TrainingProgram.find({ trainerId: req.user.id })
+        const programs = await TrainingProgram.find({ 
+            trainerId: req.user.id,
+            programStatus: { $in: ['active', 'archived'] }
+        })
             .populate('athleteId', 'name surname')
             .sort({ createdAt: -1 });
 
