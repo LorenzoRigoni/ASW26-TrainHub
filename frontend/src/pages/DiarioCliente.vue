@@ -53,7 +53,7 @@ const fetchAthleteInfo = async (id) => {
       surname: data.surname,
       role: data.role,
       email: data.email,
-      birthDate: data.birthDate ? new Date(data.birthDate).toLocaleDateString('it-IT') : 'gg/mm/aaaa',
+      birthDate: data.dateOfBirth ? new Date(data.dateOfBirth).toLocaleDateString('it-IT') : 'gg/mm/aaaa',
       image: data.profilePicture ? `http://localhost:5000${data.profilePicture}` : defaultAvatar
     }
   } catch (error) {

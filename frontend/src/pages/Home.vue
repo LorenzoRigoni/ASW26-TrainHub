@@ -40,7 +40,7 @@ const fetchData = async () => {
       console.warn("Impossibile caricare le notifiche", notifErr.message)
     }
 
-    if (userLogged.value.role === ROLES.PERSONAL_TRAINER || userLogged.value.role === 'trainer') {
+    if (userLogged.value.role === ROLES.PERSONAL_TRAINER) {
       const [clientsRes, statsRes, programsRes] = await Promise.all([
         axios.get('http://localhost:5000/api/users/my-clients', config),
         axios.get('http://localhost:5000/api/users/trainer-stats', config),
@@ -50,7 +50,7 @@ const fetchData = async () => {
       customersList.value = clientsRes.data?.data || []
       stats.value = statsRes.data?.data || { activeClientsCount: 0, totalPrograms: 0, activeNutritionalPlans: 0, pendingPrograms: 0 }
       programsList.value = programsRes.data?.data || []
-    } else if (userLogged.value.role === 'client' || userLogged.value.role === 'cliente') {
+    } else if (userLogged.value.role === ROLES.CLIENTE) {
       const [programsRes, activeRes] = await Promise.all([
         axios.get('http://localhost:5000/api/training-programs/my-programs', config),
         axios.get('http://localhost:5000/api/training-programs/active', config).catch(() => ({ data: { data: null } }))
@@ -66,7 +66,7 @@ const fetchData = async () => {
       activeProgram.value = activeRes.data.data
 
       //TODO: piano nutrizionale
-    } else if (userLogged.value.role === 'nutritionist' || userLogged.value.role === 'nutrizionista') {
+    } else if (userLogged.value.role === ROLES.NUTRIZIONISTA) {
       //TODO: logica caricamento dati nutrizionista
     }
   } catch(error){

@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const bodyDiarySchema = new mongoose.Schema({
     athleteId: {
-        type: mongoose.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        require: true
+        required: true
     },
 
     date: {

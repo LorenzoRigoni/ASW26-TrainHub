@@ -78,16 +78,16 @@ exports.login = async (req, res) => {
             });
         }
 
-        const findedUser = await User.findOne({ username }).select('+password');
+        const user = await User.findOne({ username }).select('+password');
 
-        if (!findedUser) {
+        if (!user) {
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials'
             });
         }
 
-        const isMatch = await findedUser.matchPassword(password);
+        const isMatch = await user.matchPassword(password);
 
         if (!isMatch) {
             return res.status(401).json({
@@ -96,7 +96,7 @@ exports.login = async (req, res) => {
             });
         }
 
-        sendTokenResponse(findedUser, 200, res, 'Login successful');
+        sendTokenResponse(user, 200, res, 'Login successful');
 
     } catch (error) {
         console.error('Login error:', error);
@@ -117,7 +117,7 @@ exports.login = async (req, res) => {
 exports.getUserInfo = async (req, res) => {
     try {
         const loggedUser = await User.findById(req.user.id)
-            .select('username name surname role email profilePicture') 
+            .select('username name surname role email profilePicture dateOfBirth') 
             .populate('assignedTrainerId', 'name surname username')
             .populate('assignedNutritionistId', 'name surname username');
 

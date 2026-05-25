@@ -42,10 +42,12 @@ exports.getMyTrainingPrograms = async (req, res) => {
 
 exports.getActiveProgram = async (req, res) => {
     try {
-        const program = await TrainingProgram.findOne({ athleteId: req.user.id, status: 'active' })
+        const program = await TrainingProgram.findOne({ athleteId: req.user.id, programStatus: 'active' })
             .populate('trainerId', 'name surname username');
 
-        if (!program) return notFound(res, 'No active program');
+        if (!program) {
+            return res.status(200).json({ success: true, data: null });
+        }
 
         res.status(200).json({ success: true, data: program });
     } catch (error) {

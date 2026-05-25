@@ -40,7 +40,7 @@ const fetchData = async () => {
           ...row,
           name: row.exercise?.name || 'Esercizio rimosso',
           image: row.exercise?.image || null,
-          muscleTag: row.exercise?.muscleTag || '',
+          movementPattern: row.exercise?.movementPattern || '',
           sets: row.sets || 0,
           reps: row.reps || 0,
           rest: row.rest || 0,

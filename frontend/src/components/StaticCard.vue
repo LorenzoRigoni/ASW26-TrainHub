@@ -7,10 +7,12 @@ defineProps({
   color: { type: String, default: '#4a90d9' },
   bg:    { type: String, default: 'rgba(74,144,217,0.12)' }
 })
+
+const emit = defineEmits(['click'])
 </script>
 
 <template>
-  <div class="stat-card" :style="{ '--card-accent': color }">
+  <div class="stat-card" :style="{ '--card-accent': color }" @click="emit('click')">
     <div class="stat-info">
       <p class="stat-label">{{ label }}</p>
       <p class="stat-value">{{ value }}</p>
@@ -33,6 +35,7 @@ defineProps({
   border: 1px solid #ebebeb;
   border-top: 3px solid var(--card-accent);
   transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
 }
 
 .stat-card:hover {

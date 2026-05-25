@@ -46,16 +46,16 @@ const giorniDaUltimo = computed(() => {
 })
 
 const statCardsPT = computed(() => [
-  { label: 'Clienti Attivi',    value: props.stats?.activeClientsCount,   icon: 'fa fa-users',   color: '#4a90d9', bg: 'rgba(74,144,217,0.12)' },
-  { label: 'Schede Create',     value: props.stats?.totalPrograms,    icon: 'fa fa-list',    color: '#7c6af7', bg: 'rgba(124,106,247,0.12)' },
-  { label: 'Richieste Nutriz.', value: props.stats?.activeNutritionalPlans, icon: 'fa fa-apple',   color: '#e05c9a', bg: 'rgba(224,92,154,0.12)' },
-  { label: 'In Attesa',         value: props.stats?.pendingPrograms,        icon: 'fa fa-clock-o', color: '#f5a623', bg: 'rgba(245,166,35,0.12)' }
+  { label: 'Clienti Attivi',    value: props.stats?.activeClientsCount,   icon: 'fa fa-users',   color: '#4a90d9', bg: 'rgba(74,144,217,0.12)', route: '/clienti' },
+  { label: 'Schede Create',     value: props.stats?.totalPrograms,    icon: 'fa fa-list',    color: '#7c6af7', bg: 'rgba(124,106,247,0.12)', route: '/programmi' },
+  { label: 'Richieste Nutriz.', value: props.stats?.activeNutritionalPlans, icon: 'fa fa-apple',   color: '#e05c9a', bg: 'rgba(224,92,154,0.12)', route: '/richieste-nutrizione' },
+  { label: 'In Attesa',         value: props.stats?.pendingPrograms,        icon: 'fa fa-clock-o', color: '#f5a623', bg: 'rgba(245,166,35,0.12)', route: '/scadenze' }
 ])
 
 const statCardsNutri = computed(() => [
-  { label: 'Clienti Attivi',   value: props.statsNutrizionista?.clientiAttivi || 0,     icon: 'fa fa-users',       color: '#4a90d9', bg: 'rgba(74,144,217,0.12)' },
-  { label: 'Richieste',        value: props.statsNutrizionista?.richiesteInAttesa || 0, icon: 'fa fa-inbox',       color: '#e05c9a', bg: 'rgba(224,92,154,0.12)' },
-  { label: 'PT Collaboratori', value: props.statsNutrizionista?.ptCollaboratori || 0,   icon: 'fa fa-handshake-o', color: '#40916c', bg: 'rgba(64,145,108,0.12)' }
+  { label: 'Clienti Attivi',   value: props.statsNutrizionista?.clientiAttivi || 0,     icon: 'fa fa-users',       color: '#4a90d9', bg: 'rgba(74,144,217,0.12)', route: '/clienti' },
+  { label: 'Richieste',        value: props.statsNutrizionista?.richiesteInAttesa || 0, icon: 'fa fa-inbox',       color: '#e05c9a', bg: 'rgba(224,92,154,0.12)', route: '/richieste-nutrizione' },
+  { label: 'PT Collaboratori', value: props.statsNutrizionista?.ptCollaboratori || 0,   icon: 'fa fa-handshake-o', color: '#40916c', bg: 'rgba(64,145,108,0.12)', route: '/clienti' }
 ])
 
 const getNotifIcon = (type) => {
@@ -137,6 +137,7 @@ const goToNutritionPlanDetail = (id) => {
           v-for="card in statCardsPT" :key="card.label"
           :label="card.label" :value="card.value"
           :icon="card.icon"   :color="card.color" :bg="card.bg"
+          @click="router.push(card.route)"
         />
       </div>
 
@@ -199,7 +200,7 @@ const goToNutritionPlanDetail = (id) => {
       <div class="action-cards-grid">
         <ActionCard
           icon="fa fa-book" icon-color="#4a90d9" icon-bg="rgba(74,144,217,0.12)"
-          @click="emit('aggiungi-misurazioni')"
+          @click="router.push('/diario')"
         >
           <template v-if="misurazionOggi">
             <p class="card-label">Peso di oggi</p>
@@ -216,7 +217,7 @@ const goToNutritionPlanDetail = (id) => {
         <ActionCard
           icon="fa fa-play" icon-color="#7c6af7" icon-bg="rgba(124,106,247,0.15)"
           :highlight="true"
-          @click=""
+          @click="router.push('/programmi')"
         >
           <p class="card-label">Allenamento di oggi</p>
           <p class="card-cta" style="color:#7c6af7">Inizia allenamento</p>
@@ -225,7 +226,8 @@ const goToNutritionPlanDetail = (id) => {
 
         <ActionCard
           icon="fa fa-calendar-check-o" icon-color="#f5a623" icon-bg="rgba(245,166,35,0.12)"
-          :clickable="false"
+          :clickable="true"
+          @click="router.push('/programmi')"
         >
           <p class="card-label">Ultimo allenamento</p>
           <template v-if="giorniDaUltimo !== null">
@@ -297,6 +299,7 @@ const goToNutritionPlanDetail = (id) => {
           v-for="card in statCardsNutri" :key="card.label"
           :label="card.label" :value="card.value"
           :icon="card.icon"   :color="card.color" :bg="card.bg"
+          @click="router.push(card.route)"
         />
       </div>
 

@@ -4,23 +4,23 @@ const workoutProgressSchema = new mongoose.Schema({
     athleteId: {
         type: mongoose.Types.ObjectId,
         ref: 'User',
-        require: true
+        required: true
     },
 
     programId: {
         type: mongoose.Types.ObjectId,
         ref: 'TrainingProgram',
-        require: true
+        required: true
     },
 
     splitId: {
         type: Number,
-        require: true
+        required: true
     },
 
     rowId: {
         type: Number,
-        require: true
+        required: true
     },
 
     date: {
@@ -30,19 +30,19 @@ const workoutProgressSchema = new mongoose.Schema({
 
     exerciseName: {
         type: String,
-        require: true
+        required: true
     },
 
     sets: [{
         weight: {
             type: Number,
-            require: true,
+            required: true,
             min: 0
         },
 
         reps: {
             type: Number,
-            require: true,
+            required: true,
             min: 0
         }
     }],

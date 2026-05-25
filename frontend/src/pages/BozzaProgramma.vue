@@ -67,7 +67,7 @@ const addExercise = (split) => {
   split.rows.push({
     rowId: split.rows.length + 1,
     exercise: "",
-    muscleTag: "Generale",
+    movementPattern: "Generale",
     sets: 0,
     reps: 0,
     rest: 0,
@@ -170,7 +170,7 @@ const toggleSidebar = () => {
               <select v-model="row.exercise">
                 <option value="" disabled>Scegli...</option>
                 <option v-for="ex in exercisesDb" :key="ex._id" :value="ex._id">
-                  {{ ex.name }} ({{ ex.muscleTag }})
+                  {{ ex.name }} ({{ ex.movementPattern }})
                 </option>
               </select>
             </div>

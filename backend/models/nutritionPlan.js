@@ -2,15 +2,14 @@ const mongoose = require('mongoose');
 
 const nutritionPlanSchema = new mongoose.Schema({
     athleteId: {
-        type: mongoose.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        require: true
+        required: true
     },
-
     nutritionistId: {
-        type: mongoose.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        require: true
+        required: true
     },
 
     title: {

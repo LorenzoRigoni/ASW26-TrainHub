@@ -7,7 +7,7 @@ const fs = require('fs');
 exports.getMyClients = async (req, res) => {
     try {
         const clients = await User.find({assignedTrainerId: req.user.id})
-            .select('name surname');
+            .select('name surname email dateOfBirth');
 
         const currentMonth = new Date().getMonth();
         const currentYear = new Date().getFullYear();
@@ -30,6 +30,8 @@ exports.getMyClients = async (req, res) => {
                 id: client._id,
                 name: client.name,
                 surname: client.surname,
+                email: client.email,
+                birthdate: client.dateOfBirth ? new Date(client.dateOfBirth).toLocaleDateString('it-IT') : '-',
                 status: status
             };
         }));
@@ -314,7 +316,7 @@ exports.uploadAvatar = async (req, res) => {
 exports.getAthleteDetail = async (req, res) => {
     try {
         const athlete = await User.findById(req.params.athleteId)
-            .select('name surname email birthDate profilePicture role');
+            .select('name surname email dateOfBirth profilePicture role');
 
         if (!athlete || athlete.role !== 'client') {
             return res.status(404).json({
@@ -325,7 +327,15 @@ exports.getAthleteDetail = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            data: athlete
+            data: {
+                _id: athlete._id,
+                name: athlete.name,
+                surname: athlete.surname,
+                email: athlete.email,
+                dateOfBirth: athlete.dateOfBirth,
+                profilePicture: athlete.profilePicture,
+                role: athlete.role
+            }
         });
     } catch (error) {
         res.status(500).json({

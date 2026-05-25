@@ -9,13 +9,13 @@ const trainingProgramSchema = new mongoose.Schema({
     athleteId: {
         type: mongoose.Types.ObjectId,
         ref: 'User',
-        require: true
+        required: true
     },
 
     trainerId: {
         type: mongoose.Types.ObjectId,
         ref: 'User',
-        require: true
+        required: true
     },
 
     programStatus: {
@@ -39,7 +39,7 @@ const trainingProgramSchema = new mongoose.Schema({
 
         name: {
             type: String,
-            require: true
+            required: true
         },
 
         day: {
@@ -53,7 +53,7 @@ const trainingProgramSchema = new mongoose.Schema({
                 type: Number,
                 required: true
             },
-            muscleTag: {
+            movementPattern: {
                 type: String,
                 required: true,
             },

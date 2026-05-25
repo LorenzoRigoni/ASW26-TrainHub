@@ -8,7 +8,7 @@ defineProps({
   sets: { type: Number, default: 0 },
   reps: { type: Number, default: 0 },
   rest: { type: Number, default: 0 },
-  muscleTag: { type: String, default: '' },
+  movementPattern: { type: String, default: '' },
   notes: { type: String, default: '' }
 })
 </script>
@@ -24,7 +24,7 @@ defineProps({
       <div class="details">
         <span class="ex-name">{{ name }}</span>
         <div class="ex-meta">
-          <span class="tag">{{ muscleTag }}</span>
+          <span class="tag">{{ movementPattern }}</span>
           <span v-if="technique" class="technique">| {{ technique }}</span>
         </div>
       </div>
