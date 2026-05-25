@@ -39,11 +39,8 @@ onMounted(async () => {
   fetchClients()
 })
 
-const goToDetail = (customer) => {
-  router.push({
-    path: '/clienti/dettaglio-cliente',
-    query: { athleteId: customer.id }
-  })
+const goToDetail = (id) => {
+  router.push(`/clienti/dettaglio-cliente/${id}`)
 }
 
 </script>
@@ -68,7 +65,7 @@ const goToDetail = (customer) => {
             :icon="null"
             :title="c.name + ' ' +  c.surname"
             :status="c.status"
-             @click="goToDetail()"
+             @click="goToDetail(c.id)"
           >
             <template #left>
              <div class="avatar" :style="{ background: getAvatarColor(c.name + c.surname) }">

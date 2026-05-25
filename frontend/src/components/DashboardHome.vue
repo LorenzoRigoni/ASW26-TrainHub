@@ -17,6 +17,7 @@ const props = defineProps({
   stats: { type: Object , default: null},
   clienti: { type: Array, default: () => [] },
   schede: {  type: Array, default: () => [] },
+  notifiche: { type: Array, default: () => [] },
   misurazionOggi:    { type: Object, default: null },
   ultimoAllenamento: { type: Object, default: null },
   schedeCliente: { type: Array, default: () => [] },

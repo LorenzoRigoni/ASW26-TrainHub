@@ -16,6 +16,7 @@ const userLogged = ref({
 const customersList = ref([])
 const stats = ref({ clientiAttivi: 0, schedeCreate: 0, richiesteNutriz: 0, inAttesa: 0 })
 const programsList = ref([])
+const recentNotifications = ref([])
 const activeProgram = ref(null)
 const sidebarOpen = ref(true)
 
@@ -28,23 +29,34 @@ const fetchData = async () => {
     const token = localStorage.getItem('token')
     const config = { headers: { Authorization: `Bearer ${token}` } }
 
-    if (userLogged.value.role === ROLES.PERSONAL_TRAINER) {
+    try {
+      const notifRes = await axios.get('http://localhost:5000/api/notifications/unread', config)
+      if (notifRes.data && notifRes.data.data) {
+        recentNotifications.value = notifRes.data.data.slice(0, 3)
+      }
+
+      if (!recentNotifications.value) recentNotifications.value = []
+    } catch (notifErr) {
+      console.warn("Impossibile caricare le notifiche", notifErr.message)
+    }
+
+    if (userLogged.value.role === ROLES.PERSONAL_TRAINER || userLogged.value.role === 'trainer') {
       const [clientsRes, statsRes, programsRes] = await Promise.all([
         axios.get('http://localhost:5000/api/users/my-clients', config),
         axios.get('http://localhost:5000/api/users/trainer-stats', config),
         axios.get('http://localhost:5000/api/users/programs-list', config)
       ])
 
-      customersList.value = clientsRes.data.data
-      stats.value = statsRes.data.data
-      programsList.value = programsRes.data.data
-    } else {
+      customersList.value = clientsRes.data?.data || []
+      stats.value = statsRes.data?.data || { clientiAttivi: 0, schedeCreate: 0, richiesteNutriz: 0, inAttesa: 0 }
+      programsList.value = programsRes.data?.data || []
+    } else if (userLogged.value.role === 'client' || userLogged.value.role === 'cliente') {
       const [programsRes, activeRes] = await Promise.all([
         axios.get('http://localhost:5000/api/training-programs/my-programs', config),
         axios.get('http://localhost:5000/api/training-programs/active', config).catch(() => ({ data: { data: null } }))
       ])
 
-      programsList.value = programsRes.data.data.map(p => ({
+      programsList.value = (programsRes.data?.data || []).map(p => ({
         id: p._id,
         title: `Scheda del ${new Date(p.createdAt).toLocaleDateString()}`,
         category: p.splits.length > 0 ? p.splits[0].name : 'Allenamento',
@@ -54,6 +66,8 @@ const fetchData = async () => {
       activeProgram.value = activeRes.data.data
 
       //TODO: piano nutrizionale
+    } else if (userLogged.value.role === 'nutritionist' || userLogged.value.role === 'nutrizionista') {
+      //TODO: logica caricamento dati nutrizionista
     }
   } catch(error){
     console.error("Errore nel caricamento dati:", error.response?.data?.message || error.message);
@@ -73,9 +87,10 @@ onMounted(fetchData)
       <DashboardHome
         :user="userLogged"
         :stats="stats"
-        :clienti="customersList"
-        :schede="programsList" 
-        :schede-cliente="programsList"
+        :clienti="customersList || []"
+        :schede="programsList || []" 
+        :schede-cliente="programsList || []"
+        :notifiche="recentNotifications || []"
         :ultimo-allenamento="{ data: '2025-05-01' }"
       />
     </main>

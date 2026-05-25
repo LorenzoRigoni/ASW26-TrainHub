@@ -4,7 +4,7 @@ const { handleError, badRequest, notFound, forbidden, requiredFields, getUserRes
 
 exports.getAllNotifications = async (req, res) => {
     try {
-        const notifications = await getUserResources(Notification, req.user._id, {}, { createdAt: -1 }, 'userId');
+        const notifications = await getUserResources(Notification, req.user.id, { isHidden: { $ne: true } }, { createdAt: -1 }, 'userId');
 
         res.status(200).json({
             success: true,
@@ -18,7 +18,7 @@ exports.getAllNotifications = async (req, res) => {
 
 exports.getUnreadNotifications = async (req, res) => {
     try {
-        const notifications = await getUserResources(Notification, req.user._id, { isRead: false }, { createdAt: -1 }, 'userId');
+        const notifications = await getUserResources(Notification, req.user.id, { isRead: false, isHidden: { $ne: true } }, { createdAt: -1 }, 'userId');
 
         res.status(200).json({
             success: true,
@@ -32,7 +32,7 @@ exports.getUnreadNotifications = async (req, res) => {
 
 exports.getNotificationById = async (req, res) => {
     try {
-        const { resource, error } = await getUserResource(Notification, req.params.id, req.user._id, 'userId');
+        const { resource, error } = await getUserResource(Notification, req.params.id, req.user.id, 'userId');
 
         if (error === 'NOT_FOUND') return notFound(res, 'Notification not found');
         if (error === 'FORBIDDEN') return forbidden(res);
@@ -45,7 +45,7 @@ exports.getNotificationById = async (req, res) => {
 
 exports.markNotificationAsRead = async (req, res) => {
     try {
-        const { resource, error } = await getUserResource(Notification, req.params.id, req.user._id, 'userId');
+        const { resource, error } = await getUserResource(Notification, req.params.id, req.user.id, 'userId');
 
         if (error === 'NOT_FOUND') return notFound(res, 'Notification not found');
         if (error === 'FORBIDDEN') return forbidden(res);
@@ -63,10 +63,30 @@ exports.markNotificationAsRead = async (req, res) => {
     }
 };
 
+exports.hideNotification = async (req, res) => {
+    try {
+        const { resource, error } = await getUserResource(Notification, req.params.id, req.user.id, 'userId');
+
+        if (error === 'NOT_FOUND') return notFound(res, 'Notification not found');
+        if (error === 'FORBIDDEN') return forbidden(res);
+
+        resource.isHidden = true;
+        await resource.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Notification hidden',
+            data: resource
+        });
+    } catch (error) {
+        handleError(res, error, 'Error hiding notification');
+    }
+};
+
 exports.markAllNotificationsAsRead = async (req, res) => {
     try {
         const result = await Notification.updateMany(
-            { userId: req.user._id, isRead: false },
+            { userId: req.user.id, isRead: false },
             { isRead: true }
         );
 
@@ -82,7 +102,7 @@ exports.markAllNotificationsAsRead = async (req, res) => {
 
 exports.deleteNotification = async (req, res) => {
     try {
-        const { resource, error } = await getUserResource(Notification, req.params.id, req.user._id, 'userId');
+        const { resource, error } = await getUserResource(Notification, req.params.id, req.user.id, 'userId');
 
         if (error === 'NOT_FOUND') return notFound(res, 'Notification not found');
         if (error === 'FORBIDDEN') return forbidden(res);
@@ -100,7 +120,7 @@ exports.deleteNotification = async (req, res) => {
 
 exports.deleteAllNotifications = async (req, res) => {
     try {
-        const result = await Notification.deleteMany({ userId: req.user._id });
+        const result = await Notification.deleteMany({ userId: req.user.id });
 
         res.status(200).json({
             success: true,
@@ -112,9 +132,6 @@ exports.deleteAllNotifications = async (req, res) => {
     }
 };
 
-// =========================
-// Notification Creator
-// =========================
 
 exports.createNotification = async (
     userId,
@@ -178,8 +195,9 @@ exports.sendNotification = async (req, res) => {
 exports.getUnreadCount = async (req, res) => {
     try {
         const count = await Notification.countDocuments({
-            userId: req.user._id,
-            isRead: false
+            userId: req.user.id,
+            isRead: false,
+            isHidden: { $ne: true }
         });
 
         res.status(200).json({

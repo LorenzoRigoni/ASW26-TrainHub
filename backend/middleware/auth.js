@@ -91,7 +91,7 @@ exports.authorize = (...roles) => {
  */
 exports.authorizeAthleteAccess = async (req, res, next) => {
     try {
-        const clientId = req.params.clientId || req.params.id;
+        const clientId = req.params.clientId || req.params.athleteId || req.params.id;
 
         if (!clientId) {
             return res.status(400).json({
@@ -116,15 +116,25 @@ exports.authorizeAthleteAccess = async (req, res, next) => {
                 });
             }
 
-            if (client.trainer && client.trainer.toString() === req.user.id) {
+            if (client.assignedTrainerId && client.assignedTrainerId.toString() === req.user.id) {
                 return next();
             }
         }
 
-        // Nutritionist user, same as trainer
+        // Nutritionist user, check if the athlete is assigned to him
         if (req.user.role === 'nutritionist') {
-            // TODO: implementare logica per nutritionist
-            return next();
+            const client = await user.findById(clientId);
+
+            if (!client) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Client not found'
+                });
+            }
+
+            if (client.assignedNutritionistId && client.assignedNutritionistId.toString() === req.user.id) {
+                return next();
+            }
         }
 
         // No permissions

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize } = require('../middleware/auth');
+const { protect, authorize, authorizeAthleteAccess } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 const {
   getMyClients,
@@ -147,7 +147,7 @@ router.get('/nutritionists', getAllNutritionists);
  * @desc Get all the details of an athlete
  * @access Private (trainer and nutritionist)
  */
-//router.get('/athlete/:athleteId', protect, authorize('trainer', 'nutritionist'), getAthleteDetail);
+router.get('/athlete/:athleteId', protect, authorizeAthleteAccess, getAthleteDetail);
 
 router.put('/update', protect, updateProfile);
 

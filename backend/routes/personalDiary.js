@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize } = require('../middleware/auth');
+const { protect, authorize, authorizeAthleteAccess } = require('../middleware/auth');
 const {
     // Workout Progress
     getMyWorkoutProgress,
@@ -15,7 +15,8 @@ const {
     createBodyDiary,
     updateBodyDiary,
     deleteBodyDiary,
-    getBodyDiaryByDateRange
+    getBodyDiaryByDateRange,
+    getBodyDiaryByAthleteId
 } = require('../controllers/personalDiaryController');
 
 // ==================== Workout Progress Routes ====================
@@ -71,6 +72,13 @@ router.delete('/workout-progress/:id', protect, authorize('client'), deleteWorko
  * @access Private (client)
  */
 router.get('/body-diary', protect, authorize('client'), getMyBodyDiary);
+
+/**
+ * @route GET /api/personal-diary/body-diary/athlete/:clientId
+ * @desc Get all body diary records for a specific athlete
+ * @access Private (trainer, nutritionist)
+ */
+router.get('/body-diary/athlete/:clientId', protect, authorizeAthleteAccess, getBodyDiaryByAthleteId);
 
 /**
  * @route GET /api/personal-diary/body-diary/by-date-range/:startDate/:endDate

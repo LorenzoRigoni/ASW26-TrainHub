@@ -3,6 +3,10 @@
     defineProps({
     icon: String,
     label: String,
+    badge: {
+      type: [Number, String],
+      default: null
+    },
       to: {
       type: [String, Object],
       required: true
@@ -22,6 +26,7 @@
     <router-link :to="to" class="item-content">
       <i :class="['item-icon', icon]"></i>
       <span class="item-label">{{ label }}</span>
+      <span v-if="badge" class="badge">{{ badge }}</span>
     </router-link>
   </li>
 </template>
@@ -56,6 +61,20 @@
 .item-label {
   flex: 1;
   transition: all 0.3s ease;
+}
+
+.badge {
+  background-color: #dc2626;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
 }
 
 .side-menu-item:hover {

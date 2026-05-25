@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
 import axios from 'axios'
+import { useRoute } from 'vue-router'
 import { ROLES } from '../utils/utils.js'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
@@ -19,16 +20,19 @@ ChartJS.register(
   Legend
 )
 
-//TODO Mostrare bottone registra solo a cliente
-
+const route = useRoute()
 const sidebarOpen = ref(true)
 
-const userLogged = ref({ 
+const currentUser = ref({
+  role: localStorage.getItem('user_role')
+})
+
+const displayedUser = ref({ 
   name: localStorage.getItem('user_name'), 
   surname: localStorage.getItem('user_surname'), 
   role: localStorage.getItem('user_role'),
-  email: localStorage.getItem('user_email') || 'mario.rossi@gmail.com',
-  birthDate: localStorage.getItem('user_birth_date') || 'gg/mm/aaaa',
+  email: localStorage.getItem('user_email') || '',
+  birthDate: localStorage.getItem('user_birth_date') || '',
   image: localStorage.getItem('user_image') || defaultAvatar
 })
 
@@ -36,25 +40,42 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
-const props = defineProps({
-  user: {
-    type: Object,
-    default: () => ({ name: '', surname: '', role: '' })
-  }
-})
-
-
 const diaryEntries = ref([])
+
+const fetchAthleteInfo = async (id) => {
+  try {
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+    const response = await axios.get(`http://localhost:5000/api/users/athlete/${id}`, config)
+    const data = response.data.data
+    displayedUser.value = {
+      name: data.name,
+      surname: data.surname,
+      role: data.role,
+      email: data.email,
+      birthDate: data.birthDate ? new Date(data.birthDate).toLocaleDateString('it-IT') : 'gg/mm/aaaa',
+      image: data.profilePicture ? `http://localhost:5000${data.profilePicture}` : defaultAvatar
+    }
+  } catch (error) {
+    console.error('Errore caricamento info atleta:', error.response?.data?.message || error.message)
+  }
+}
 
 const fetchDiaryEntries = async () => {
   try {
     const token = localStorage.getItem('token')
     const config = { headers: { Authorization: `Bearer ${token}` } }
-    const response = await axios.get('http://localhost:5000/api/personal-diary/body-diary', config)
+    
+    let url = 'http://localhost:5000/api/personal-diary/body-diary'
+    if (route.params.id) {
+      url = `http://localhost:5000/api/personal-diary/body-diary/athlete/${route.params.id}`
+    }
+    
+    const response = await axios.get(url, config)
 
     diaryEntries.value = (response.data.data || []).map((entry) => ({
       date: entry.date ? new Date(entry.date).toISOString().split('T')[0] : '',
-      activity: entry.activity || 'on',
+      activity: entry.activity || 'off',
       adherence: entry.adherence || 'Media',
       steps: entry.steps ?? 0,
       hunger: entry.hunger ?? 5,
@@ -67,6 +88,9 @@ const fetchDiaryEntries = async () => {
 }
 
 onMounted(async () => {
+  if (route.params.id) {
+    await fetchAthleteInfo(route.params.id)
+  }
   fetchDiaryEntries()
 })
 
@@ -242,32 +266,32 @@ const adherenceOptions = {
 <template>
      <div id="app">
         <Navbar @toggle-sidebar="toggleSidebar" />
-        <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
+        <SideMenu :isOpen="sidebarOpen" :role="currentUser.role" @close="sidebarOpen = false" />
         <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
           <div class="diary">
             <div class="diary-header">
               <div class="client-info">
                 <div class="avatar-wrapper">
-                  <img v-if="userLogged.image" :src="userLogged.image" alt="Profilo cliente" class="avatar" />
+                  <img v-if="displayedUser.image" :src="displayedUser.image" alt="Profilo cliente" class="avatar" />
                   <div v-else class="avatar-placeholder"><i class="fa fa-user"></i></div>
                 </div>
 
                 <div class="client-details">
-                  <h1>{{ userLogged.name }} {{ userLogged.surname }}</h1>
+                  <h1>{{ displayedUser.name }} {{ displayedUser.surname }}</h1>
                   <div class="client-meta">
                     <span class="header-row">
                       <p>Data nascita: </p>
-                      {{ userLogged.birthDate || '-' }}
+                      {{ displayedUser.birthDate || '-' }}
                     </span>
 
                     <span class="header-row">
                       <p>Email: </p>
-                      {{ userLogged.email || '-' }}
+                      {{ displayedUser.email || '-' }}
                     </span>
                   </div>
                 </div>
               </div>
-              <button v-if="userLogged.role === ROLES.CLIENTE"  class="btn-primary add-btn" @click="openModal">
+              <button v-if="currentUser.role === ROLES.CLIENTE"  class="btn-primary add-btn" @click="openModal">
                 <i class="fa fa-plus"></i> Registra dati
               </button>
             </div>

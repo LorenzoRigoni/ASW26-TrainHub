@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
@@ -7,6 +8,8 @@ import ListItem from '../components/MainListItem.vue'
 import Footer from '../components/Footer.vue'
 
 const sidebarOpen = ref(true)
+const notifications = ref([])
+const loading = ref(true)
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
@@ -18,53 +21,74 @@ const userLogged = ref({
   role: localStorage.getItem('user_role') 
 })
 
-onMounted(async () => {
-})
-
-/* NOTIFICHE */
-//TODO sostituire con dati reali
-const notifications = ref([
-  {
-    title: 'Nuovo diario compilato',
-    message: 'Marco Rossi ha compilato il diario alimentare.',
-    date: 'Oggi · 09:42',
-    status: 'nuova',
-    icon: 'fa fa-book',
-    read: false
-  },
-
-  {
-    title: 'Piano alimentare in scadenza',
-    message: 'Il piano di Giulia Bianchi scadrà tra 2 giorni.',
-    date: 'Oggi · 08:10',
-    status: 'warning',
-    icon: 'fa fa-exclamation-triangle',
-    read: false
-  },
-
-  {
-    title: 'Nuovo cliente assegnato',
-    message: 'Ti è stato assegnato Luca Verdi.',
-    date: 'Ieri · 18:22',
-    status: 'info',
-    icon: 'fa fa-user-plus',
-    read: true
-  },
-
-  {
-    title: 'Pagamento ricevuto',
-    message: 'Pagamento confermato per Andrea Neri.',
-    date: 'Ieri · 11:05',
-    status: 'success',
-    icon: 'fa fa-check-circle',
-    read: true
+const getNotificationDetails = (type) => {
+  switch (type) {
+    case 'program_created':
+      return { icon: 'fa fa-file-text-o', status: 'nuova' }
+    case 'workout_created':
+      return { icon: 'fa fa-check-circle', status: 'success' }
+    case 'package_expiring':
+      return { icon: 'fa fa-exclamation-triangle', status: 'warning' }
+    case 'program_completed':
+      return { icon: 'fa fa-check-circle', status: 'success' }
+    case 'nutrition_plan':
+      return { icon: 'fa fa-cutlery', status: 'info' }
+    default:
+      return { icon: 'fa fa-bell', status: 'info' }
   }
-])
+}
 
-//TODO decidere cosa mostrare al click sulla notifica: dettaglio? messaggio di conferma? 
-const openNotification = (notification) => {
-  notification.read = true
-  console.log(notification)
+const fetchNotifications = async () => {
+  try {
+    loading.value = true
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+    const response = await axios.get('http://localhost:5000/api/notifications', config)
+    
+    notifications.value = (response.data.data || []).map(n => {
+      const details = getNotificationDetails(n.type)
+      return {
+        id: n._id,
+        title: n.title,
+        message: n.message,
+        date: new Date(n.createdAt).toLocaleString(),
+        status: details.status,
+        icon: details.icon,
+        isRead: n.isRead
+      }
+    })
+  } catch (error) {
+    console.error('Errore caricamento notifiche:', error.response?.data?.message || error.message)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(fetchNotifications)
+
+const openNotification = async (notification) => {
+  if (notification.isRead) return
+
+  try {
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+    await axios.patch(`http://localhost:5000/api/notifications/${notification.id}/read`, {}, config)
+    notification.isRead = true
+  } catch (error) {
+    console.error('Errore nel segnare la notifica come letta:', error.response?.data?.message || error.message)
+  }
+}
+
+const hideNotification = async (notification) => {
+  try {
+    const token = localStorage.getItem('token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+    await axios.patch(`http://localhost:5000/api/notifications/${notification.id}/hide`, {}, config)
+    
+    notifications.value = notifications.value.filter(n => n.id !== notification.id)
+  } catch (error) {
+    console.error('Errore nel nascondere la notifica:', error.response?.data?.message || error.message)
+  }
 }
 </script>
 
@@ -79,14 +103,17 @@ const openNotification = (notification) => {
           <p> Aggiornamenti recenti della piattaforma</p>
         </div>
       </div>
-      <MainList>
+
+      <div v-if="loading" class="loader">Caricamento...</div>
+
+      <MainList v-else-if="notifications.length > 0">
         <ListItem
           v-for="(notification, index) in notifications"
-          :key="index"
+          :key="notification.id"
           :title="notification.title"
           :status="notification.status"
           :icon="notification.icon"
-          :class="{ 'notification-read': notification.read, 'notification-unread': !notification.read }"
+          :class="{ 'notification-read': notification.isRead, 'notification-unread': !notification.isRead }"
           @click="openNotification(notification)"
         >
           <template #subtitle>
@@ -100,20 +127,29 @@ const openNotification = (notification) => {
           </template>
 
           <template #status>
-            <span class="notification-badge" :class="notification.status">
-              {{
-                notification.status === 'nuova'
-                  ? 'Nuova'
-                  : notification.status === 'warning'
-                  ? 'Attenzione'
-                  : notification.status === 'success'
-                  ? 'Completata'
-                  : 'Info'
-              }}
-            </span>
+            <div class="notification-actions">
+              <span class="notification-badge" :class="notification.status">
+                {{
+                  notification.status === 'nuova'
+                    ? 'Nuova'
+                    : notification.status === 'warning'
+                    ? 'Attenzione'
+                    : notification.status === 'success'
+                    ? 'Completata'
+                    : 'Info'
+                }}
+              </span>
+              <button class="hide-btn" @click.stop="hideNotification(notification)" title="Nascondi notifica">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
           </template>
         </ListItem>
       </MainList>
+
+      <div v-else class="empty-state">
+        <p>Non hai ancora nessuna notifica.</p>
+      </div>
     </main>
     <Footer />
   </div>
@@ -211,6 +247,32 @@ const openNotification = (notification) => {
 .notification-badge.info {
   background: #ede9fe;
   color: #6d28d9;
+}
+
+.notification-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hide-btn {
+  background: none;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.2s ease, background-color 0.2s ease;
+  width: 30px;
+  height: 30px;
+}
+
+.hide-btn:hover {
+  color: #ef4444;
+  background-color: #fee2e2;
 }
 
 

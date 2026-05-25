@@ -29,6 +29,8 @@ const routes = [
   { path: '/clienti', component: ClientiPage },
   { path: '/clienti/dettaglio-cliente/:id', component: DiarioPage },
 
+  { path: '/diario', component: DiarioPage },
+
   { path: '/programmi', component: ListaProgrammi },
   { path: '/programmi/dettaglio-programma/:id', component: DettaglioProgrammaPage },
   { path: '/programmi/dettaglio-programma/:programId/dettaglio-split/:splitId/:athleteId?', component: DettaglioSplitPage },

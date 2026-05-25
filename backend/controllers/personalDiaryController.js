@@ -254,3 +254,13 @@ exports.deleteBodyDiary = async (req, res) => {
         handleError(res, error, 'Error deleting body diary');
     }
 };
+
+exports.getBodyDiaryByAthleteId = async (req, res) => {
+    try {
+        const data = await getUserResources(BodyDiary, req.params.clientId);
+
+        res.status(200).json({ success: true, count: data.length, data });
+    } catch (error) {
+        handleError(res, error, 'Error fetching body diary by athlete id');
+    }
+};

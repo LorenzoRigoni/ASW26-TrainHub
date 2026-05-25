@@ -10,7 +10,8 @@ const {
     deleteNotification,
     deleteAllNotifications,
     getUnreadCount,
-    sendNotification
+    sendNotification,
+    hideNotification
 } = require('../controllers/notificationController');
 
 // ==================== Notification Routes ====================
@@ -56,6 +57,13 @@ router.get('/:id', protect, getNotificationById);
  * @access Private
  */
 router.patch('/:id/read', protect, markNotificationAsRead);
+
+/**
+ * @route PATCH /api/notifications/:id/hide
+ * @desc Hide a specific notification
+ * @access Private
+ */
+router.patch('/:id/hide', protect, hideNotification);
 
 /**
  * @route PATCH /api/notifications/mark-all-read

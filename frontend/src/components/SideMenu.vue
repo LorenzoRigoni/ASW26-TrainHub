@@ -4,6 +4,7 @@ import SideMenuItem from './SideMenuItem.vue'
 import { ROLES } from '../utils/utils'
 import { useRouter } from 'vue-router'
 import { useRoute } from 'vue-router'
+import { useNotifications } from '../utils/useNotifications'
 
 const props = defineProps({
   isOpen: {
@@ -18,6 +19,8 @@ const props = defineProps({
 const router = useRouter()
 const route = useRoute()
 const emit = defineEmits(['close'])
+const { unreadCount } = useNotifications()
+
 const isActive = (path) => route.path === path
 const searchQuery = ref('')
 
@@ -25,7 +28,7 @@ const menuItems = [
   { id: 'home', icon: 'fa fa-home', label: 'Home', route: '/home', roles: [ROLES.PERSONAL_TRAINER,ROLES.CLIENTE,ROLES.NUTRIZIONISTA] },
   { id: 'clients', icon: 'fa fa-users', label: 'Clienti', route: '/clienti', roles: [ROLES.PERSONAL_TRAINER,ROLES.NUTRIZIONISTA] },
   { id: 'schede', icon: 'fa fa-list', label: 'Schede', route: '/programmi', roles: [ROLES.PERSONAL_TRAINER,ROLES.CLIENTE] },
-  { id: 'diario', icon: 'fa fa-book', label: 'Diario', route: '/clienti/dettaglio-cliente', roles: [ROLES.CLIENTE] },
+  { id: 'diario', icon: 'fa fa-book', label: 'Diario', route: '/diario', roles: [ROLES.CLIENTE] },
   { id: 'esercizi', icon: 'fa fa-tasks', label: 'Elenco Esercizi', route: '/esercizi', roles: [ROLES.PERSONAL_TRAINER] },
   { id: 'richieste-nutriz', icon: 'fa fa-apple', label: 'Richieste Nutriz.', route: '/richieste-nutrizione', roles: [ROLES.PERSONAL_TRAINER,ROLES.NUTRIZIONISTA] },
   { id: 'richieste-pt', icon: 'fa fa-heartbeat', label: 'In scadenza', route: '/scadenze', roles: [ROLES.PERSONAL_TRAINER] },
@@ -96,6 +99,7 @@ const filteredItems = () => {
           :label="item.label"
           :to="item.route"
           :active="isActive(item.route)"
+          :badge="item.id === 'notifications' && unreadCount > 0 ? unreadCount : null"
         />
       </ul>
     </div>

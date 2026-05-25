@@ -310,3 +310,28 @@ exports.uploadAvatar = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+exports.getAthleteDetail = async (req, res) => {
+    try {
+        const athlete = await User.findById(req.params.athleteId)
+            .select('name surname email birthDate profilePicture role');
+
+        if (!athlete || athlete.role !== 'client') {
+            return res.status(404).json({
+                success: false,
+                message: 'Athlete not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: athlete
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching athlete details',
+            error: error.message
+        });
+    }
+};

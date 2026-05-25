@@ -98,14 +98,14 @@ exports.createNutritionPlan = async (req, res) => {
         });
 
         // Create notification for athlete
-        await createNotification({
-            userId: athleteId,
-            type: 'nutrition_plan',
-            title: 'Nuovo piano alimentare',
-            message: `Hai ricevuto un nuovo piano alimentare: ${plan.title}`,
-            relatedEntityId: plan._id,
-            relatedEntityType: 'nutrition_plan'
-        });
+        await createNotification(
+            athleteId,
+            'nutrition_plan',
+            'Nuovo piano alimentare',
+            `Hai ricevuto un nuovo piano alimentare: ${plan.title}`,
+            plan._id,
+            'NutritionPlan'
+        );
 
         res.status(201).json({ success: true, data: plan });
     } catch (error) {

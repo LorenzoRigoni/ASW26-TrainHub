@@ -1,6 +1,15 @@
 <script setup>
+import { useNotifications } from '../utils/useNotifications'
+import { useRouter } from 'vue-router'
 
 const emit = defineEmits(['toggle-sidebar'])
+const router = useRouter()
+const { unreadCount } = useNotifications()
+
+const goToNotifications = () => {
+  unreadCount.value = 0
+  router.push('/home/notifiche')
+}
 </script>
 
 <template>
@@ -15,10 +24,18 @@ const emit = defineEmits(['toggle-sidebar'])
       <img src="../assets/TrainHub - Logo.png" alt="TrainHub Logo" class="logo-icon" />
     </div>
 
-    
-    <button class="profile-button" aria-label="Profilo utente">
-      <img src="../assets/UserIcon.png" alt="User profile" class="user-icon" />
-    </button>
+    <div class="navbar-actions">
+      <!-- NOTIFICATION BELL -->
+      <button class="notification-btn" @click="goToNotifications" aria-label="Notifiche">
+        <i class="fa fa-bell"></i>
+        <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+      </button>
+
+      <!-- PROFILE BUTTON -->
+      <button class="profile-button" aria-label="Profilo utente">
+        <img src="../assets/UserIcon.png" alt="User profile" class="user-icon" />
+      </button>
+    </div>
   </nav>
 </template>
 
@@ -67,6 +84,50 @@ const emit = defineEmits(['toggle-sidebar'])
 .logo-icon {
   height: 44px;
   width: auto;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #1e1548;
+  cursor: pointer;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.notification-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.notification-btn .badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: #dc2626;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: 2px solid white;
 }
 
 .profile-button {
