@@ -31,7 +31,7 @@ const routes = [
 
   { path: '/programmi', component: ListaProgrammi },
   { path: '/programmi/dettaglio-programma/:id', component: DettaglioProgrammaPage },
-  { path: '/programmi/dettaglio-programma/:id/dettaglio-split/:id', component: DettaglioSplitPage },
+  { path: '/programmi/dettaglio-programma/:programId/dettaglio-split/:splitId/:athleteId?', component: DettaglioSplitPage },
 
   { path: '/bozze', component: ListaBozzePage },
   { path: '/bozze/dettaglio-bozza/:id', component: BozzaProgrammaPage },

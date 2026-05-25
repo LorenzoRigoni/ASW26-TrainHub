@@ -62,8 +62,13 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
-const goToSplit = (split) => {
-  router.push('/programmi/dettaglio-programma/:id/dettaglio-split/${split.id}')
+const goToSplit = (split, program) => {
+  const splitIdentificator = split._id || split.splitId
+  if (userLogged.value.role === 'trainer') {
+    router.push(`/programmi/dettaglio-programma/${program._id}/dettaglio-split/${split._id}/${program.athleteId._id}`)
+  } else {
+    router.push(`/programmi/dettaglio-programma/${program._id}/dettaglio-split/${split._id}`)
+  }
 }
 </script>
 
@@ -94,7 +99,7 @@ const goToSplit = (split) => {
                         v-for="(ex, j) in split.exercises"
                         :key="j"
                         v-bind="ex"
-                        @click="goToSplit(split)"
+                        @click="goToSplit(split, program)"
                       />
                     </ul>
                   </div>

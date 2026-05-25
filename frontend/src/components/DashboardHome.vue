@@ -15,15 +15,15 @@ const router = useRouter()
 const props = defineProps({
   user: { type: Object, default: null },
   stats: { type: Object , default: null},
-  clienti: { type: Array, default: null },
-  schede: {  type: Array, default: null },
+  clienti: { type: Array, default: () => [] },
+  schede: {  type: Array, default: () => [] },
   misurazionOggi:    { type: Object, default: null },
   ultimoAllenamento: { type: Object, default: null },
-  schedeCliente: { type: Array, default: null },
-  pianiNutrizionali: { type: Array, default: null },
+  schedeCliente: { type: Array, default: () => [] },
+  pianiNutrizionali: { type: Array, default: () => [] },
   statsNutrizionista: { type: Object, default: null},
-  richiesteNutrizionista: { type: Array, default: null },
-  clientiNutrizionista: { type: Array, default: null }
+  richiesteNutrizionista: { type: Array, default: () => [] },
+  clientiNutrizionista: { type: Array, default: () => [] }
 })
 
 const emit = defineEmits([
