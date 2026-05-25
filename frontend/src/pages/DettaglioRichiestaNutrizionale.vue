@@ -1,9 +1,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute  } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import { ROLES } from '../utils/utils.js'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
+import Footer from '../components/Footer.vue'
 
 const userLogged = ref({ 
   name: localStorage.getItem('user_name'), 
@@ -11,51 +13,96 @@ const userLogged = ref({
   role: localStorage.getItem('user_role') 
 })
 
-
 const route = useRoute()
+const router = useRouter()
 
 const sidebarOpen = ref(true)
-
 const requestId = computed(() => route.params.id)
-
-// MODE
 const isEditMode = computed(() => !!requestId.value)
 
-// FORM MOCK
 const form = ref({
-  title: 'Piano alimentare dimagrimento',
-  clientId: 2,
-  goal: 'Definizione',
-  nutritionistId: 'n1',
-  startDate: '2026-05-01',
-  endDate: '2026-06-01',
-  notes: 'Ridurre carboidrati la sera e aumentare proteine.'
+  title: '',
+  clientId: '',
+  goal: '',
+  nutritionistId: '',
+  status: 'In attesa',
+  startDate: '',
+  endDate: '',
+  notes: ''
 })
 
-// CLIENTI MOCK
-const clients = ref([
-  { id: 1, name: 'Luca', surname: 'Bianchi' },
-  { id: 2, name: 'Giulia', surname: 'Verdi' },
-  { id: 3, name: 'Marco', surname: 'Neri' }
-])
+const clients = ref([])
+const nutritionists = ref([])
+const loading = ref(false)
 
-// NUTRIZIONISTI MOCK
-const nutritionists = ref([
-  { _id: 'n1', name: 'Anna', surname: 'Ferrari' },
-  { _id: 'n2', name: 'Luca', surname: 'Conti' }
-])
+const getAuthConfig = () => {
+  const token = localStorage.getItem('token')
+  return { headers: { Authorization: `Bearer ${token}` } }
+}
 
-// METHODS
+const fetchData = async () => {
+  loading.value = true
+  try {
+    const config = getAuthConfig()
+    
+    // Fetch clients and nutritionists in parallel
+    const [clientsRes, nutriRes] = await Promise.all([
+      axios.get('http://localhost:5000/api/users/my-clients', config),
+      axios.get('http://localhost:5000/api/users/nutritionists', config)
+    ])
+    
+    clients.value = (clientsRes.data?.data || []).map(c => ({ id: c.id, name: c.name, surname: c.surname }))
+    nutritionists.value = nutriRes.data?.data || []
+
+    if (isEditMode.value) {
+      const res = await axios.get(`http://localhost:5000/api/nutrition-requests/${requestId.value}`, config)
+      const data = res.data.data
+      form.value = {
+        title: data.title,
+        clientId: data.clientId._id || data.clientId,
+        goal: data.goal,
+        nutritionistId: data.nutritionistId._id || data.nutritionistId,
+        status: data.status,
+        startDate: data.startDate ? data.startDate.split('T')[0] : '',
+        endDate: data.endDate ? data.endDate.split('T')[0] : '',
+        notes: data.notes || ''
+      }
+    }
+  } catch (error) {
+    console.error('Errore caricamento dati:', error.response?.data?.message || error.message)
+    alert('Errore nel caricamento della pagina')
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(fetchData)
+
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
-const closeModal = () => {
-  console.log('Modal chiusa')
+const goBack = () => {
+  router.push('/richieste-nutrizione')
 }
 
-const saveRequest = () => {
-  console.log('Dati salvati:', form.value)
+const saveRequest = async () => {
+  try {
+    const config = getAuthConfig()
+    const payload = { ...form.value }
+    
+    if (isEditMode.value) {
+      await axios.put(`http://localhost:5000/api/nutrition-requests/${requestId.value}`, payload, config)
+    } else {
+      await axios.post('http://localhost:5000/api/nutrition-requests', payload, config)
+    }
+    
+    alert(isEditMode.value ? 'Richiesta aggiornata' : 'Richiesta inviata')
+    goBack()
+  } catch (error) {
+    console.error('Errore salvataggio:', error.response?.data?.message || error.message)
+    alert('Errore durante il salvataggio: ' + (error.response?.data?.message || error.message))
+  }
 }
 
 const pageTitle = computed(() =>
@@ -63,6 +110,14 @@ const pageTitle = computed(() =>
     ? 'Dettaglio richiesta nutrizionale'
     : 'Nuova richiesta nutrizionale'
 )
+
+const canEditForm = computed(() => {
+  return userLogged.value.role === ROLES.PERSONAL_TRAINER
+})
+
+const canEditStatus = computed(() => {
+  return userLogged.value.role === ROLES.NUTRIZIONISTA
+})
 </script>
 
 <template>
@@ -71,78 +126,95 @@ const pageTitle = computed(() =>
         <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
         
         <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
-            <div class="info-header">
-                <h1>{{ pageTitle }}</h1>
+            <div v-if="loading" class="loader-container">
+              <i class="fa fa-spinner fa-spin"></i> Caricamento...
             </div>
-            <div class="form-card">
-              <div class="form-grid">
-                <!-- COLONNA 1 -->
-                <div class="col col-left">
+            
+            <template v-else>
+              <div class="info-header">
+                  <h1>{{ pageTitle }}</h1>
+              </div>
+              <div class="form-card">
+                <div class="form-grid">
+                  <!-- COLONNA 1 -->
+                  <div class="col col-left">
 
-                  <div class="form-row">
-                    <label>Titolo</label>
-                    <input type="text" v-model="form.title" />
+                    <div class="form-row">
+                      <label>Titolo</label>
+                      <input type="text" v-model="form.title" :disabled="!canEditForm" />
+                    </div>
+
+                    <div class="form-row">
+                      <label>Cliente</label>
+                      <select v-model="form.clientId" :disabled="isEditMode || !canEditForm">
+                        <option value="" disabled>Seleziona cliente</option>
+                        <option v-for="c in clients" :key="c.id" :value="c.id">
+                          {{ c.name }} {{ c.surname }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="form-row">
+                      <label>Obiettivo</label>
+                      <select v-model="form.goal" :disabled="!canEditForm">
+                        <option value="" disabled>Seleziona obiettivo</option>
+                        <option value="Definizione">Definizione</option>
+                        <option value="Mantenimento">Mantenimento</option>
+                        <option value="Massa">Massa</option>
+                      </select>
+                    </div>
+
+                    <div class="form-row">
+                      <label>Nutrizionista</label>
+                      <select v-model="form.nutritionistId" :disabled="!canEditForm">
+                        <option value="" disabled>Seleziona nutrizionista</option>
+                        <option v-for="n in nutritionists" :key="n._id" :value="n._id">
+                          {{ n.name }} {{ n.surname }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="form-row" v-if="isEditMode">
+                      <label>Stato</label>
+                      <select v-model="form.status" :disabled="!canEditStatus">
+                        <option value="In attesa">In attesa</option>
+                        <option value="In elaborazione">In elaborazione</option>
+                        <option value="Completata">Completata</option>
+                        <option value="Rifiutata">Rifiutata</option>
+                      </select>
+                    </div>
+
                   </div>
 
-                  <div class="form-row">
-                    <label>Cliente</label>
-                    <select v-model="form.clientId" :disabled="isEditMode">
-                      <option value="" disabled>Seleziona cliente</option>
-                      <option v-for="c in clients" :key="c.id" :value="c.id">
-                        {{ c.name }} {{ c.surname }}
-                      </option>
-                    </select>
-                  </div>
+                  <!-- COLONNA 2 -->
+                  <div class="col col-right">
 
-                  <div class="form-row">
-                    <label>Obiettivo</label>
-                    <select v-model="form.goal">
-                      <option value="" disabled>Seleziona obiettivo</option>
-                      <option value="Definizione">Definizione</option>
-                      <option value="Mantenimento">Mantenimento</option>
-                      <option value="Massa">Massa</option>
-                    </select>
-                  </div>
+                    <div class="form-row">
+                      <label>Data inizio</label>
+                      <input type="date" v-model="form.startDate" :disabled="!canEditForm" />
+                    </div>
 
-                  <div class="form-row">
-                    <label>Nutrizionista</label>
-                    <select v-model="form.nutritionistId">
-                      <option value="" disabled>Seleziona nutrizionista</option>
-                      <option v-for="n in nutritionists" :key="n._id" :value="n._id">
-                        {{ n.name }} {{ n.surname }}
-                      </option>
-                    </select>
-                  </div>
+                    <div class="form-row">
+                      <label>Data fine</label>
+                      <input type="date" v-model="form.endDate" :disabled="!canEditForm" />
+                    </div>
 
+                    <div class="form-row grow">
+                      <label>Note</label>
+                      <textarea v-model="form.notes" :disabled="!canEditForm"></textarea>
+                    </div>
+                  </div>
                 </div>
-
-                <!-- COLONNA 2 -->
-                <div class="col col-right">
-
-                  <div class="form-row">
-                    <label>Data inizio</label>
-                    <input type="date" v-model="form.startDate" />
-                  </div>
-
-                  <div class="form-row">
-                    <label>Data fine</label>
-                    <input type="date" v-model="form.endDate" />
-                  </div>
-
-                  <div class="form-row grow">
-                    <label>Note</label>
-                    <textarea v-model="form.notes"></textarea>
-                  </div>
+                <div class="form-actions">
+                  <button class="btn-primary red-button" @click="goBack">Annulla</button>
+                  <button class="btn-primary" @click="saveRequest">
+                    {{ isEditMode ? 'Salva' : 'Invia' }}
+                  </button>
                 </div>
               </div>
-              <div class="form-actions">
-                <button class="btn-primary red-button" @click="closeModal">Annulla</button>
-                <button class="btn-primary" @click="saveRequest">
-                  {{ isEditMode ? 'Salva' : 'Invia' }}
-                </button>
-              </div>
-            </div>
+            </template>
         </main>
+        <Footer />
      </div>
 </template>
 
@@ -342,5 +414,14 @@ h1 {
   max-width:90%;
   margin: 20px auto 16px;
 
+}
+
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.2rem;
+  color: #1e1548;
 }
 </style>

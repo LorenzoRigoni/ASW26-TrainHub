@@ -20,10 +20,10 @@ const {
 
 /**
  * @route GET /api/users/my-clients
- * @desc Get all the clients assigned to the logged trainer
- * @access Private (trainer)
+ * @desc Get all the clients assigned to the logged trainer or nutritionist
+ * @access Private (trainer, nutritionist)
  */
-router.get('/my-clients', protect, authorize('trainer'), getMyClients);
+router.get('/my-clients', protect, authorize('trainer', 'nutritionist'), getMyClients);
 
 /**
  * @route GET /api/users/trainer-stats

@@ -6,7 +6,16 @@ const fs = require('fs');
 
 exports.getMyClients = async (req, res) => {
     try {
-        const clients = await User.find({assignedTrainerId: req.user.id})
+        let query = {};
+        if (req.user.role === 'trainer') {
+            query = { assignedTrainerId: req.user.id };
+        } else if (req.user.role === 'nutritionist') {
+            query = { assignedNutritionistId: req.user.id };
+        } else {
+            return res.status(403).json({ success: false, message: 'Unauthorized role' });
+        }
+
+        const clients = await User.find(query)
             .select('name surname email dateOfBirth');
 
         const currentMonth = new Date().getMonth();

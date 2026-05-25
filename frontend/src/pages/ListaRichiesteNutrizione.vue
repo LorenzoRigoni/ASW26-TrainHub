@@ -71,86 +71,9 @@ const loadRequests = async () => {
   }
 }
 
-const showModal = ref(false)
-
-const today = new Date().toISOString().split('T')[0]
-
-const form = ref({
-  title: '',
-  clientId: '',
-  nutritionistId: '',
-  goal: '',
-  startDate: today,
-  endDate: today,
-  notes: ''
-})
-
-const openModal = () => {
-  isEditMode.value = false
-  selectedRequestId.value = null
-  form.value = {
-    title: '',
-    clientId: '',
-    nutritionistId: '',
-    goal: '',
-    startDate: today,
-    endDate: today,
-    notes: ''
-  }
-  showModal.value = true
-}
-
-const openModalCompiled = (request) => {
-  isEditMode.value = true
-  selectedRequestId.value = request._id
-  form.value = {
-    title: request.title,
-    clientId: request.clientId?._id || request.clientId,
-    nutritionistId: request.nutritionistId?._id || request.nutritionistId,
-    goal: request.goal || '',
-    startDate: request.startDate ? new Date(request.startDate).toISOString().split('T')[0] : today,
-    endDate: request.endDate ? new Date(request.endDate).toISOString().split('T')[0] : today,
-    notes: request.notes || ''
-  }
-  showModal.value = true
-}
-
-const closeModal = () => {
-  showModal.value = false
-}
-
 const formatDate = (dateString) => {
   if (!dateString) return ''
   return new Date(dateString).toLocaleDateString('it-IT')
-}
-
-const saveRequest = async () => {
-  try {
-    const token = localStorage.getItem('token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-
-    const payload = {
-      title: form.value.title,
-      clientId: form.value.clientId,
-      nutritionistId: form.value.nutritionistId,
-      goal: form.value.goal,
-      startDate: form.value.startDate,
-      endDate: form.value.endDate,
-      notes: form.value.notes
-    }
-
-    if (isEditMode.value) {
-      await axios.put(`http://localhost:5000/api/nutrition-requests/${selectedRequestId.value}`, payload, config)
-    } else {
-      await axios.post('http://localhost:5000/api/nutrition-requests', payload, config)
-    }
-    
-    await loadRequests()
-    closeModal()
-  } catch (error) {
-    console.error('Errore salvataggio richiesta:', error.response?.data?.message || error.message)
-    alert('Errore durante il salvataggio: ' + (error.response?.data?.message || error.message))
-  }
 }
 
 </script>

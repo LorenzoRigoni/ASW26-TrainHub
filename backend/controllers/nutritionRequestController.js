@@ -25,6 +25,32 @@ exports.getMyNutritionRequests = async (req, res) => {
     }
 };
 
+exports.getNutritionRequestById = async (req, res) => {
+    try {
+        const request = await NutritionRequest.findById(req.params.id)
+            .populate('trainerId', 'name surname')
+            .populate('clientId', 'name surname')
+            .populate('nutritionistId', 'name surname');
+
+        if (!request) return notFound(res);
+
+        const trainerId = request.trainerId?._id || request.trainerId;
+        const nutritionistId = request.nutritionistId?._id || request.nutritionistId;
+
+        if (req.user.role === 'trainer' && !isOwner(trainerId, req.user.id)) {
+            return forbidden(res);
+        }
+
+        if (req.user.role === 'nutritionist' && !isOwner(nutritionistId, req.user.id)) {
+            return forbidden(res);
+        }
+
+        res.status(200).json({ success: true, data: request });
+    } catch (error) {
+        handleError(res, error, 'Error fetching nutrition request');
+    }
+};
+
 exports.createNutritionRequest = async (req, res) => {
     try {
         const { clientId, nutritionistId, title, goal, startDate, endDate, notes } = req.body;
@@ -56,10 +82,11 @@ exports.updateNutritionRequest = async (req, res) => {
 
         if (!request) return notFound(res);
 
-        // Authorization: Trainers can edit their own requests if still pending
+        // Authorization: Trainers can edit their own requests
         // Nutritionists can update status
         if (req.user.role === 'trainer') {
-            if (!isOwner(request.trainerId, req.user.id)) return forbidden(res);
+            const trainerId = request.trainerId?._id || request.trainerId;
+            if (!isOwner(trainerId, req.user.id)) return forbidden(res);
             
             const { title, goal, startDate, endDate, notes, clientId, nutritionistId } = req.body;
             if (title) request.title = title;
@@ -70,7 +97,8 @@ exports.updateNutritionRequest = async (req, res) => {
             if (clientId) request.clientId = clientId;
             if (nutritionistId) request.nutritionistId = nutritionistId;
         } else if (req.user.role === 'nutritionist') {
-            if (!isOwner(request.nutritionistId, req.user.id)) return forbidden(res);
+            const nutritionistId = request.nutritionistId?._id || request.nutritionistId;
+            if (!isOwner(nutritionistId, req.user.id)) return forbidden(res);
             
             const { status } = req.body;
             if (status) request.status = status;
@@ -91,7 +119,8 @@ exports.deleteNutritionRequest = async (req, res) => {
 
         if (!request) return notFound(res);
 
-        if (!isOwner(request.trainerId, req.user.id)) {
+        const trainerId = request.trainerId?._id || request.trainerId;
+        if (!isOwner(trainerId, req.user.id)) {
             return forbidden(res);
         }
 
