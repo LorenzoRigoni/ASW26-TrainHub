@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
-import { getInitials, getAvatarColor, ROLES } from '../utils/utils'
 import { useRouter } from 'vue-router'
+import { getInitials, getAvatarColor, ROLES } from '../utils/utils'
 
 import StatCard   from './StaticCard.vue'
 import ActionCard from './ActionCard.vue'
@@ -25,6 +25,12 @@ const props = defineProps({
   richiesteNutrizionista: { type: Array, default: null },
   clientiNutrizionista: { type: Array, default: null }
 })
+
+const emit = defineEmits([
+  'nuova-scheda', 'vedi-clienti', 'vedi-schede', 'apri-cliente', 'apri-scheda',
+  'aggiungi-misurazioni', 'inizia-allenamento', 'apri-scheda-cliente', 'apri-piano-nutrizionale',
+  'apri-richiesta', 'apri-cliente-nutrizionista'
+])
 
 const greeting = computed(() => {
   const h = new Date().getHours()
@@ -51,6 +57,15 @@ const statCardsNutri = computed(() => [
   { label: 'PT Collaboratori', value: props.statsNutrizionista.ptCollaboratori,   icon: 'fa fa-handshake-o', color: '#40916c', bg: 'rgba(64,145,108,0.12)' }
 ])
 
+const getNotifIcon = (type) => {
+  switch (type) {
+    case 'program_created': return 'fa fa-file-text-o'
+    case 'workout_created': return 'fa fa-check-circle'
+    case 'package_expiring': return 'fa fa-exclamation-triangle'
+    case 'nutrition_plan': return 'fa fa-cutlery'
+    default: return 'fa fa-bell'
+  }
+}
 
 const goToCustomerDetail = (id) => {
   router.push(`/clienti/dettaglio-cliente/${id}`)
@@ -90,6 +105,29 @@ const goToNutritionPlanDetail = (id) => {
         <i class="fa fa-play"></i> Inizia Allenamento
       </button>
     </div>
+
+    <!-- NOTIFICATION SECTION -->
+    <div v-if="notifiche.length > 0" class="notif-section">
+      <PanelList
+        title="Nuove Notifiche"
+        link-label="Vedi tutte"
+        @link-click="router.push('/home/notifiche')"
+      >
+        <ListItem
+          v-for="n in notifiche" :key="n._id"
+          :title="n.title"
+          :subtitle="n.message"
+          @click="router.push('/home/notifiche')"
+        >
+          <template #left>
+            <div class="icon-wrap notif-icon-wrap">
+              <i :class="getNotifIcon(n.type)"></i>
+            </div>
+          </template>
+        </ListItem>
+      </PanelList>
+    </div>
+
 
     <!-- PERSONAL TRAINER -->
     <template v-if="user.role === ROLES.PERSONAL_TRAINER">
@@ -341,6 +379,15 @@ const goToNutritionPlanDetail = (id) => {
   margin: 0; 
   color: #6b7280; 
   font-size: 0.95rem; 
+}
+
+.notif-section {
+  margin-bottom: 2rem;
+}
+
+.notif-icon-wrap {
+  background: rgba(224,92,154,0.1);
+  color: #e05c9a;
 }
 
 .btn-primary {
