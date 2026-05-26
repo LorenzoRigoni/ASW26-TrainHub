@@ -218,18 +218,6 @@ const openDeadlineDetail = (deadline) => {
             </span>
           </div>
 
-          <div class="detail-row">
-            <span class="label">Stato</span>
-
-            <span>
-              {{
-                selectedDeadline.status === 'pending'
-                  ? 'In attesa'
-                  : 'Completata'
-              }}
-            </span>
-          </div>
-
           <div
             class="detail-row"
             v-if="selectedDeadline.notes"
@@ -241,18 +229,17 @@ const openDeadlineDetail = (deadline) => {
         </div>
 
         <template #actions>
-          <button
-            class="btn-danger"
-            @click="showDeadlineModal = false"
-          >
+          <button class="btn-danger"  @click="showDeadlineModal = false">
+            <i class="fa fa-close"></i>
             Chiudi
           </button>
 
-          <button
-            v-if="selectedDeadline?.status === 'pending'"
-            class="btn-primary"
-            @click="openProgramModal(selectedDeadline)"
-          >
+          <button class="btn-primary"  @click="showDeadlineModal = false">
+            <i class="fa fa-save"></i>
+            Salva
+          </button>
+
+          <button v-if="selectedDeadline?.status === 'pending'"  class="btn-primary"  @click="openProgramModal(selectedDeadline)">
             <i class="fa fa-magic"></i>
             Crea Programma
           </button>
