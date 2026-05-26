@@ -24,6 +24,9 @@ const showModal = ref(false)
 const loading = ref(true)
 const deadlines = ref([])
 const athletes = ref([])
+const showProgramModal = ref(false)
+const showDeadlineModal = ref(false)
+const selectedDeadline = ref(null)
 
 const today = new Date().toISOString().split('T')[0]
 
@@ -110,8 +113,7 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
-const showProgramModal = ref(false)
-const selectedDeadline = ref(null)
+
 
 const programForm = ref({
   title: '',
@@ -130,7 +132,13 @@ const openProgramModal = (deadline) => {
     endDate: today
   }
 
+  showDeadlineModal.value = false
   showProgramModal.value = true
+}
+
+const openDeadlineDetail = (deadline) => {
+  selectedDeadline.value = deadline
+  showDeadlineModal.value = true
 }
 
 </script>
@@ -161,23 +169,13 @@ const openProgramModal = (deadline) => {
             :title="`${s.athleteId?.name || ''} ${s.athleteId?.surname || ''}`"
             :status="s.status === 'pending' ? 'In attesa' : 'Completata'"
             :class="getPriorityClass(s.dueDate)"
+            @click="openDeadlineDetail(s)"
           >
             <template #subtitle>
               <div class="plan-subtitle">
                 <div class="info-row">
                   <i class="fa fa-clock-o"></i>
                   <span>Inizio previsto: <strong>{{ new Date(s.dueDate).toLocaleDateString() }}</strong></span>
-                </div>
-                
-                <div v-if="s.status === 'pending'" class="info-row" style="margin-top: 8px;">
-                  <button 
-                    @click.stop="createProgram(s)" 
-                    class="btn-primary"
-                    style="padding: 8px 14px; font-size: 0.85rem;"
-                    @click="openProgramModal"
-                  >
-                    <i class="fa fa-magic"></i> Crea Programma
-                  </button>
                 </div>
               </div>
             </template>
@@ -189,6 +187,77 @@ const openProgramModal = (deadline) => {
            <p>Nessuna scadenza pendente. Ottimo lavoro!</p>
         </div>
       </div>
+
+      <AppModal
+        v-model="showDeadlineModal"
+        title="Dettaglio Scadenza"
+        width="650px"
+      >
+        <div v-if="selectedDeadline" class="deadline-detail">
+
+          <div class="detail-row">
+            <span class="label">Atleta</span>
+            <span>
+              {{ selectedDeadline.athleteId?.name }}
+              {{ selectedDeadline.athleteId?.surname }}
+            </span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Titolo</span>
+            <span>{{ selectedDeadline.title }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Scadenza</span>
+            <span>
+              {{
+                new Date(selectedDeadline.dueDate)
+                  .toLocaleDateString()
+              }}
+            </span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Stato</span>
+
+            <span>
+              {{
+                selectedDeadline.status === 'pending'
+                  ? 'In attesa'
+                  : 'Completata'
+              }}
+            </span>
+          </div>
+
+          <div
+            class="detail-row"
+            v-if="selectedDeadline.notes"
+          >
+            <span class="label">Note</span>
+            <span>{{ selectedDeadline.notes }}</span>
+          </div>
+
+        </div>
+
+        <template #actions>
+          <button
+            class="btn-danger"
+            @click="showDeadlineModal = false"
+          >
+            Chiudi
+          </button>
+
+          <button
+            v-if="selectedDeadline?.status === 'pending'"
+            class="btn-primary"
+            @click="openProgramModal(selectedDeadline)"
+          >
+            <i class="fa fa-magic"></i>
+            Crea Programma
+          </button>
+        </template>
+      </AppModal>
 
       <AppModal
         v-model="showProgramModal"
@@ -392,7 +461,7 @@ const openProgramModal = (deadline) => {
 .form-row {
   display: flex;
   align-items: center;
-  gap: 18px;
+  margin-bottom: 10pt;
 }
 
 .form-row label {
@@ -433,4 +502,25 @@ const openProgramModal = (deadline) => {
   line-height: 1.3;
 }
 
+/*Css modal dettaglio scadenza */
+.deadline-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: white;
+  border: 1px solid #e5e8f3;
+  border-radius: 14px;
+}
+
+.label {
+  font-weight: 700;
+  color: #1e1548;
+}
 </style>
