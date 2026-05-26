@@ -1,13 +1,12 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { ROLES } from '../utils/utils.js'
-import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import DashboardHome from '../components/DashboardHome.vue'
+import AIChat from '../components/AIChat.vue'
 import axios from 'axios'
 
-//Al momento per vedere come cambiano le varie home, cambiamo ruolo: ''. I valori possibili sono personalTrainer, cliente, nutrizionista.
 const userLogged = ref({ 
   name: localStorage.getItem('user_name'), 
   surname: localStorage.getItem('user_surname'), 
@@ -93,9 +92,8 @@ onMounted(fetchData)
         :notifiche="recentNotifications || []"
         :ultimo-allenamento="{ data: '2025-05-01' }"
       />
+      <AIChat />
     </main>
-
-    <Footer />
   </div>
 </template>
 
