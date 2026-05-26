@@ -10,7 +10,6 @@ import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
 
 const sidebarOpen = ref(true)
-
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
@@ -30,36 +29,63 @@ const today = new Date().toISOString().split('T')[0]
 const form = ref({
   title: '',
   athleteId: '',
-  description: '',
-  dailyCalories: '',
-  proteins: '',
-  carbs: '',
-  fats: '',
   notes: '',
   startDate: today,
   endDate: today
 })
 
-const getAuthConfig = () => {
-  const token = localStorage.getItem('token')
-  return { headers: { Authorization: `Bearer ${token}` } }
+const selectedFile = ref(null)
+
+const handleFileChange = (event) => {
+  selectedFile.value = event.target.files[0]
+}
+
+const token = localStorage.getItem('token')
+const config = { headers: { Authorization: `Bearer ${token}` } }
+
+const formatDate = (dateString) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('it-IT')
+}
+
+const calculateStatus = (startDate, endDate) => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  const start = new Date(startDate)
+  start.setHours(0, 0, 0, 0)
+  
+  const end = new Date(endDate)
+  end.setHours(0, 0, 0, 0)
+
+  if (today >= start && today <= end) {
+    return { text: 'Attivo', class: 'status-active' }
+  } else {
+    return { text: 'Inattivo', class: 'status-inactive' }
+  }
 }
 
 const loadPlans = async () => {
   try {
-    const response = await axios.get('http://localhost:5000/api/nutrition-plans/nutritionist/plans', getAuthConfig())
-    nutritionPlans.value = response.data.data || []
+    const url = userLogged.value.role === 'nutritionist' 
+      ? 'http://localhost:5000/api/nutrition-plans/nutritionist/plans' 
+      : 'http://localhost:5000/api/nutrition-plans/my-plans'
+    
+    const response = await axios.get(url, config)
+    nutritionPlans.value = response.data.data
   } catch (error) {
-    console.error('Errore caricamento piani:', error.response?.data?.message || error.message)
+    console.error("Errore nel caricamento dei piani alimentari:", error)
   }
 }
 
 const loadClients = async () => {
+  if (userLogged.value.role !== 'nutritionist') return
   try {
-    const response = await axios.get('http://localhost:5000/api/users/my-clients', getAuthConfig())
-    clients.value = response.data.data || []
+    const response = await axios.get('http://localhost:5000/api/users/my-clients', config)
+    clients.value = response.data.data
   } catch (error) {
-    console.error('Errore caricamento clienti:', error.response?.data?.message || error.message)
+    console.error("Errore nel caricamento degli atleti:", error)
   }
 }
 
@@ -67,66 +93,54 @@ onMounted(async () => {
   await Promise.all([loadPlans(), loadClients()])
 })
 
-const openModal = () => {
-  form.value = {
-    title: '',
-    athleteId: '',
-    description: '',
-    dailyCalories: '',
-    proteins: '',
-    carbs: '',
-    fats: '',
-    notes: '',
-    startDate: today,
-    endDate: today
+const savePlan = async () => {
+  if (!selectedFile.value) {
+    //TODO: messaggio di errore visibile
+    return;
   }
 
+  try {
+    const formData = new FormData();
+    formData.append('title', form.value.title);
+    formData.append('athleteId', form.value.athleteId);
+    formData.append('startDate', form.value.startDate);
+    formData.append('endDate', form.value.endDate);
+    formData.append('notes', form.value.notes);
+    formData.append('pdfFile', selectedFile.value); 
+
+    const response = await axios.post(
+      'http://localhost:5000/api/nutrition-plans', 
+      formData, 
+      {
+        headers: { 
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'multipart/form-data' 
+        }
+      }
+    );
+
+    showModal.value = false;
+    form.value = { title: '', athleteId: '', notes: '', pdfFile: '', startDate: today, endDate: today };
+    selectedFile.value = null;
+    
+    await loadPlans();
+    //TODO: alert("Piano alimentare salvato con successo!");
+  } catch (error) {
+    console.error(error.response?.data?.message || "Errore nel salvataggio del piano")
+  }
+}
+
+const downloadPdf = (plan) => {
+  const fileUrl = `http://localhost:5000${plan.pdfUrl}`
+  window.open(fileUrl, '_blank')
+}
+
+const openModal = () => {
   showModal.value = true
 }
 
 const closeModal = () => {
   showModal.value = false
-}
-
-const savePlan = async () => {
-  try {
-    if (!form.value.athleteId) {
-      alert('Seleziona un cliente per il piano')
-      return
-    }
-
-    const payload = {
-      athleteId: form.value.athleteId,
-      title: form.value.title,
-      description: form.value.description,
-      dailyCalories: form.value.dailyCalories ? Number(form.value.dailyCalories) : null,
-      macros: {
-        proteins: form.value.proteins ? Number(form.value.proteins) : null,
-        carbs: form.value.carbs ? Number(form.value.carbs) : null,
-        fats: form.value.fats ? Number(form.value.fats) : null
-      },
-      notes: form.value.notes,
-      startDate: form.value.startDate,
-      endDate: form.value.endDate
-    }
-
-    const response = await axios.post('http://localhost:5000/api/nutrition-plans', payload, getAuthConfig())
-    nutritionPlans.value.unshift(response.data.data)
-    closeModal()
-  } catch (error) {
-    console.error('Errore salvataggio piano:', error.response?.data?.message || error.message)
-  }
-}
-
-const formatStatus = (status) => {
-  if (status === 'active') return 'Attivo'
-  if (status === 'draft') return 'Bozza'
-  if (status === 'archived') return 'Archiviato'
-  return status
-}
-
-const openPdf = (plan) => {
-  alert('Dettaglio piano non ancora implementato')
 }
 </script>
 <template>
@@ -145,9 +159,8 @@ const openPdf = (plan) => {
       <div class="page-header">
         <div>
           <h1>Piani alimentari</h1>
-          <p>Gestisci e assegna i programmi alimentari ai clienti</p>
         </div>
-        <button class="btn-primary" @click="openModal">
+        <button class="btn-primary" @click="openModal" v-if="userLogged.role === 'nutritionist'">
           <i class="fa fa-plus"></i>
           Carica piano alimentare
         </button>
@@ -155,20 +168,17 @@ const openPdf = (plan) => {
 
       <!-- LISTA -->
       <MainList>
-        <ListItem
-          v-for="plan in nutritionPlans"
-          :key="plan._id"
+        <ListItem 
+          v-for="plan in nutritionPlans" 
+          :key="plan._id" 
           :title="plan.title"
-          :status="formatStatus(plan.planStatus)"
-          icon="fa fa-utensils"
-          @click="openPdf(plan)"
+          :subtitle="userLogged.role === 'nutritionist' 
+            ? `${plan.athleteId?.name} ${plan.athleteId?.surname} - Periodo dal ${formatDate(plan.startDate)} al ${formatDate(plan.endDate)}` 
+            : `Dott. ${plan.nutritionistId?.name} ${plan.nutritionistId?.surname} - Periodo dal ${formatDate(plan.startDate)} al ${formatDate(plan.endDate)}`"
+          :status="calculateStatus(plan.startDate, plan.endDate).text"
+          @click="downloadPdf(plan)"
+          style="cursor: pointer;"
         >
-
-          <template #subtitle>
-            {{ plan.athleteId?.name }} {{ plan.athleteId?.surname }} ·
-            {{ new Date(plan.startDate).toISOString().split('T')[0] }} -
-            {{ new Date(plan.endDate).toISOString().split('T')[0] }}
-          </template>
         </ListItem>
       </MainList>
     </main>
@@ -199,31 +209,15 @@ const openPdf = (plan) => {
           </select>
         </div>
 
-        <!-- DESCRIPTION -->
         <div class="form-row full-width">
-          <label>Descrizione</label>
-          <textarea v-model="form.description" placeholder="Descrivi gli obiettivi e le indicazioni"></textarea>
-        </div>
-
-        <!-- CALORIE E MACRO -->
-        <div class="form-row">
-          <label>Calorie giornaliere</label>
-          <input type="number" min="0" v-model.number="form.dailyCalories" />
-        </div>
-
-        <div class="form-row">
-          <label>Proteine (g)</label>
-          <input type="number" min="0" v-model.number="form.proteins" />
-        </div>
-
-        <div class="form-row">
-          <label>Carboidrati (g)</label>
-          <input type="number" min="0" v-model.number="form.carbs" />
-        </div>
-
-        <div class="form-row">
-          <label>Grassi (g)</label>
-          <input type="number" min="0" v-model.number="form.fats" />
+          <label for="pdf-file">Allega PDF del Piano</label>
+          <input 
+            type="file" 
+            id="pdfFile" 
+            accept="application/pdf" 
+            @change="handleFileChange" 
+            required
+          />
         </div>
 
         <!-- DATE -->
@@ -395,6 +389,56 @@ const openPdf = (plan) => {
   justify-content: flex-end;
   gap: 12px;
   margin-top: 10px;
+}
+
+.plan-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.plan-title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1e1548;
+}
+
+.plan-title span {
+  font-weight: 500;
+  color: #5b47c5;
+}
+
+.plan-dates {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.plan-notes {
+  margin: 4px 0 0 0;
+  font-size: 0.85rem;
+  color: #888;
+  font-style: italic;
+}
+
+/* Stili per i Badge di Stato */
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-active {
+  background-color: #e6f7ed;
+  color: #1f9254;
+  border: 1px solid #a3e2bd;
+}
+
+.status-inactive {
+  background-color: #f5f5f7;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
 }
 
 @media (max-width: 768px) {

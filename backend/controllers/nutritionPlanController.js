@@ -32,14 +32,18 @@ exports.getMyNutritionPlans = async (req, res) => {
 
 exports.getActiveNutritionPlan = async (req, res) => {
     try {
-        const plan = await NutritionPlan.findOne({ athleteId: req.user.id, planStatus: 'active' })
-            .populate('nutritionistId', 'name surname username');
+        const today = new Date();
 
-        if (!plan) return notFound(res, 'No active nutrition plan');
+        const plan = await NutritionPlan.findOne({ 
+            athleteId: req.user.id,
+            startDate: { $lte: today },
+            endDate: { $gte: today }
+        })
+        .populate('nutritionistId', 'name surname username');
 
         res.status(200).json({ success: true, data: plan });
     } catch (error) {
-        handleError(res, error, 'Error fetching active nutrition plan');
+        handleError(res, error, 'Errore nel recupero del piano alimentare attivo');
     }
 };
 
@@ -72,32 +76,24 @@ exports.getNutritionistPlans = async (req, res) => {
 
 exports.createNutritionPlan = async (req, res) => {
     try {
-        const { athleteId, title, description, dailyCalories, macros, meals, notes, startDate, endDate } = req.body;
-
-        if (!requiredFields(req.body, ['athleteId'])) {
-            return badRequest(res, 'Athlete ID is required');
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Nessun file PDF caricato' });
         }
 
-        // Verify athlete exists and is a client
-        const athlete = await User.findById(athleteId);
-        if (!athlete || athlete.role !== 'client') {
-            return badRequest(res, 'Invalid athlete');
-        }
+        const { title, athleteId, startDate, endDate, notes } = req.body;
+
+        const pdfUrl = `/uploads/nutrition_plans/${req.file.filename}`;
 
         const plan = await NutritionPlan.create({
+            title,
             athleteId,
             nutritionistId: req.user.id,
-            title: title || 'Piano nutrizionale',
-            description,
-            dailyCalories,
-            macros,
-            meals,
-            notes,
-            startDate: startDate ? new Date(startDate) : Date.now(),
-            endDate: endDate ? new Date(endDate) : Date.now()
+            pdfUrl,
+            startDate,
+            endDate,
+            notes
         });
 
-        // Create notification for athlete
         await createNotification(
             athleteId,
             'nutrition_plan',
@@ -110,56 +106,6 @@ exports.createNutritionPlan = async (req, res) => {
         res.status(201).json({ success: true, data: plan });
     } catch (error) {
         handleError(res, error, 'Error creating nutrition plan');
-    }
-};
-
-exports.updateNutritionPlan = async (req, res) => {
-    try {
-        const { plan, error } = await getPlan(req.params.id);
-
-        if (error === 'NOT_FOUND') return notFound(res);
-
-        const accessError = checkAccess(plan, req.user);
-        if (accessError) return forbidden(res);
-
-        const { title, description, dailyCalories, macros, meals, notes } = req.body;
-
-        if (title !== undefined) plan.title = title;
-        if (description !== undefined) plan.description = description;
-        if (dailyCalories !== undefined) plan.dailyCalories = dailyCalories;
-        if (macros) plan.macros = { ...plan.macros, ...macros };
-        if (meals) plan.meals = meals;
-        if (notes !== undefined) plan.notes = notes;
-
-        await plan.save();
-
-        res.status(200).json({ success: true, data: plan });
-    } catch (error) {
-        handleError(res, error, 'Error updating nutrition plan');
-    }
-};
-
-exports.changeNutritionPlanStatus = async (req, res) => {
-    try {
-        const { plan, error } = await getPlan(req.params.id);
-
-        if (error === 'NOT_FOUND') return notFound(res);
-
-        const accessError = checkAccess(plan, req.user);
-        if (accessError) return forbidden(res);
-
-        const { status } = req.body;
-
-        if (!['draft', 'active', 'archived'].includes(status)) {
-            return badRequest(res, 'Invalid status');
-        }
-
-        plan.planStatus = status;
-        await plan.save();
-
-        res.status(200).json({ success: true, data: plan });
-    } catch (error) {
-        handleError(res, error, 'Error changing nutrition plan status');
     }
 };
 

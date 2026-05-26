@@ -1,14 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
+const uploadPdf = require('../middleware/uploadPdf');
 const {
     getMyNutritionPlans,
     getActiveNutritionPlan,
     getNutritionPlanById,
     getNutritionistPlans,
     createNutritionPlan,
-    updateNutritionPlan,
-    changeNutritionPlanStatus,
     deleteNutritionPlan
 } = require('../controllers/nutritionPlanController');
 
@@ -49,21 +48,7 @@ router.get('/nutritionist/plans', protect, authorize('nutritionist'), getNutriti
  * @desc Create a new nutrition plan
  * @access Private (nutritionist)
  */
-router.post('/', protect, authorize('nutritionist'), createNutritionPlan);
-
-/**
- * @route PATCH /api/nutrition-plans/:id
- * @desc Update nutrition plan
- * @access Private (nutritionist)
- */
-router.patch('/:id', protect, authorize('nutritionist'), updateNutritionPlan);
-
-/**
- * @route PATCH /api/nutrition-plans/:id/status
- * @desc Change nutrition plan status
- * @access Private (nutritionist)
- */
-router.patch('/:id/status', protect, authorize('nutritionist'), changeNutritionPlanStatus);
+router.post('/', protect, authorize('nutritionist'), uploadPdf.single('pdfFile'), createNutritionPlan);
 
 /**
  * @route DELETE /api/nutrition-plans/:id

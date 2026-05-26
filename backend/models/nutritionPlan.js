@@ -11,102 +11,29 @@ const nutritionPlanSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-
     title: {
         type: String,
-        default: 'Piano nutrizionale'
+        required: [true, 'Fornire un titolo al piano alimentari'],
+        trim: true
     },
-
-    description: {
+    pdfUrl: {
         type: String,
-        default: null
+        required: [true, 'Il file PDF è obbligatorio']
     },
-
-    planStatus: {
-        type: String,
-        enum: ['draft', 'active', 'archived'],
-        default: 'draft'
-    },
-
-    dailyCalories: {
-        type: Number,
-        min: 0,
-        default: null
-    },
-
-    macros: {
-        proteins: {
-            type: Number,
-            min: 0,
-            default: null
-        },
-        carbs: {
-            type: Number,
-            min: 0,
-            default: null
-        },
-        fats: {
-            type: Number,
-            min: 0,
-            default: null
-        }
-    },
-
-    meals: [{
-        name: {
-            type: String,
-            required: true,
-        },
-
-        foods: [{
-            food: {
-                type: String,
-                required: true,
-            },
-
-            grams: {
-                type: Number,
-                min: 0,
-                default: null
-            },
-
-            quantity: {
-                type: Number,
-                min: 0,
-                default: null
-            },
-
-            unit: {
-                type: String,
-                default: ''
-            },
-
-            notes: {
-                type: String,
-                default: null
-            }
-        }],
-
-        notes: {
-            type: String,
-            default: null
-        }
-    }],
-
-    notes: {
-        type: String,
-        default: null
-    },
-
     startDate: {
         type: Date,
-        default: Date.now
+        required: true
     },
-
     endDate: {
         type: Date,
-        default: Date.now
+        required: true
+    },
+    notes: {
+        type: String,
+        default: ''
     }
+}, {
+    timestamps: true
 });
 
 module.exports = mongoose.model('NutritionPlan', nutritionPlanSchema);
