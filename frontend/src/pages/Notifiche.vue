@@ -156,43 +156,6 @@ const hideNotification = async (notification) => {
 </template>
 
 <style scoped>
-#app {
-  min-height: 100vh;
-  background: #f7f8fc;
-}
-
-.main-content {
-  margin-top: 60px;
-  margin-left: 10pt;
-  padding: 24px;
-  padding-bottom: 50px;
-  transition: margin-left 0.3s ease;
-  min-height: calc(100vh - 60px);
-}
-
-@media (min-width: 769px) {
-  .main-content.sidebar-open {
-    margin-left: 280px;
-  }
-}
-
-.page-header {
-  margin-bottom: 24px;
-}
-
-.page-header h1 {
-  margin: 0;
-  font-size: 1.9rem;
-  color: #1e1548;
-  font-weight: 700;
-}
-
-.page-header p {
-  margin-top: 6px;
-  color: #666;
-  font-size: 0.95rem;
-}
-
 .notification-subtitle {
   display: flex;
   flex-direction: column;

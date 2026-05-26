@@ -120,12 +120,11 @@ const toggleSidebar = () => {
       <div v-if="loading" class="loader">Caricamento in corso...</div>
 
       <template v-else-if="program">
-        <div class="header">
+        <div class="page-header">
           <div class="input-group" style="flex: 1; min-width: 300px;">
-            <label for="program-title-input">Titolo del Programma</label>
-            <h2 class="title">
+            <h1 class="title">
               {{ program.title || 'Nessun titolo inserito' }}
-            </h2>
+            </h1>
           </div>
           <p class="subtitle">Stai modificando la bozza per l'atleta. Ricorda di salvare prima di uscire.</p>
         </div>
@@ -184,9 +183,9 @@ const toggleSidebar = () => {
         </div>
 
         <div class="actions">
-          <button @click="router.push('/programmi')" class="btn-primary red-button">
+          <button @click="router.push('/programmi')" class="btn-primary btn-red">
             <i class="fa fa-close"></i>Annulla</button>
-          <button @click="saveDraft" class="btn-primary green-button">
+          <button @click="saveDraft" class="btn-primary btn-green">
             <i class="fa fa-save"></i> Salva e Chiudi
           </button>
           <button @click="publishProgram" class="btn-primary" style="margin-right: 0;">
@@ -199,43 +198,6 @@ const toggleSidebar = () => {
 </template>
 
 <style scoped>
-.main-content {
-  margin-top: 60px;
-  margin-left: 10pt;
-  padding: 20px;
-  padding-bottom: 50px;
-  transition: margin-left 0.3s ease;
-  min-height: calc(100vh - 60px);
-  background-color: #f4f6f9;
-}
-
-@media (min-width: 769px) {
-  .main-content.sidebar-open {
-    margin-left: 280px;
-  }
-}
-
-
-.header {
-  display:flow-root;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.title { 
-  font-size: 1.75rem; 
-  font-weight: bold; 
-  color: #1e1548; 
-  margin: 0 0 0.25rem; 
-}
-
-.subtitle   { 
-  margin: 0; 
-  color: #6b7280; 
-  font-size: 0.95rem; 
-}
 
 .split{
   background-color: white;
@@ -244,38 +206,11 @@ const toggleSidebar = () => {
   padding: 10pt;
 }
 
-.btn-primary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background-color: #1e1548;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 7pt;
-  font-size: 12pt;
-  font-weight: bold;
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(30,21,72,0.25);
-  transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
-  margin-right: 10pt;
-}
 
-.btn-primary:hover ,.secondary-button:hover {
-  background-color: #7a768d;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(30,21,72,0.35);
-}
+
 
 /************************************** */
-.green-button{
-  background-color: rgb(33, 143, 33);
-}
 
-.red-button{
-  background-color: #dc2626;
-}
 
 .actions {
   display: flex;
@@ -313,7 +248,6 @@ const toggleSidebar = () => {
   font-weight: bold;
 }
 
-/* ---------- EXERCISE CARD ---------- */
 
 .exercise-card {
 
@@ -321,7 +255,6 @@ const toggleSidebar = () => {
   margin-top: 7px;
 
 }
-
 
 .exercise-row {
   display: flex;
@@ -343,7 +276,6 @@ const toggleSidebar = () => {
   color: #6b7280;
 }
 
-/* modern inputs */
 
 .exercise-select {
   flex: 2;
@@ -384,36 +316,6 @@ const toggleSidebar = () => {
 }
 
 
-.delete-button {
-  width: 46px;
-  height: 46px;
-  border: none;
-  border-radius: 14px;
-  background: #fef2f2;
-  color: #dc2626;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-}
-
-.delete-button i {
-  font-size: 16px;
-}
-
-.delete-button:hover {
-  background: #fee2e2;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.15);
-}
-
-.delete-button:active {
-  transform: scale(0.96);
-}
-
-/* responsive */
 @media (max-width: 1000px) {
   .exercise-row {
     flex-wrap: wrap;

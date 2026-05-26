@@ -1,0 +1,103 @@
+.main-content {
+  margin-top: 60px;
+  padding: 20px;
+  padding-bottom: 50px;
+  transition: margin-left 0.3s ease;
+  min-height: calc(100vh - 60px);
+  background-color: #f4f6f9;
+}
+
+@media (min-width: 769px) {
+  .main-content.sidebar-open {
+    margin-left: 280px;
+  }
+}
+
+#app {
+  min-height: 100vh;
+  background: #f7f8fc;
+}
+
+/*Stile titolo e sottotitolo della pagina*/
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 1.9rem;
+  color: #1e1548;
+  font-weight: 700;
+}
+
+.page-header p {
+  margin-top: 6px;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+
+/*BUTTONS */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1e1548;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 18px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.btn-primary:hover ,.secondary-button:hover {
+  background-color: #7a768d;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(30,21,72,0.35);
+}
+
+.btn-red {
+  background: #d62828;
+  
+}
+
+.btn-green{
+  background-color: rgb(33, 143, 33);
+}
+
+/*Bottone piccolo delete usato nei list items*/
+.delete-button {
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 14px;
+  background: #fef2f2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.delete-button i {
+  font-size: 16px;
+}
+
+.delete-button:hover {
+  background: #fee2e2;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.15);
+}
+
+.delete-button:active {
+  transform: scale(0.96);
+}

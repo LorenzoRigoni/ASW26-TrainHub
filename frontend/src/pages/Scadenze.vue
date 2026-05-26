@@ -229,7 +229,7 @@ const openDeadlineDetail = (deadline) => {
         </div>
 
         <template #actions>
-          <button class="btn-danger"  @click="showDeadlineModal = false">
+          <button class="btn-primary btn-red"  @click="showDeadlineModal = false">
             <i class="fa fa-close"></i>
             Chiudi
           </button>
@@ -291,7 +291,7 @@ const openDeadlineDetail = (deadline) => {
 
         <template #actions>
           <button
-            class="btn-danger"
+            class="btn-primary btn-red"
             @click="showProgramModal = false"
           >
             Annulla
@@ -362,7 +362,7 @@ const openDeadlineDetail = (deadline) => {
 
         <template #actions>
           <button
-            class="btn-danger"
+            class="btn-primary btn-red"
             @click="showModal = false"
           >
             Annulla
@@ -381,68 +381,6 @@ const openDeadlineDetail = (deadline) => {
 </template>
 
 <style scoped>
-  .main-content {
-  margin-top: 60px;
-  margin-left: 10pt;
-  padding: 20px;
-  padding-bottom: 50px;
-  transition: margin-left 0.3s ease;
-  min-height: calc(100vh - 60px);
-  background-color: #f4f6f9;
-}
-
-@media (min-width: 769px) {
-  .main-content.sidebar-open {
-    margin-left: 280px;
-  }
-}
-
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
-}
-
-.page-header h1 {
-  margin: 0;
-  color: #1e1548;
-}
-
-.page-header p {
-  margin-top: 6px;
-  color: #666;
-}
-
-.btn-primary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #1e1548;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 18px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.2s;
-}
-
-.btn-primary:hover {
-  background: #2f2275;
-}
-
-.btn-danger {
-  background: #d62828;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 18px;
-  cursor: pointer;
-  font-weight: 600;
-}
 
 
 .form-row {
