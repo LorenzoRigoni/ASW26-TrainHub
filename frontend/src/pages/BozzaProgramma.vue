@@ -25,8 +25,6 @@ const userLogged = ref({
   role: localStorage.getItem('user_role') 
 })
 
-const dayOfTheWeek = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica']
-
 const token = localStorage.getItem('token')
 const config = { headers: { Authorization: `Bearer ${token}` } }
 
@@ -125,13 +123,9 @@ const toggleSidebar = () => {
         <div class="header">
           <div class="input-group" style="flex: 1; min-width: 300px;">
             <label for="program-title-input">Titolo del Programma</label>
-            <input 
-              id="program-title-input"
-              v-model="program.title" 
-              class="title" 
-              placeholder="Es. Scheda Forza Autunno"
-              style="font-size: 1.75rem; font-weight: bold; color: #1e1548; height: 54px; background: #fff;"
-            />
+            <h2 class="title">
+              {{ program.title || 'Nessun titolo inserito' }}
+            </h2>
           </div>
           <p class="subtitle">Stai modificando la bozza per l'atleta. Ricorda di salvare prima di uscire.</p>
         </div>
@@ -145,18 +139,6 @@ const toggleSidebar = () => {
                 placeholder="Es. Split A / Upper" 
                 style="font-size: 14pt; font-weight: bold; height: 40px; background: #fff; border-radius: 10px;"
               />
-            </div>
-
-            <div class="input-group" style="flex: 1; max-width: 200px;">
-              <label>Giorno di Allenamento</label>
-              <select 
-                v-model="split.day"
-                style="font-size: 11pt; font-weight: bold; height: 40px; background: #fff; border-radius: 10px; width: 100%; cursor: pointer;"
-              >
-                <option v-for="day in dayOfTheWeek" :key="day" :value="day">
-                  {{ day }}
-                </option>
-              </select>
             </div>
 
             <button @click="addExercise(split)" class="secondary-button" style="height: 40px; margin-bottom: 0;">

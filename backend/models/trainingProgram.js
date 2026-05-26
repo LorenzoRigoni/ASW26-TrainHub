@@ -42,12 +42,6 @@ const trainingProgramSchema = new mongoose.Schema({
             required: true
         },
 
-        day: {
-            type: String,
-            enum: ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'],
-            default: 'Lunedì'
-        },
-
         rows: [{
             rowId: {
                 type: Number,

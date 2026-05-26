@@ -16,7 +16,7 @@ exports.getMyClients = async (req, res) => {
         }
 
         const clients = await User.find(query)
-            .select('name surname email dateOfBirth');
+            .select('name surname email dateOfBirth profilePicture');
 
         const currentMonth = new Date().getMonth();
         const currentYear = new Date().getFullYear();
@@ -41,6 +41,7 @@ exports.getMyClients = async (req, res) => {
                 surname: client.surname,
                 email: client.email,
                 birthdate: client.dateOfBirth ? new Date(client.dateOfBirth).toLocaleDateString('it-IT') : '-',
+                profilePicture: client.profilePicture,
                 status: status
             };
         }));

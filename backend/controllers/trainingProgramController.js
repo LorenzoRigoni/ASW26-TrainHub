@@ -76,8 +76,7 @@ exports.getTrainingProgramById = async (req, res) => {
 exports.getTrainerPrograms = async (req, res) => {
     try {
         const programs = await TrainingProgram.find({ 
-            trainerId: req.user.id,
-            programStatus: { $in: ['active', 'archived'] }
+            trainerId: req.user.id
         })
             .populate('athleteId', 'name surname')
             .sort({ createdAt: -1 });

@@ -8,8 +8,9 @@ import { useRouter } from 'vue-router'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 
+import profileImage from '../assets/profileImage.png'
+
 const router = useRouter()
-//TODO: aggiungere la possibiltà di assegnare un colore al badge attivo/inattivo/perso. 
 const customers = ref([])
 
 const userLogged = ref({ 
@@ -30,6 +31,13 @@ const fetchClients = async () => {
     const config = { headers: { Authorization: `Bearer ${token}` } }
     const response = await axios.get('http://localhost:5000/api/users/my-clients', config)
     customers.value = response.data.data || []
+    customers.value.forEach((c) => {
+      if (c.profilePicture) {
+        c.profilePicture = `http://localhost:5000${c.profilePicture}`
+      } else {
+        c.profilePicture = profileImage
+      }
+    })
   } catch (error) {
     console.error('Errore caricamento clienti:', error.response?.data?.message || error.message)
   }
@@ -68,8 +76,8 @@ const goToDetail = (id) => {
              @click="goToDetail(c.id)"
           >
             <template #left>
-             <div class="avatar" :style="{ background: getAvatarColor(c.name + c.surname) }">
-                {{ getInitials(c.name, c.surname) }}
+             <div class="avatar">
+                <img :src="c.profilePicture" alt="User profile" class="user-icon" />
               </div>
             </template>
 
@@ -125,6 +133,13 @@ const goToDetail = (id) => {
   transition: margin-left 0.3s ease;
   min-height: calc(100vh - 60px);
   overflow-x: hidden;
+}
+
+.user-icon {
+  height: 30px;
+  width: auto;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 @media (min-width: 769px) {

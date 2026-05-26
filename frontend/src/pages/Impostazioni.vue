@@ -116,6 +116,7 @@ const saveSettings = async () => {
     localStorage.setItem('user_surname', updatedUser.surname)
     localStorage.setItem('user_username', updatedUser.username)
     localStorage.setItem('user_email', updatedUser.email)
+    localStorage.setItem('user_image', updatedUser.profileImage)
     console.log('Dati Salvati')
   } catch (error) {
     console.error("Errore durante il salvataggio dei dati:", error)

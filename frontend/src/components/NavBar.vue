@@ -1,6 +1,9 @@
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useNotifications } from '../utils/useNotifications'
 import { useRouter } from 'vue-router'
+
+import profileImage from '../assets/profileImage.png'
 
 const emit = defineEmits(['toggle-sidebar'])
 const router = useRouter()
@@ -10,6 +13,15 @@ const goToNotifications = () => {
   unreadCount.value = 0
   router.push('/home/notifiche')
 }
+
+const previewImage = ref(profileImage)
+
+onMounted(() => {
+  const pathImgProfilo = localStorage.getItem('user_image')
+  if (pathImgProfilo) {
+    previewImage.value = `http://localhost:5000${pathImgProfilo}`
+  }
+})
 </script>
 
 <template>
@@ -33,7 +45,7 @@ const goToNotifications = () => {
 
       <!-- PROFILE BUTTON -->
       <button class="profile-button" aria-label="Profilo utente">
-        <img src="../assets/UserIcon.png" alt="User profile" class="user-icon" />
+        <img :src="previewImage" alt="User profile" class="user-icon" />
       </button>
     </div>
   </nav>
@@ -152,6 +164,8 @@ const goToNotifications = () => {
 .user-icon {
   height: 30px;
   width: auto;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 @media (max-width: 768px) {

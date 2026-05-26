@@ -37,7 +37,7 @@ const fetchData = async () => {
       const res = await axios.get('http://localhost:5000/api/training-programs/my-programs', config)
       programs.value = res.data.data.map(p => ({
         id: p._id,
-        title: `Scheda creata da ${p.trainerId?.surname || 'Trainer'}`,
+        title: p.title || `Scheda creata da ${p.trainerId?.surname || 'Trainer'}`,
         category: p.splits[0]?.name || 'Generale',
         date: new Date(p.createdAt).toLocaleDateString(),
         status: p.programStatus
