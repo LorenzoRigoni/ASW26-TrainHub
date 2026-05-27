@@ -120,17 +120,15 @@ const toggleSidebar = () => {
       <div v-if="loading" class="loader">Caricamento in corso...</div>
 
       <template v-else-if="program">
-        <div class="page-header">
-          <div class="input-group" style="flex: 1; min-width: 300px;">
+        <div class="header-text">
             <h1 class="title">
               {{ program.title || 'Nessun titolo inserito' }}
             </h1>
-          </div>
           <p class="subtitle">Stai modificando la bozza per l'atleta. Ricorda di salvare prima di uscire.</p>
         </div>
 
         <div v-for="split in program.splits" :key="split._id" class="split">
-          <div class="split-header" style="display: flex; gap: 1.5rem; align-items: flex-end; flex-wrap: wrap;">
+          <div class="split-header">
             <div class="input-group" style="flex: 1; max-width: 250px;">
               <label>Nome Split</label>
               <input 
@@ -140,12 +138,12 @@ const toggleSidebar = () => {
               />
             </div>
 
-            <button @click="addExercise(split)" class="secondary-button" style="height: 40px; margin-bottom: 0;">
+            <button @click="addExercise(split)" class="secondary-button" >
               <i class="fa fa-plus"></i> Aggiungi esercizio
             </button>
           </div>
 
-          <div v-for="(row, index) in split.rows" :key="index" class="exercise-row" style="margin-bottom: 15px;">
+          <div v-for="(row, index) in split.rows" :key="index" class="exercise-row">
             <div class="input-group exercise-select">
               <label>Esercizio</label>
               <select v-model="row.exercise">
@@ -198,40 +196,11 @@ const toggleSidebar = () => {
 </template>
 
 <style scoped>
-
 .split{
   background-color: white;
   margin-bottom: 20pt;
   border-radius: 10pt;
   padding: 10pt;
-}
-
-
-
-
-/************************************** */
-
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 14px;
-  margin-top: 32px;
-  flex-wrap: wrap;
-}
-
-.secondary-button{
-  align-items: center;
-  background-color: #1e1548;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 7pt;
-  font-size: 9pt;
-  font-weight:bold;
-  margin: 5pt; 
-  margin-right: 0;
 }
 
 .split-header {
@@ -248,25 +217,22 @@ const toggleSidebar = () => {
   font-weight: bold;
 }
 
-
 .exercise-card {
-
   padding: 10px;
   margin-top: 7px;
-
 }
 
 .exercise-row {
   display: flex;
-  align-items: flex-end;
+  align-items:center;
   gap: 12px;
   width: 100%;
 }
 
-
 .input-group {
   display: flex;
   flex-direction: column;
+  margin-bottom: 10pt;
 }
 
 .input-group label {
@@ -275,7 +241,6 @@ const toggleSidebar = () => {
   font-weight: 600;
   color: #6b7280;
 }
-
 
 .exercise-select {
   flex: 2;
@@ -315,7 +280,6 @@ const toggleSidebar = () => {
   cursor: pointer;
 }
 
-
 @media (max-width: 1000px) {
   .exercise-row {
     flex-wrap: wrap;
@@ -332,5 +296,4 @@ const toggleSidebar = () => {
     width: 100%;
   }
 }
-
 </style>

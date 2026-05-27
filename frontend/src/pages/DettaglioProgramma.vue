@@ -4,7 +4,6 @@ import { ROLES } from '../utils/utils.js'
 import { useRoute, useRouter} from 'vue-router'
 import axios from 'axios'
 
-import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import SplitListItem from '../components/SplitListItem.vue'
@@ -83,11 +82,13 @@ const goToSplit = (split, program) => {
             </div>
 
             <template v-else-if="program">
-                <div class="header-dettaglio">
+                <div class="header-text">
                     <h1 class="program-title">{{ program.title }}</h1>
-                    <span class="badge-status" :class="program.programStatus">
-                        {{ program.programStatus }}
-                    </span>
+                    
+                    <!-- TODO: correggere con stato Attivo/Completato-->
+                    <p class="badge-status" :class="program.programStatus">
+                        {{ program.data }}
+                    </p>
                 </div>
                 
                 <div class="program-container">
@@ -110,63 +111,16 @@ const goToSplit = (split, program) => {
                 <p>Impossibile trovare il programma richiesto.</p>
             </div>
         </main>
-        
-        <Footer />
     </div>
 </template>
 
 <style scoped>
-.main-content {
-  margin-top: 60px;
-  padding: 24px;
-  padding-bottom: 60px;
-
-  min-height: calc(100vh - 60px);
-  background: #f4f6f9;
-
-  transition: margin-left 0.3s ease;
-  overflow-x: hidden;
-}
-
-/* sidebar desktop */
-@media (min-width: 769px) {
-  .main-content.sidebar-open {
-    margin-left: 280px;
-  }
-}
-
-/* mobile safety */
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0 !important;
-    padding: 16px;
-  }
-}
-
-
-.header-dettaglio {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-
-h1 {
-  font-size: 24pt; 
-  font-weight: bold; 
-  color: #1e1548; 
-  margin: 0 0 0.25rem; 
-}
 
 .badge-status {
   padding: 6px 12px;
   border-radius: 999px;
-
   font-size: 0.85rem;
   font-weight: 600;
-
   text-transform: capitalize;
   white-space: nowrap;
 }
@@ -174,11 +128,6 @@ h1 {
 .badge-status.active {
   background: #e8f5e9;
   color: #2e7d32;
-}
-
-.badge-status.draft {
-  background: #fff3e0;
-  color: #ef6c00;
 }
 
 .badge-status.completed {
@@ -229,11 +178,7 @@ h1 {
   gap: 2rem;
 }
 
-.split-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-}
+
 
 .exercise-list {
   list-style: none;

@@ -139,12 +139,12 @@ const goBack = () => {
       </div>
 
       <div class="split-page">
-        <div class="split-header">
+        <div class="page-header">
             <div class="header-left">
                 <button class="back-btn" @click="goBack">
                     <i class="fa fa-arrow-left"></i>
                 </button>
-                <div>
+                <div class="header-text">
                     <h1>{{ currentSplitName || 'Dettaglio Allenamento' }}</h1>
                     <p class="split-subtitle">  Storico allenamenti e compilazione sessione </p>
                 </div>
@@ -172,15 +172,13 @@ const goBack = () => {
 
         <div class="table-wrapper">
             <div class="table-header">
-            <span>Data</span>
-            <span>Kg</span>
-            <span>Reps</span>
+              <span>Data</span>
+              <span>Kg</span>
+              <span>Reps</span>
             </div>
 
             <div v-for="(log, i) in exerciseLogs[row.exercise._id || row.exercise]" :key="i" class="table-row" >
-            <span>
-                {{new Date(log.date).toLocaleDateString('it-IT') }}
-            </span>
+            <span>{{new Date(log.date).toLocaleDateString('it-IT') }}</span>
             <span>{{ log.load }} kg</span>
             <span>{{ log.reps }}</span>
             </div>
@@ -205,7 +203,7 @@ const goBack = () => {
         </section>
 
         <div v-if="isClient" class="save-container">
-           <button class="save-btn" @click="saveAllProgress">
+           <button class="btn-primary save-btn" @click="saveAllProgress">
                 <i class="fa fa-save"></i>
                 <span> Salva</span>
             </button>
@@ -216,49 +214,11 @@ const goBack = () => {
 </template>
 
 <style scoped>
-.main-content {
-  margin-top: 60px;
-  padding: 24px;
-  padding-bottom: 60px;
-  min-height: calc(100vh - 60px);
-  background: #f4f6f9;
-  transition: margin-left 0.3s ease;
-}
-
-@media (min-width: 769px) {
-  .main-content.sidebar-open {
-    margin-left: 280px;
-  }
-}
-
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0 !important;
-    padding: 16px;
-  }
-}
-
 .split-page {
   max-width: 1100px;
   margin: 0 auto;
 }
 
-.split-header {
-  margin-bottom: 2rem;
-}
-
-.split-header h1 {
-  margin: 0;
-  font-size: 2rem;
-  color: #1e1548;
-}
-
-.split-subtitle {
-  color: #666;
-  margin-top: 8px;
-}
-
-/* CARD */
 .exercise-card {
   background: white;
   border-radius: 24px;
@@ -276,10 +236,6 @@ const goBack = () => {
   flex-wrap: wrap;
 }
 
-.exercise-title h2 {
-  margin: 0;
-  color: #1e1548;
-}
 
 .exercise-info {
   margin-top: 8px;
@@ -292,9 +248,11 @@ const goBack = () => {
   color: #666;
 }
 
-/* TABLE */
+
 .table-wrapper {
   overflow-x: auto;
+  border:1px solid #d1c5c5;
+  border-radius: 7pt;
 }
 
 .table-header,
@@ -306,22 +264,23 @@ const goBack = () => {
 }
 
 .table-header {
-  font-weight: 700;
-  color: #555;
-  padding: 0 16px 12px;
+  font-weight: bold;
+  color: #0f0a2e;
+  padding: 10px;
   border-bottom: 2px solid #eee;
+  background-color: #bfcaee;
+  border-top-left-radius: 7pt;
+  border-top-right-radius: 7pt;
 }
 
 .table-row {
   padding: 14px 16px;
-  border-bottom: 1px solid #f1f1f1;
 }
 
 .table-row:last-child {
   border-bottom: none;
 }
 
-/* TODAY SESSION */
 .current-session {
   background: #fff7d6;
   border-radius: 14px;
@@ -333,7 +292,6 @@ const goBack = () => {
   color: #8a6d00;
 }
 
-/* INPUT */
 .table-row input {
   width: 100%;
   border: 1px solid #ddd;
@@ -354,30 +312,23 @@ const goBack = () => {
   cursor: not-allowed;
 }
 
-/* SAVE BUTTON */
 .save-container {
   display: flex;
   justify-content: center;
   margin-top: 32px;
 }
 
-.save-btn {
-  background: #1e1548;
-  color: white;
-  border: none;
-  border-radius: 16px;
-  padding: 16px 34px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
 .save-btn:hover {
   transform: translateY(-2px);
 }
 
-/* MOBILE */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0 !important;
+    padding: 16px;
+  }
+}
+
 @media (max-width: 768px) {
   .exercise-title {
     flex-direction: column;

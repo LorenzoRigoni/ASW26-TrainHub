@@ -5,7 +5,6 @@ import axios from 'axios'
 import { ROLES } from '../utils/utils.js'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
-import Footer from '../components/Footer.vue'
 
 const userLogged = ref({ 
   name: localStorage.getItem('user_name'), 
@@ -45,7 +44,6 @@ const fetchData = async () => {
   try {
     const config = getAuthConfig()
     
-    // Fetch clients and nutritionists in parallel
     const [clientsRes, nutriRes] = await Promise.all([
       axios.get('http://localhost:5000/api/users/my-clients', config),
       axios.get('http://localhost:5000/api/users/nutritionists', config)
@@ -131,12 +129,12 @@ const canEditStatus = computed(() => {
             </div>
             
             <template v-else>
-              <div class="info-header">
+              <div class="header-text">
                   <h1>{{ pageTitle }}</h1>
+                  <p>Visualizza e modifica i dettagli della richiesta nutrizionale.</p>
               </div>
               <div class="form-card">
                 <div class="form-grid">
-                  <!-- COLONNA 1 -->
                   <div class="col col-left">
 
                     <div class="form-row">
@@ -186,7 +184,6 @@ const canEditStatus = computed(() => {
 
                   </div>
 
-                  <!-- COLONNA 2 -->
                   <div class="col col-right">
 
                     <div class="form-row">
@@ -205,35 +202,19 @@ const canEditStatus = computed(() => {
                     </div>
                   </div>
                 </div>
-                <div class="form-actions">
-                  <button class="btn-primary red-button" @click="goBack">Annulla</button>
-                  <button class="btn-primary" @click="saveRequest">
+                <div class="actions">
+                  <button class="btn-primary btn-red" @click="goBack"><i class="fa fa-close"></i>Annulla</button>
+                  <button class="btn-primary" @click="saveRequest"><i class="fa fa-check"></i>
                     {{ isEditMode ? 'Salva' : 'Invia' }}
                   </button>
                 </div>
               </div>
             </template>
         </main>
-        <Footer />
      </div>
 </template>
 
 <style scoped>
-
-.main-content {
-  margin-top: 60px;
-  padding: 24px;
-  min-height: calc(100vh - 60px);
-  background-color: #f4f6f9;
-  transition: margin-left 0.3s ease;
-}
-
-/* desktop sidebar */
-@media (min-width: 769px) {
-  .main-content.sidebar-open {
-    margin-left: 280px;
-  }
-}
 
 @media (max-width: 900px) {
   .form-grid {
@@ -253,74 +234,13 @@ const canEditStatus = computed(() => {
   }
 }
 
-
-
-.btn-primary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background-color: #1e1548;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 0.65rem 1.4rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(30,21,72,0.25);
-  transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
-}
-
-.btn-primary:hover {
-  background-color: #2d2070;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(30,21,72,0.35);
-}
-
-h1 {
-  font-size: 24pt; 
-  font-weight: bold; 
-  color: #1e1548; 
-  margin: 0 0 0.25rem; 
-}
-
-
-.header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-
-  gap: 1rem;
-  flex-wrap: wrap;
-  padding: 0 5px 0 5px; 
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 14px;
-  margin-top: 32px;
-  flex-wrap: wrap;
-}
-
-.red-button{
-  background-color: #dc2626;
-}
-
-/************************ */
-
 .form-card {
-  max-width: 90%;
+  max-width: 95%;
   margin-top: 20px;
-
   background: #ffffff;
   border-radius: 16px;
-
   padding: 24px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.06);
-
   display: flex;
   flex-direction: column;
   margin: 20px auto 0; 
@@ -332,18 +252,16 @@ h1 {
   gap: 24px;
 }
 
-/* colonne */
+
 .col {
   display: flex;
   flex-direction: column;
 }
 
-/* colonna destra: deve riempire altezza */
 .col-right {
   display: flex;
   flex-direction: column;
 }
-
 
 .form-row.grow {
   flex: 1;
@@ -351,7 +269,6 @@ h1 {
   flex-direction: column;
 }
 
-/* textarea riempie lo spazio verticale */
 .form-row.grow textarea {
   flex: 1;
   min-height: 220px;
@@ -363,12 +280,6 @@ h1 {
   border-bottom: 1px solid #ececf3;
 }
 
-.form-header h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #2b2b3a;
-  margin: 0;
-}
 
 .form-row {
   display: flex;
@@ -396,7 +307,6 @@ h1 {
   outline: none;
 }
 
-/* focus state */
 .form-row input:focus,
 .form-row select:focus,
 .form-row textarea:focus {
@@ -404,7 +314,6 @@ h1 {
   box-shadow: 0 0 0 3px rgba(30,21,72,0.12);
 }
 
-/* textarea specific */
 .form-row textarea {
   min-height: 100px;
   resize: vertical;
@@ -413,7 +322,6 @@ h1 {
 .info-header {
   max-width:90%;
   margin: 20px auto 16px;
-
 }
 
 .loader-container {
