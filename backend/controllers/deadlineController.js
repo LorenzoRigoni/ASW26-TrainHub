@@ -42,3 +42,30 @@ exports.createDeadline = async (req, res) => {
         handleError(res, error, 'Errore creazione scadenza');
     }
 };
+
+exports.updateDeadline = async (req, res) => {
+    try {
+        const { title, dueDate, notes, status } = req.body;
+        
+        let deadline = await Deadline.findById(req.params.id);
+
+        if (!deadline) {
+            return notFound(res, 'Scadenza non trovata');
+        }
+
+        if (deadline.trainerId.toString() !== req.user.id) {
+            return res.status(403).json({ success: false, message: 'Non sei autorizzato a modificare questa scadenza' });
+        }
+
+        if (title !== undefined) deadline.title = title;
+        if (dueDate !== undefined) deadline.dueDate = dueDate;
+        if (notes !== undefined) deadline.notes = notes;
+        if (status !== undefined) deadline.status = status;
+
+        await deadline.save();
+
+        res.status(200).json({ success: true, data: deadline });
+    } catch (error) {
+        handleError(res, error, 'Errore durante l\'aggiornamento della scadenza');
+    }
+};

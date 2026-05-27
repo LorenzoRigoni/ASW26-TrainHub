@@ -127,9 +127,44 @@ const openProgramModal = (deadline) => {
 }
 
 const openDeadlineDetail = (deadline) => {
-  selectedDeadline.value = deadline
+  selectedDeadline.value = { ...deadline }
+  
+  if (selectedDeadline.value.dueDate) {
+    selectedDeadline.value.dueDate = new Date(selectedDeadline.value.dueDate)
+      .toISOString()
+      .split('T')[0]
+  }
+  
   showDeadlineModal.value = true
 }
+
+const saveDeadlineChanges = async () => {
+  if (!selectedDeadline.value || !selectedDeadline.value._id) {
+    alert("Nessuna scadenza selezionata");
+    return;
+  }
+
+  try {
+    const response = await axios.put(
+      `http://localhost:5000/api/deadlines/${selectedDeadline.value._id}`,
+      {
+        title: selectedDeadline.value.title,
+        dueDate: selectedDeadline.value.dueDate,
+        notes: selectedDeadline.value.notes
+      },
+      config
+    );
+
+    if (response.data.success) {
+      showDeadlineModal.value = false;
+      selectedDeadline.value = null;
+      await fetchData();
+    }
+  } catch (error) {
+    console.error("Errore durante l'aggiornamento della scadenza:", error);
+    alert(error.response?.data?.message || "Impossibile modificare la scadenza");
+  }
+};
 
 </script>
 <template>
@@ -181,7 +216,8 @@ const openDeadlineDetail = (deadline) => {
 
       <AppModal
         v-model="showDeadlineModal"
-        title="Dettaglio Scadenza"
+        title="Dettaglio e Modifica Scadenza"
+        @close="showDeadlineModal = false"
         width="650px"
       >
         <div v-if="selectedDeadline" class="deadline-detail">
@@ -194,27 +230,36 @@ const openDeadlineDetail = (deadline) => {
             </span>
           </div>
 
-          <div class="detail-row">
-            <span class="label">Titolo</span>
-            <span>{{ selectedDeadline.title }}</span>
+          <div class="form-row">
+            <label for="edit-title" class="label">Titolo:</label>
+            <input 
+              type="text" 
+              id="edit-title" 
+              v-model="selectedDeadline.title" 
+              class="form-control"
+            />
           </div>
 
-          <div class="detail-row">
-            <span class="label">Scadenza</span>
-            <span>
-              {{
-                new Date(selectedDeadline.dueDate)
-                  .toLocaleDateString()
-              }}
-            </span>
+          <div class="form-row">
+            <label for="edit-date" class="label">Scadenza:</label>
+            <input 
+              type="date" 
+              id="edit-date" 
+              v-model="selectedDeadline.dueDate"
+            />
           </div>
 
           <div
-            class="detail-row"
+            class="form-row"
             v-if="selectedDeadline.notes"
           >
-            <span class="label">Note</span>
-            <span>{{ selectedDeadline.notes }}</span>
+            <label for="edit-notes" class="label">Note:</label>
+            <textarea 
+              id="edit-notes" 
+              v-model="selectedDeadline.notes" 
+              class="form-control"
+              placeholder="Aggiungi eventuali note..."
+            ></textarea>
           </div>
 
         </div>
@@ -225,9 +270,9 @@ const openDeadlineDetail = (deadline) => {
             Chiudi
           </button>
 
-          <button class="btn-primary"  @click="showDeadlineModal = false">
+          <button class="btn-primary"  @click="saveDeadlineChanges">
             <i class="fa fa-save"></i>
-            Salva
+            Salva Modifiche
           </button>
 
           <button v-if="selectedDeadline?.status === 'pending'"  class="btn-primary"  @click="openProgramModal(selectedDeadline)">
@@ -435,5 +480,21 @@ const openDeadlineDetail = (deadline) => {
 .label {
   font-weight: 700;
   color: #1e1548;
+}
+
+.form-control {
+  flex: 1;
+  border: 1px solid #d8dcf0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  background: white;
+  color: #333;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #5b47c5;
+  box-shadow: 0 0 0 4px rgba(91, 71, 197, 0.12);
 }
 </style>

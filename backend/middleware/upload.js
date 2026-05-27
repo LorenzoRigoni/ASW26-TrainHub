@@ -3,7 +3,19 @@ const path = require('path');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/exercises/');
+        let folder = 'uploads';
+
+        if (req.baseUrl.includes('exercises') || req.path.includes('exercises')) {
+            folder = 'uploads/exercises/';
+        } else if (req.baseUrl.includes('users') || req.path.includes('avatar') || req.path.includes('profile')) {
+            folder = 'uploads/avatars/';
+        }
+
+        if (!fs.existsSync(folder)) {
+            fs.mkdirSync(folder, { recursive: true });
+        }
+
+        cb(null, folder);
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
