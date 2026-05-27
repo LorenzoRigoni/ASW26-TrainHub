@@ -147,7 +147,6 @@ userSchema.statics.countClientsByTrainer = async function(trainerId) {
     });
 };
 
-userSchema.index({ username: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ assignedTrainerId: 1 });
 userSchema.index({ assignedNutritionistId: 1 });
