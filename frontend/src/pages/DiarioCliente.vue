@@ -94,7 +94,7 @@ onMounted(async () => {
   fetchDiaryEntries()
 })
 
-//Finestra pop up per inserimento dati
+
 const showModal = ref(false)
 
 const today = new Date().toISOString().split('T')[0]
@@ -366,7 +366,6 @@ const adherenceOptions = {
                 <input type="date" v-model="form.date" />
             </div>
 
-            <!-- ATTIVITÀ -->
             <div class="form-row">
                 <label>Attività</label>
                 <div class="radio-group">
@@ -375,7 +374,6 @@ const adherenceOptions = {
                 </div>
             </div>
 
-            <!-- ADERENZA -->
             <div class="form-row">
                 <label>Aderenza</label>
                 <select v-model="form.adherence">
@@ -385,7 +383,6 @@ const adherenceOptions = {
                 </select>
             </div>
 
-            <!-- NEAT -->
             <div class="form-row">
                 <label>NEAT</label>
                 <input
@@ -395,7 +392,6 @@ const adherenceOptions = {
                 />
             </div>
 
-            <!-- FAME -->
             <div class="form-column">
                 <label>Livello fame</label>
                 <div class="hunger-row">
@@ -418,93 +414,20 @@ const adherenceOptions = {
                 />
             </div>
 
-            <!-- NOTA -->
             <div class="form-row note-row">
                 <label>Nota</label>
                 <textarea v-model="form.notes" placeholder="Aggiungi una nota"></textarea>
             </div>
 
-            <div class="modal-actions">
-                <button class="btn-danger" @click="closeModal">Annulla</button>
+            <div class="actions">
+                <button class="btn-primary btn-red" @click="closeModal">Annulla</button>
                 <button class="btn-primary" @click="saveEntry">Conferma</button>
             </div>
-
         </div>
     </div>
 </template>
 
 <style scoped>
-#app {
-  min-height: 100vh;
-}
-
-.diary{
-  padding: 2rem 2.5rem 5rem;
-  min-height: 100vh;
-  background-color: #f4f6f9;
-}
-
-.main-content {
-  margin-top: 60px;      
-  margin-left: 10pt;
-  padding-bottom: 50px;   
-  transition: margin-left 0.3s ease;
-  min-height: calc(100vh - 60px);
-  overflow-x: hidden;
-}
-
-@media (min-width: 769px) {
-  .main-content.sidebar-open {
-    margin-left: 280px;
-  }
-}
-
-/*Sidebar in mobile*/
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0 !important;
-  }
-}
-
-.btn-primary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background-color: #1e1548;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 0.65rem 1.4rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(30,21,72,0.25);
-  transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
-}
-.btn-primary:hover {
-  background-color: #2d2070;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(30,21,72,0.35);
-}
-
-h1 {
-  font-size: 1.75rem; 
-  font-weight: 700; 
-  color: #1e1548; 
-  margin: 0 0 0.25rem; 
-}
-.header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 15px;
-  margin-top: 15px;
-  gap: 1rem;
-  flex-wrap: wrap;
-  padding: 0 5px 0 5px;
-}
-
 .diary-table {
   width: 100%;
   border-collapse: separate;
@@ -516,7 +439,6 @@ h1 {
   margin-top: 10px;
 }
 
-/* Header */
 .diary-table thead {
   background: #1e1548;
   color: white;
@@ -529,24 +451,20 @@ h1 {
   font-size: 0.9rem;
 }
 
-/* Celle */
 .diary-table td {
   padding: 14px;
   border-bottom: 1px solid #eee;
   font-size: 0.9rem;
 }
 
-/* hover righe */
 .diary-table tbody tr:hover {
   background: #f6f7fb;
 }
 
-/* ultimi bordi arrotondati */
 .diary-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-/* STATUS ON/OFF */
 .status {
   font-weight: 700;
   padding: 4px 10px;
@@ -564,7 +482,6 @@ h1 {
   background: #f0f0f0;
 }
 
-/* BADGE ADERENZA */
 .badge {
   padding: 4px 10px;
   border-radius: 999px;
@@ -573,26 +490,25 @@ h1 {
   display: inline-block;
 }
 
-/* Medio */
+
 .badge.Ottima {
   color: #8a6d00;
   background: #fff4c2;
 }
 
-/* Sgarro */
+
 .badge.Sgarro {
   color: #b00020;
   background: #ffd6d6;
 }
 
-/* Ottimo */
+
 .badge.Media {
   color: #1a7f37;
   background: #d9f7df;
 }
 
 
-/*CSS finestra inserimento dati */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -602,8 +518,6 @@ h1 {
   justify-content: center;
   z-index: 999;
 }
-
-/* OVERLAY */
 
 .modal-overlay {
   position: fixed;
@@ -616,8 +530,6 @@ h1 {
   z-index: 999;
   padding: 20px;
 }
-
-/* MODAL */
 
 .modal {
   width: 100%;
@@ -632,7 +544,6 @@ h1 {
   animation: modalFade 0.25s ease;
 }
 
-/* HEADER */
 
 .modal-header {
   margin-bottom: 5px;
@@ -644,8 +555,6 @@ h1 {
   font-size: 1.45rem;
   font-weight: 700;
 }
-
-/* RIGHE FORM */
 
 .form-row {
   display: flex;
@@ -660,7 +569,6 @@ h1 {
   gap: 10px;
 }
 
-/* LABEL */
 
 .form-row label,
 .form-column label {
@@ -669,8 +577,6 @@ h1 {
   color: #2b2b40;
   font-size: 0.95rem;
 }
-
-/* INPUT */
 
 .modal input[type="date"],
 .modal input[type="number"],
@@ -708,8 +614,6 @@ h1 {
   min-width: auto;
 }
 
-/* RADIO */
-
 .radio-group {
   display: flex;
   gap: 12px;
@@ -741,8 +645,6 @@ h1 {
   transform: translateY(-1px);
 }
 
-/* HUNGER */
-
 .hunger-row {
   display: flex;
   align-items: center;
@@ -765,39 +667,6 @@ h1 {
   font-weight: 700;
 }
 
-/* ACTIONS */
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 10px;
-}
-
-/* BTN ANNULLA */
-
-.btn-danger {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background-color: #d62828;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 0.65rem 1.4rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(214,40,40,0.25);
-  transition: 0.2s ease;
-}
-
-.btn-danger:hover {
-  background-color: #b71c1c;
-  transform: translateY(-1px);
-}
-
-/* ANIMAZIONE */
 
 @keyframes modalFade {
   from {
@@ -811,7 +680,6 @@ h1 {
   }
 }
 
-/*STILE CHART */
 .charts-grid {
   margin-top: 28px;
   display: grid;
@@ -844,7 +712,6 @@ h1 {
   height: 220px !important;
 }
 
-/*STILE HEADER DIARIO (rimuove css vecchio) */
 .diary-header {
   background: #1e1548;
   border-radius: 28px;
@@ -914,7 +781,6 @@ h1 {
   align-self: flex-start;
 }
 
-/* responsive */
 @media (max-width: 768px) {
   .diary-header {
     flex-direction: column;

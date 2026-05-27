@@ -98,7 +98,7 @@ const hideNotification = async (notification) => {
     <SideMenu :isOpen="sidebarOpen" :role="userLogged.role"  @close="sidebarOpen = false"/>
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="page-header">
-        <div>
+        <div class="header-text">
           <h1>Notifiche</h1>
           <p> Aggiornamenti recenti della piattaforma</p>
         </div>

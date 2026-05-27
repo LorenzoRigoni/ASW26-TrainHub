@@ -85,9 +85,8 @@ const formatDate = (dateString) => {
     <SideMenu :isOpen="sidebarOpen"  :role="userLogged.role"  @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
-      <!-- HEADER -->
       <div class="page-header">
-        <div>
+        <div class="header-text">
           <h1>Richieste piani alimentari</h1>
           <p>Richiedi al team nutrition piani alimentari per i tuoi clienti</p>
         </div>
@@ -97,7 +96,6 @@ const formatDate = (dateString) => {
         </button>
       </div>
 
-      <!-- LISTA-->
       <MainList>
         <ListItem
           v-for="request in nutritionRequests"
@@ -143,98 +141,6 @@ const formatDate = (dateString) => {
 </template>
 
 <style scoped>
-  .main-content {
-  margin-top: 60px;
-  margin-left: 10pt;
-  padding: 20px;
-  padding-bottom: 50px;
-  transition: margin-left 0.3s ease;
-  min-height: calc(100vh - 60px);
-  background-color: #f4f6f9;
-}
-
-@media (min-width: 769px) {
-  .main-content.sidebar-open {
-    margin-left: 280px;
-  }
-}
-
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
-}
-
-.page-header h1 {
-  margin: 0;
-  color: #1e1548;
-}
-
-.page-header p {
-  margin-top: 6px;
-  color: #666;
-}
-
-.btn-primary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #1e1548;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 18px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.2s;
-}
-
-.btn-primary:hover {
-  background: #2f2275;
-}
-
-.btn-danger {
-  background: #d62828;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 18px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(3px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.modal {
-  width: 100%;
-  max-width: 520px;
-  background: white;
-  border-radius: 20px;
-  padding: 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-}
-
-.modal-header h2 {
-  margin: 0;
-  color: #1e1548;
-}
-
 .form-row {
   display: flex;
   align-items: center;
@@ -263,12 +169,6 @@ const formatDate = (dateString) => {
   box-shadow: 0 0 0 4px rgba(91,71,197,0.12);
 }
 
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 10px;
-}
 
 .plan-subtitle {
   display: flex;
@@ -285,6 +185,5 @@ const formatDate = (dateString) => {
   font-size: 9pt;
   line-height: 1.3;
 }
-
 
 </style>

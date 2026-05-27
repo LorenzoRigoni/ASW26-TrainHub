@@ -8,7 +8,6 @@ import profileImage from '../assets/profileImage.png'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
-
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
 import ActionCard from '../components/ActionCard.vue'
@@ -160,6 +159,7 @@ onMounted(() => {
   fetchUserData()
 })
 </script>
+
 <template>
   <div id="app">
 
@@ -169,9 +169,9 @@ onMounted(() => {
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="header">
-        <div class="info-header">
+        <div class="header-text">
            <h1>Impostazioni</h1>
-          <p>Gestisci il tuo account</p>
+            <p>Gestisci il tuo account</p>
         </div>
       </div>
 
@@ -285,55 +285,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-
-.main-content {
-  margin-top: 60px;
-  margin-left: 10pt;
-  padding: 20px;
-  padding-bottom: 50px;
-  transition: margin-left 0.3s ease;
-  min-height: calc(100vh - 60px);
-  background-color: #f4f6f9;
-}
-
-
-@media (min-width: 769px) {
-  .main-content.sidebar-open {
-    margin-left: 280px;
-  }
-}
-
-.btn-primary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background-color: #1e1548;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 0.65rem 1.4rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(30,21,72,0.25);
-  transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
-}
-
-.btn-primary:hover {
-  background-color: #2d2070;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(30,21,72,0.35);
-}
-
-h1 {
-  font-size: 24pt; 
-  font-weight: bold; 
-  color: #1e1548; 
-  margin: 0 0 0.25rem; 
-}
-
-
 .header {
   display: flex;
   align-items: flex-start;
@@ -348,12 +299,6 @@ h1 {
 .settings-header p{
   margin-bottom: 10pt;
   font-size: 10pt;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  padding-top: 1.5rem;
 }
 
 .form-grid {
@@ -433,21 +378,6 @@ h1 {
     0 8px 24px rgba(0,0,0,0.12),
     0 2px 8px rgba(0,0,0,0.08);
   margin-bottom: 1rem;
-}
-
-.secondary-btn {
-  background: #eef2ff;
-  color: #292086;
-  border: none;
-  border-radius: 10px;
-  padding: 0.7rem 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.secondary-btn:hover {
-  background: #dfe5ff;
 }
 
 .profile-form {

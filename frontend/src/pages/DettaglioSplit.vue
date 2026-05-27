@@ -215,7 +215,7 @@ const goBack = () => {
 
 <style scoped>
 .split-page {
-  max-width: 1100px;
+  max-width: 90%;
   margin: 0 auto;
 }
 

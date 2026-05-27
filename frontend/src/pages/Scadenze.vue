@@ -9,15 +9,6 @@ import { useRouter } from 'vue-router'
 import Footer from '../components/Footer.vue'
 import AppModal from '../components/Modal.vue'
 
-// Questa pagina è pensata per essere visibile solo al pt. 
-// In pratica quando un cliente ha compilato tutte le settimane, tranne l'ultima, viene creata automaticamente 
-// una scadenza visibile al pt. i dati della scadenza li compiliamo noi in automatico. Questo permette al pt di 
-// sapere quando deve essere pronto un programma di allenamento nuovo per la settimana successiva. 
-// sarebbe carino calcolare quanti giorni mancano alla scadenza in modo ma mostrare gli elementi e colorarli 
-// in ordine di priorità. 
-// Lasciamo la due date editable, per un qualsiasi motivo il trainer potrebbe dover posticipare la scadenza 
-// (infortunio, vacanze, malattia...)
-
 const router = useRouter()
 const sidebarOpen = ref(true)
 const showModal = ref(false)
@@ -114,7 +105,6 @@ const toggleSidebar = () => {
 }
 
 
-
 const programForm = ref({
   title: '',
   sessions: 3,
@@ -145,6 +135,7 @@ const openDeadlineDetail = (deadline) => {
 <template>
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
+
     <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
@@ -381,8 +372,6 @@ const openDeadlineDetail = (deadline) => {
 </template>
 
 <style scoped>
-
-
 .form-row {
   display: flex;
   align-items: center;
@@ -427,7 +416,6 @@ const openDeadlineDetail = (deadline) => {
   line-height: 1.3;
 }
 
-/*Css modal dettaglio scadenza */
 .deadline-detail {
   display: flex;
   flex-direction: column;

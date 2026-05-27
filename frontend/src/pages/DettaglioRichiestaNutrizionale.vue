@@ -215,6 +215,11 @@ const canEditStatus = computed(() => {
 </template>
 
 <style scoped>
+.main-content{
+  max-width: 95%;
+  margin: 0 auto;
+  margin-top: 60px;
+}
 
 @media (max-width: 900px) {
   .form-grid {
@@ -235,7 +240,7 @@ const canEditStatus = computed(() => {
 }
 
 .form-card {
-  max-width: 95%;
+ 
   margin-top: 20px;
   background: #ffffff;
   border-radius: 16px;

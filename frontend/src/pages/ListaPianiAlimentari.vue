@@ -2,10 +2,9 @@
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
 
-import Footer from '../components/Footer.vue'
+
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
-
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
 
@@ -148,16 +147,11 @@ const closeModal = () => {
 
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu
-      :isOpen="sidebarOpen"
-      :role="userLogged.role"
-      @close="sidebarOpen = false"
-    />
+    <SideMenu :isOpen="sidebarOpen"  :role="userLogged.role"  @close="sidebarOpen = false"/>
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
-      <!-- HEADER -->
       <div class="page-header">
-        <div>
+        <div class="header-text">
           <h1>Piani alimentari</h1>
         </div>
         <button class="btn-primary" @click="openModal" v-if="userLogged.role === 'nutritionist'">
@@ -166,7 +160,6 @@ const closeModal = () => {
         </button>
       </div>
 
-      <!-- LISTA -->
       <MainList>
         <ListItem 
           v-for="plan in nutritionPlans" 
@@ -183,22 +176,19 @@ const closeModal = () => {
       </MainList>
     </main>
 
-    <Footer />
-
-    <!-- MODAL -->
     <div v-if="showModal" class="modal-overlay">
       <div class="modal">
         <div class="modal-header">
           <h2>Carica piano alimentare</h2>
         </div>
 
-        <!-- TITOLO -->
+     
         <div class="form-row">
           <label>Titolo</label>
           <input type="text" placeholder="Nome piano" v-model="form.title"/>
         </div>
 
-        <!-- CLIENTE -->
+    
         <div class="form-row">
           <label>Cliente</label>
           <select v-model="form.athleteId">
@@ -220,7 +210,7 @@ const closeModal = () => {
           />
         </div>
 
-        <!-- DATE -->
+
         <div class="form-row">
           <label>Data inizio</label>
           <input type="date" v-model="form.startDate"/>
@@ -236,9 +226,8 @@ const closeModal = () => {
           <textarea v-model="form.notes" placeholder="Note aggiuntive per il cliente"></textarea>
         </div>
 
-        <!-- ACTIONS -->
         <div class="modal-actions">
-          <button class="btn-danger" @click="closeModal">Annulla</button>
+          <button class="btn-primary btn-red" @click="closeModal">Annulla</button>
           <button class="btn-primary" @click="savePlan">Crea piano</button>
         </div>
       </div>
@@ -247,69 +236,6 @@ const closeModal = () => {
 </template>
 
 <style scoped>
-  .main-content {
-  margin-top: 60px;
-  margin-left: 10pt;
-  padding: 20px;
-  padding-bottom: 50px;
-  transition: margin-left 0.3s ease;
-  min-height: calc(100vh - 60px);
-}
-
-@media (min-width: 769px) {
-  .main-content.sidebar-open {
-    margin-left: 280px;
-  }
-}
-
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
-}
-
-.page-header h1 {
-  margin: 0;
-  color: #1e1548;
-}
-
-.page-header p {
-  margin-top: 6px;
-  color: #666;
-}
-
-.btn-primary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #1e1548;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 18px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.2s;
-}
-
-.btn-primary:hover {
-  background: #2f2275;
-}
-
-.btn-danger {
-  background: #d62828;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 18px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -419,26 +345,6 @@ const closeModal = () => {
   font-size: 0.85rem;
   color: #888;
   font-style: italic;
-}
-
-/* Stili per i Badge di Stato */
-.badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.status-active {
-  background-color: #e6f7ed;
-  color: #1f9254;
-  border: 1px solid #a3e2bd;
-}
-
-.status-inactive {
-  background-color: #f5f5f7;
-  color: #6c757d;
-  border: 1px solid #dee2e6;
 }
 
 @media (max-width: 768px) {

@@ -139,6 +139,7 @@ onMounted(() => {
 <template>
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
+
     <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
@@ -193,29 +194,17 @@ onMounted(() => {
                       {{ e.description || 'Nessuna descrizione disponibile per questo esercizio.' }}
                     </div>
 
-                    <div
-                      v-if="userLogged.role === 'trainer'"
-                      class="exercise-actions"
-                    >
-                      <button
-                        class="btn-action edit"
-                        @click.stop="openEditModal(e)"
-                        title="Modifica"
-                      >
+                    <div v-if="userLogged.role === 'trainer'" class="exercise-actions" >
+                      <button class="btn-action edit" @click.stop="openEditModal(e)" title="Modifica">
                         <i class="fa fa-edit"></i>
                       </button>
 
-                      <button
-                        class="btn-action delete"
-                        @click.stop="handleDelete(e._id)"
-                        title="Elimina"
-                      >
+                      <button class="btn-action delete" @click.stop="handleDelete(e._id)" title="Elimina" >
                         <i class="fa fa-trash"></i>
                       </button>
                     </div>
                   </div>
                 </div>
-
               </div>
             </template>
           </MainListItem>
@@ -251,8 +240,8 @@ onMounted(() => {
           </div>
 
           <div class="modal-actions">
-            <button type="button" @click="showModal = false" class="btn-cancel">Annulla</button>
-            <button type="submit" class="btn-save">Salva Esercizio</button>
+            <button type="button" @click="showModal = false" class="btn-primary btn-red"><i class="fa fa-close" aria-hidden="true"></i>Annulla</button>
+            <button type="submit" class="btn-primary"><i class="fa fa-check" aria-hidden="true"></i>Salva Esercizio</button>
           </div>
         </form>
       </div>
@@ -261,48 +250,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.lista-esercizi {
-  padding: 2rem 2.5rem 5rem;
-  min-height: 100vh;
-  background-color: #f4f6f9;
-}
-
-.subtitle   { 
-  margin: 0; 
-  color: #6b7280; 
-  font-size: 0.95rem; 
-}
-
-.header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.title { 
-  font-size: 1.75rem; 
-  font-weight: bold; 
-  color: #1e1548; 
-  margin: 0 0 0.25rem; 
-}
-
-.subtitle   { 
-  margin: 0; 
-  color: #6b7280; 
-  font-size: 0.95rem; 
-}
-
-.main-content {
-  margin-top: 60px;      
-  margin-left: 0;
-  padding-bottom: 50px;   
-  transition: margin-left 0.3s ease;
-  min-height: calc(100vh - 60px);
-  overflow-x: hidden;
-}
 
 .exercise-row {
   display: flex;
@@ -459,25 +406,10 @@ onMounted(() => {
   background-color: #fee2e2;
 }
 
-.btn-cancel { background: #eee; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; }
-.btn-save { background: #1e1548; color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; }
-
 .img-preview-mini {
   font-size: 0.8rem;
-  color: #10b981;
+  color: #b9b610;
   margin-top: 0.3rem;
 }
 
-@media (min-width: 769px) {
-  .main-content.sidebar-open {
-    margin-left: 280px;
-  }
-}
-
-/*Sidebar in mobile*/
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0 !important;
-  }
-}
 </style>
