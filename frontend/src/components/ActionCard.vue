@@ -1,8 +1,7 @@
 <script setup>
-// Card cliccabile usata nella home del Cliente.
-// Lo slot #default permette di mettere contenuto custom nel body della card.
+
 defineProps({
-  icon:        { type: String,  required: true },   // es. 'fa fa-book'
+  icon:        { type: String,  required: true },  
   iconColor:   { type: String,  default: '#4a90d9' },
   iconBg:      { type: String,  default: 'rgba(74,144,217,0.12)' },
   highlight:   { type: Boolean, default: false },  
@@ -23,7 +22,6 @@ const emit = defineEmits(['click'])
     </div>
 
     <div class="action-card-body">
-      <!-- inserire label, valore, sottotitolo dal parent -->
       <slot />
     </div>
 
