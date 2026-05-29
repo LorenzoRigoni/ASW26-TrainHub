@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { showToast } from '../utils/toast.js'
 import axios from 'axios'
 import { ROLES } from '../utils/utils.js'
 import Navbar from '../components/NavBar.vue'
@@ -67,8 +68,7 @@ const fetchData = async () => {
       }
     }
   } catch (error) {
-    console.error('Errore caricamento dati:', error.response?.data?.message || error.message)
-    alert('Errore nel caricamento della pagina')
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   } finally {
     loading.value = false
   }
@@ -95,11 +95,10 @@ const saveRequest = async () => {
       await axios.post('http://localhost:5000/api/nutrition-requests', payload, config)
     }
     
-    alert(isEditMode.value ? 'Richiesta aggiornata' : 'Richiesta inviata')
+    showToast(isEditMode.value ? 'Richiesta aggiornata correttamente!' : 'Richiesta inviata correttamente!', "success")
     goBack()
   } catch (error) {
-    console.error('Errore salvataggio:', error.response?.data?.message || error.message)
-    alert('Errore durante il salvataggio: ' + (error.response?.data?.message || error.message))
+    showToast("Errore nella richiesta: " + error, "error")
   }
 }
 

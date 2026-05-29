@@ -3,6 +3,7 @@ import { onMounted, ref, computed } from 'vue'
 import axios from 'axios'
 import { useRoute } from 'vue-router'
 import { ROLES } from '../utils/utils.js'
+import { showToast } from '../utils/toast.js'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -57,7 +58,7 @@ const fetchAthleteInfo = async (id) => {
       image: data.profilePicture ? `http://localhost:5000${data.profilePicture}` : defaultAvatar
     }
   } catch (error) {
-    console.error('Errore caricamento info atleta:', error.response?.data?.message || error.message)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   }
 }
 
@@ -83,7 +84,7 @@ const fetchDiaryEntries = async () => {
       weight: entry.weight ?? 0
     }))
   } catch (error) {
-    console.error('Errore caricamento diario:', error.response?.data?.message || error.message)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   }
 }
 
@@ -167,9 +168,10 @@ const saveEntry = async () => {
       weight: entry.weight || form.value.weight
     })
 
+    showToast("Dati salvati correttamente!", "success")
     closeModal()
   } catch (error) {
-    console.error('Errore salvataggio entry:', error.response?.data?.message || error.message)
+    showToast("Errore nel salvataggio dei dati: " + error, "error")
   }
 }
 

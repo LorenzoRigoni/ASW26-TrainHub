@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ROLES } from '../utils/utils.js'
 import { useRouter, useRoute } from 'vue-router'
+import { showToast } from '../utils/toast.js'
 
 import axios from 'axios'
 
@@ -46,14 +47,13 @@ const fetchData = async () => {
       
       program.value = rawProgram
     } else {
-      console.error("Struttura dati del programma non valida:", resProgram.data)
+      showToast("Struttura dei dati del programma non valida", "error")
     }
 
     const resEx = await axios.get('http://localhost:5000/api/exercises', config)
     exercisesDb.value = resEx.data.data
   } catch (error) {
-    console.error("Errore caricamento dati:", error)
-    alert("Errore nel recupero della bozza")
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   } finally {
     loading.value = false
   }
@@ -89,20 +89,20 @@ const saveDraft = async () => {
     }
 
     await axios.put(`http://localhost:5000/api/training-programs/draft/${programId}`, payload, config)
+    showToast("Draft salveto con successo!", "success")
     router.push('/programmi')
   } catch (error) {
-    console.error("Errore salvataggio:", error)
+    showToast("Errore nel salvataggio del draft: " + error, "error")
   }
 }
 
 const publishProgram = async () => {
-  if (!confirm("Vuoi pubblicare il programma? L'atleta riceverà una notifica e non potrai più modificare la struttura.")) return
-  
   try {
     await axios.patch(`http://localhost:5000/api/training-programs/publish/${program.value._id}`, {}, config)
+    showToast("Programma caricato con successo!", "success")
     router.push('/programmi')
   } catch (error) {
-    console.error("Errore pubblicazione:", error)
+    showToast("Errore nella pubblicazione: " + error, "error")
   }
 }
 

@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { ROLES } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
+import { showToast } from '../utils/toast.js'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -36,7 +37,7 @@ const fetchClients = async () => {
     const response = await axios.get('http://localhost:5000/api/users/my-clients', config)
     clients.value = response.data.data || []
   } catch (error) {
-    console.error('Errore caricamento clienti:', error)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   }
 }
 
@@ -45,7 +46,7 @@ const fetchNutritionists = async () => {
     const response = await axios.get('http://localhost:5000/api/users/nutritionists')
     nutritionists.value = response.data.data || []
   } catch (error) {
-    console.error('Errore caricamento nutrizionisti:', error)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   }
 }
 
@@ -67,7 +68,7 @@ const loadRequests = async () => {
     const response = await axios.get('http://localhost:5000/api/nutrition-requests', config)
     nutritionRequests.value = response.data.data || []
   } catch (error) {
-    console.error('Errore caricamento richieste:', error.response?.data?.message || error.message)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   }
 }
 

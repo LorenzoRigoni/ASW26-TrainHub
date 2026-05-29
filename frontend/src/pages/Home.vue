@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { ROLES } from '../utils/utils.js'
+import { showToast } from '../utils/toast.js'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import DashboardHome from '../components/DashboardHome.vue'
@@ -36,7 +37,7 @@ const fetchData = async () => {
 
       if (!recentNotifications.value) recentNotifications.value = []
     } catch (notifErr) {
-      console.warn("Impossibile caricare le notifiche", notifErr.message)
+      showToast("Errore nel caricamento delle notifiche: " + notifErr, "error")
     }
 
     if (userLogged.value.role === ROLES.PERSONAL_TRAINER) {
@@ -63,13 +64,9 @@ const fetchData = async () => {
       }))
 
       activeProgram.value = activeRes.data.data
-
-      //TODO: piano nutrizionale
-    } else if (userLogged.value.role === ROLES.NUTRIZIONISTA) {
-      //TODO: logica caricamento dati nutrizionista
     }
   } catch(error){
-    console.error("Errore nel caricamento dati:", error.response?.data?.message || error.message);
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   }
 }
 

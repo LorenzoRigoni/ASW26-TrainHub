@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { ROLES } from '../utils/utils.js'
 import { useRoute, useRouter} from 'vue-router'
+import { showToast } from '../utils/toast.js'
 import axios from 'axios'
 
 import Navbar from '../components/NavBar.vue'
@@ -28,8 +29,6 @@ const fetchData = async () => {
     const programRes = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, config)
     const rawProgram = programRes.data.data
 
-    console.log("Dati grezzi dal server:", rawProgram)
-
     program.value = {
       ...rawProgram,
       title: rawProgram.title || `Piano di ${rawProgram.athleteId?.name || 'Atleta'}`,
@@ -49,7 +48,7 @@ const fetchData = async () => {
       }))
     }
   } catch (error) {
-    console.error("Errore nel caricamento del dettaglio:", error)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   } finally {
     loading.value = false
   }

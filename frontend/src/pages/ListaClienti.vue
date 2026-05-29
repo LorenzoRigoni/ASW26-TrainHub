@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { ROLES, getAvatarColor, getInitials } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
+import { showToast } from '../utils/toast.js'
 
 import axios from 'axios'
 import MainList from '../components/MainList.vue'
@@ -39,7 +40,7 @@ const fetchClients = async () => {
       }
     })
   } catch (error) {
-    console.error('Errore caricamento clienti:', error.response?.data?.message || error.message)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   }
 }
 

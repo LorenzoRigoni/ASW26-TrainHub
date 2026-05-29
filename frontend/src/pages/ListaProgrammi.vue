@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { ROLES } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
+import { showToast } from '../utils/toast.js'
 import axios from 'axios'
 
 import MainList from '../components/MainList.vue'
@@ -45,7 +46,7 @@ const fetchData = async () => {
       }))
     }
   } catch (error) {
-    console.error("Errore caricamento programmi:", error)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   }
 }
 

@@ -8,6 +8,7 @@ import ListItem from '../components/MainListItem.vue'
 import { useRouter } from 'vue-router'
 import Footer from '../components/Footer.vue'
 import AppModal from '../components/Modal.vue'
+import { showToast } from '../utils/toast.js'
 
 const router = useRouter()
 const sidebarOpen = ref(true)
@@ -47,7 +48,7 @@ const fetchData = async () => {
     deadlines.value = resSca.data.data
     athletes.value = resAth.data.data
   } catch (error) {
-    console.error("Errore caricamento:", error)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   } finally {
     loading.value = false
   }
@@ -65,9 +66,6 @@ const getPriorityClass = (dueDate) => {
 }
 
 const createProgram = async (deadline) => {
-  const sessions = prompt(`Quanti split settimanali per ${deadline.athleteId.name}?`, "3")
-  if (!sessions || isNaN(sessions)) return
-  console.log(deadline)
   try {
     const res = await axios.post('http://localhost:5000/api/training-programs/init', {
       athleteId: deadline.athleteId._id,
@@ -80,23 +78,22 @@ const createProgram = async (deadline) => {
       router.push(`/bozze/dettaglio-bozza/${res.data.data._id}`)
     }
   } catch (error) {
-    console.error("Errore creazione programma:", error)
-    alert("Errore nell'inizializzazione del programma.")
+    showToast("Errore nella creazione del programma: " + error, "error")
   }
 }
 
 const saveNewDeadline = async () => {
   console.log(newDeadline.value)
   if (!newDeadline.value.athleteId || !newDeadline.value.dueDate) {
-    alert("Compila tutti i campi obbligatori")
-    return
+    showToast("Atleta o data di scadenza mancante", "error")
   }
   try {
     await axios.post('http://localhost:5000/api/deadlines', newDeadline.value, config)
     showModal.value = false
     fetchData()
+    showToast("Scadenza creata con successo!", "success")
   } catch (error) {
-    console.error(error)
+    showToast("Errore nella creazione della scadenza: " + error, "error")
   }
 }
 
@@ -140,7 +137,7 @@ const openDeadlineDetail = (deadline) => {
 
 const saveDeadlineChanges = async () => {
   if (!selectedDeadline.value || !selectedDeadline.value._id) {
-    alert("Nessuna scadenza selezionata");
+    showToast("Nessuna scadenza selezionata", "error")
     return;
   }
 
@@ -159,10 +156,10 @@ const saveDeadlineChanges = async () => {
       showDeadlineModal.value = false;
       selectedDeadline.value = null;
       await fetchData();
+      showToast("Scadenza aggiornata con successo!", "success")
     }
   } catch (error) {
-    console.error("Errore durante l'aggiornamento della scadenza:", error);
-    alert(error.response?.data?.message || "Impossibile modificare la scadenza");
+    showToast("Errore durante l'aggiornamento della scadenza: " + error, "error");
   }
 };
 

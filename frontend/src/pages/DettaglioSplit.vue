@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ROLES } from '../utils/utils.js'
 import { useRoute, useRouter } from 'vue-router'
+import { showToast } from '../utils/toast.js'
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -79,7 +80,7 @@ const fetchData = async () => {
       }
     })
   } catch (err) {
-    console.error("Errore nel caricamento dei dati di split:", err)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   } finally {
     loading.value = false
   }
@@ -108,9 +109,10 @@ const saveAllProgress = async () => {
       currentWeekInput.value[key] = { load: '', reps: '', notes: '' }
     })
 
+    showToast("Progressi salvati correttamente!", "success")
     await fetchData()
   } catch (err) {
-    console.error(err.response?.data?.message || "Errore durante il salvataggio dei dati")
+    showToast("Errore nel salvataggio dei progressi: " + error, "error")
   }
 }
 

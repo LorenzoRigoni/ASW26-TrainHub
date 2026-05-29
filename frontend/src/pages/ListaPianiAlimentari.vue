@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
-
+import { showToast } from '../utils/toast.js'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -74,7 +74,7 @@ const loadPlans = async () => {
     const response = await axios.get(url, config)
     nutritionPlans.value = response.data.data
   } catch (error) {
-    console.error("Errore nel caricamento dei piani alimentari:", error)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   }
 }
 
@@ -84,7 +84,7 @@ const loadClients = async () => {
     const response = await axios.get('http://localhost:5000/api/users/my-clients', config)
     clients.value = response.data.data
   } catch (error) {
-    console.error("Errore nel caricamento degli atleti:", error)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   }
 }
 
@@ -94,7 +94,7 @@ onMounted(async () => {
 
 const savePlan = async () => {
   if (!selectedFile.value) {
-    //TODO: messaggio di errore visibile
+    showToast("Selezionare un piano", "error")
     return;
   }
 
@@ -122,10 +122,10 @@ const savePlan = async () => {
     form.value = { title: '', athleteId: '', notes: '', pdfFile: '', startDate: today, endDate: today };
     selectedFile.value = null;
     
+    showToast("Piano alimentare salvato con successo!", "success")
     await loadPlans();
-    //TODO: alert("Piano alimentare salvato con successo!");
   } catch (error) {
-    console.error(error.response?.data?.message || "Errore nel salvataggio del piano")
+    showToast("Errore nel salvataggio dei dati: " + error, "error")
   }
 }
 

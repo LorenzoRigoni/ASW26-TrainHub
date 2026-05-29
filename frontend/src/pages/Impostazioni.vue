@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ROLES } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
+import { showToast } from '../utils/toast.js'
 import axios from 'axios'
 
 import profileImage from '../assets/profileImage.png'
@@ -63,7 +64,7 @@ const fetchUserData = async () => {
       previewImage.value = `http://localhost:5000${user.profilePicture}`
     }
   } catch (error) {
-    console.error("Errore durante il caricamento dei dati utente:", error)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   }
 }
 
@@ -116,9 +117,9 @@ const saveSettings = async () => {
     localStorage.setItem('user_username', updatedUser.username)
     localStorage.setItem('user_email', updatedUser.email)
     localStorage.setItem('user_image', updatedUser.profileImage)
-    console.log('Dati Salvati')
+    showToast("Dati salvati correttamente!", "success")
   } catch (error) {
-    console.error("Errore durante il salvataggio dei dati:", error)
+    showToast("Errore nel salvataggio dei dati: " + error, "error")
   } finally {
     loading.value = false
   }
@@ -126,11 +127,11 @@ const saveSettings = async () => {
 
 const changePassword = async () => {
   if (!passwordFields.value.newPassword) {
-    alert("Compila tutti i campi della password.")
+    showToast("Il campo della nuova password non è compilato", "error")
     return
   }
   if (passwordFields.value.newPassword !== passwordFields.value.confirmPassword) {
-    alert("La nuova password e la conferma non coincidono!")
+    showToast("La nuova password e la conferma non coincidono", "error")
     return
   }
 
@@ -148,8 +149,9 @@ const changePassword = async () => {
       newPassword: '',
       confirmPassword: ''
     }
+    showToast("Password cambiata con successo!", "success")
   } catch (error) {
-    console.error("Errore durante il cambio password:", error)
+    showToast("Errore nel cambio di password: " + error, "error")
   } finally {
     passLoading.value = false
   }

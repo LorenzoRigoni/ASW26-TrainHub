@@ -8,6 +8,7 @@ import SideMenu from '../components/SideMenu.vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { formatPrograms } from '../utils/utils.js'
+import { showToast } from '../utils/toast.js'
 
 
 const router = useRouter()
@@ -38,9 +39,8 @@ const fetchBozze = async () => {
     const res = await axios.get('http://localhost:5000/api/training-programs/trainer-programs', config)
     const allPrograms = res.data.data || res.data
     programs.value = allPrograms.filter(p => p.programStatus === 'draft')
-    console.log(allPrograms)
   } catch (error) {
-    console.error("Errore nel recupero delle bozze:", error)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   } finally {
     loading.value = false
   }

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { showToast } from '../utils/toast.js'
 import axios from 'axios'
 import { ROLES } from '../utils/utils.js'
 import MainList from '../components/MainList.vue'
@@ -55,7 +56,7 @@ const fetchData = async () => {
     })
     exercises.value = res.data.data
   } catch (err) {
-    console.error("Errore nel caricamento esercizi:", err)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   } finally {
     loading.value = false
   }
@@ -109,9 +110,10 @@ const handleSubmit = async () => {
     }
 
     showModal.value = false
+    showToast("Esercizio salvato con successo!", "success")
     fetchData()
   } catch (err) {
-    console.log(err.response?.data?.message || "Si è verificato un errore")
+    showToast("Errore nel salvataggio dei dati: " + error, "error")
   }
 }
 
@@ -121,9 +123,10 @@ const handleDelete = async (id) => {
     await axios.delete(`http://localhost:5000/api/exercises/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
+    showToast("Esercizio eliminato con successo!", "error")
     fetchData()
   } catch (err) {
-    console.log(err.response?.data?.message || "Impossibile eliminare l'esercizio")
+    showToast("Errore nel salvataggio dei dati: " + error, "error")
   }
 }
 

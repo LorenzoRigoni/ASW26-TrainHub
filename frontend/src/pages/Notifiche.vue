@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { showToast } from '../utils/toast.js'
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -58,7 +59,7 @@ const fetchNotifications = async () => {
       }
     })
   } catch (error) {
-    console.error('Errore caricamento notifiche:', error.response?.data?.message || error.message)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   } finally {
     loading.value = false
   }
@@ -75,7 +76,7 @@ const openNotification = async (notification) => {
     await axios.patch(`http://localhost:5000/api/notifications/${notification.id}/read`, {}, config)
     notification.isRead = true
   } catch (error) {
-    console.error('Errore nel segnare la notifica come letta:', error.response?.data?.message || error.message)
+    showToast("Errore nel segnare la notifica come letta: " + error, "error")
   }
 }
 
@@ -87,7 +88,7 @@ const hideNotification = async (notification) => {
     
     notifications.value = notifications.value.filter(n => n.id !== notification.id)
   } catch (error) {
-    console.error('Errore nel nascondere la notifica:', error.response?.data?.message || error.message)
+    showToast("Errore nel nascondere la notifica: " + error, "error")
   }
 }
 </script>
