@@ -1,14 +1,16 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { calculateDaysLeft} from '../utils/utils.js'
+import { useRouter } from 'vue-router'
+import { showToast } from '../utils/toast.js'
+
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
-import { useRouter } from 'vue-router'
-import Footer from '../components/Footer.vue'
 import AppModal from '../components/Modal.vue'
-import { showToast } from '../utils/toast.js'
+
 
 const router = useRouter()
 const sidebarOpen = ref(true)
@@ -55,15 +57,6 @@ const fetchData = async () => {
 }
 
 onMounted(fetchData)
-
-const getPriorityClass = (dueDate) => {
-  const diffTime = new Date(dueDate) - new Date()
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-  if (diffDays < 0) return 'status-expired'
-  if (diffDays <= 3) return 'status-urgent'
-  return 'status-upcoming'
-}
 
 const createProgram = async (deadline) => {
   try {
@@ -163,6 +156,45 @@ const saveDeadlineChanges = async () => {
   }
 };
 
+const formattedDeadlines = computed(() => {
+  return deadlines.value.map((d) => {
+    const daysLeft = calculateDaysLeft(d.dueDate)
+
+    let statusClass = ''
+    let iconClass = ''
+
+    if (daysLeft <= 0) {
+      statusClass = 'status-red'
+      iconClass = 'icon-red'
+    } 
+    else if (daysLeft < 5) {
+      statusClass = 'status-orange'
+      iconClass = 'icon-orange'
+    } 
+    else if (daysLeft <= 10) {
+      statusClass = 'status-yellow'
+      iconClass = 'icon-yellow'
+    } 
+    else {
+      statusClass = 'status-green'
+      iconClass = 'icon-green'
+    }
+
+    return {
+      ...d,
+      statusText:
+        daysLeft === 0
+          ? 'Oggi'
+          : daysLeft === 1
+          ? '1 giorno'
+          : `${daysLeft} giorni`,
+
+      statusClass,
+      iconClass
+    }
+  })
+})
+
 </script>
 <template>
   <div id="app">
@@ -186,12 +218,13 @@ const saveDeadlineChanges = async () => {
 
         <MainList v-else>
           <ListItem
-            v-for="s in deadlines"
+            v-for="s in formattedDeadlines"
             :key="s.id"
             icon="fa fa-calendar-check-o"
             :title="`${s.athleteId?.name || ''} ${s.athleteId?.surname || ''}`"
-            :status="s.status === 'pending' ? 'In attesa' : 'Completata'"
-            :class="getPriorityClass(s.dueDate)"
+            :status="s.statusText"
+            :statusClass="s.statusClass"
+            :iconClass="s.iconClass"
             @click="openDeadlineDetail(s)"
           >
             <template #subtitle>

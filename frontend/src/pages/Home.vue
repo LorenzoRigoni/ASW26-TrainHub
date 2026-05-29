@@ -184,8 +184,8 @@ onMounted(fetchData)
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="dashboard-home">
-        <div class="dashboard-header">
-          <div>
+        <div class="page-header">
+          <div class="header-text">
             <h1 class="welcome-title">{{ greeting }}, {{ userLogged.name }}</h1>
             <p class="welcome-sub">Ecco il riepilogo della tua attività</p>
           </div>
@@ -449,7 +449,6 @@ onMounted(fetchData)
 
 <style scoped>
 .dashboard-home {
-  padding: 2rem 2.5rem 5rem;
   min-height: 100vh;
   background-color: #f4f6f9;
 }
