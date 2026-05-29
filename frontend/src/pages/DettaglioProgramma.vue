@@ -83,8 +83,6 @@ const goToSplit = (split, program) => {
             <template v-else-if="program">
                 <div class="header-text">
                     <h1 class="program-title">{{ program.title }}</h1>
-                    
-                    <!-- TODO: correggere con stato Attivo/Completato-->
                     <p class="badge-status" :class="program.programStatus">
                         {{ program.data }}
                     </p>
@@ -92,7 +90,7 @@ const goToSplit = (split, program) => {
                 
                 <div class="program-container">
                   <div v-for="(split, i) in program.splits" :key="split._id || i" class="program">
-                    <h2 class="split-title">{{ split.name }} - {{ split.day }}</h2>
+                    <h2 class="split-title">{{ split.name }}</h2>
                     
                     <ul class="exercise-list">
                       <SplitListItem

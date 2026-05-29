@@ -90,7 +90,7 @@ const saveDraft = async () => {
 
     await axios.put(`http://localhost:5000/api/training-programs/draft/${programId}`, payload, config)
     showToast("Draft salveto con successo!", "success")
-    router.push('/programmi')
+    router.push('/bozze')
   } catch (error) {
     showToast("Errore nel salvataggio del draft: " + error, "error")
   }
