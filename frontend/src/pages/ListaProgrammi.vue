@@ -9,7 +9,6 @@ import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
-import Footer from '../components/Footer.vue'
 
 const router = useRouter()
 const programs = ref([])
@@ -98,8 +97,6 @@ const goToDetail = (id) => {
         </div>
       </div>
     </main>
-
-    <Footer />
   </div>
 </template>
 
