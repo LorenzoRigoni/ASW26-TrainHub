@@ -2,22 +2,18 @@
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
 import { showToast } from '../utils/toast.js'
+import { useAuthStore } from '../stores/auth.js'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
 
+const auth = useAuthStore()
 const sidebarOpen = ref(true)
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
-
-const userLogged = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role') 
-})
 
 const nutritionPlans = ref([])
 const clients = ref([])
@@ -38,9 +34,6 @@ const selectedFile = ref(null)
 const handleFileChange = (event) => {
   selectedFile.value = event.target.files[0]
 }
-
-const token = localStorage.getItem('token')
-const config = { headers: { Authorization: `Bearer ${token}` } }
 
 const formatDate = (dateString) => {
   if (!dateString) return '-'
@@ -67,11 +60,11 @@ const calculateStatus = (startDate, endDate) => {
 
 const loadPlans = async () => {
   try {
-    const url = userLogged.value.role === 'nutritionist' 
+    const url = auth.user.role === 'nutritionist' 
       ? 'http://localhost:5000/api/nutrition-plans/nutritionist/plans' 
       : 'http://localhost:5000/api/nutrition-plans/my-plans'
     
-    const response = await axios.get(url, config)
+    const response = await axios.get(url, auth.apiConfig)
     nutritionPlans.value = response.data.data
   } catch (error) {
     showToast("Errore nel caricamento dei dati: " + error, "error")
@@ -79,9 +72,9 @@ const loadPlans = async () => {
 }
 
 const loadClients = async () => {
-  if (userLogged.value.role !== 'nutritionist') return
+  if (auth.user.role !== 'nutritionist') return
   try {
-    const response = await axios.get('http://localhost:5000/api/users/my-clients', config)
+    const response = await axios.get('http://localhost:5000/api/users/my-clients', auth.apiConfig)
     clients.value = response.data.data
   } catch (error) {
     showToast("Errore nel caricamento dei dati: " + error, "error")
@@ -112,7 +105,7 @@ const savePlan = async () => {
       formData, 
       {
         headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          ...auth.apiConfig.headers,
           'Content-Type': 'multipart/form-data' 
         }
       }
@@ -147,14 +140,14 @@ const closeModal = () => {
 
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu :isOpen="sidebarOpen"  :role="userLogged.role"  @close="sidebarOpen = false"/>
+    <SideMenu :isOpen="sidebarOpen"  :role="auth.user.role"  @close="sidebarOpen = false"/>
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="page-header">
         <div class="header-text">
           <h1>Piani alimentari</h1>
         </div>
-        <button class="btn-primary" @click="openModal" v-if="userLogged.role === 'nutritionist'">
+        <button class="btn-primary" @click="openModal" v-if="auth.user.role === 'nutritionist'">
           <i class="fa fa-plus"></i>
           Carica piano alimentare
         </button>
@@ -165,7 +158,7 @@ const closeModal = () => {
           v-for="plan in nutritionPlans" 
           :key="plan._id" 
           :title="plan.title"
-          :subtitle="userLogged.role === 'nutritionist' 
+          :subtitle="auth.user.role === 'nutritionist' 
             ? `${plan.athleteId?.name} ${plan.athleteId?.surname} - Periodo dal ${formatDate(plan.startDate)} al ${formatDate(plan.endDate)}` 
             : `Dott. ${plan.nutritionistId?.name} ${plan.nutritionistId?.surname} - Periodo dal ${formatDate(plan.startDate)} al ${formatDate(plan.endDate)}`"
           :status="calculateStatus(plan.startDate, plan.endDate).text"

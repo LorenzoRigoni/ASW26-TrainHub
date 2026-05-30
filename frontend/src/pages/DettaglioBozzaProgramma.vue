@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { ROLES } from '../utils/utils.js'
 import { useRouter, useRoute } from 'vue-router'
 import { showToast } from '../utils/toast.js'
+import { useAuthStore } from '../stores/auth.js'
 
 import axios from 'axios'
 
@@ -16,23 +17,17 @@ import ListItem from '../components/MainListItem.vue'
 const route = useRoute()
 const router = useRouter()
 
+const auth = useAuthStore()
+
 const program = ref(null)
 const exercisesDb = ref([])
 const loading = ref(true)
 const sidebarOpen = ref(true)
-const userLogged = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role') 
-})
-
-const token = localStorage.getItem('token')
-const config = { headers: { Authorization: `Bearer ${token}` } }
 
 const fetchData = async () => {
   try {
     const programId = route.params.id
-    const resProgram = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, config)
+    const resProgram = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, auth.apiConfig)
     const rawProgram = resProgram.data.data
 
     if (rawProgram && rawProgram.splits) {
@@ -50,7 +45,7 @@ const fetchData = async () => {
       showToast("Struttura dei dati del programma non valida", "error")
     }
 
-    const resEx = await axios.get('http://localhost:5000/api/exercises', config)
+    const resEx = await axios.get('http://localhost:5000/api/exercises', auth.apiConfig)
     exercisesDb.value = resEx.data.data
   } catch (error) {
     showToast("Errore nel caricamento dei dati: " + error, "error")
@@ -88,7 +83,7 @@ const saveDraft = async () => {
       notes: program.value.notes
     }
 
-    await axios.put(`http://localhost:5000/api/training-programs/draft/${programId}`, payload, config)
+    await axios.put(`http://localhost:5000/api/training-programs/draft/${programId}`, payload, auth.apiConfig)
     showToast("Draft salvato con successo!", "success")
     router.push('/bozze')
   } catch (error) {
@@ -98,7 +93,7 @@ const saveDraft = async () => {
 
 const publishProgram = async () => {
   try {
-    await axios.patch(`http://localhost:5000/api/training-programs/publish/${program.value._id}`, {}, config)
+    await axios.patch(`http://localhost:5000/api/training-programs/publish/${program.value._id}`, {}, auth.apiConfig)
     showToast("Programma pubblicato con successo!", "success")
     router.push('/programmi')
   } catch (error) {
@@ -114,7 +109,7 @@ const toggleSidebar = () => {
 <template>
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
-    <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div v-if="loading" class="loader">Caricamento in corso...</div>

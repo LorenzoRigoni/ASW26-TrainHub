@@ -284,7 +284,7 @@ exports.updateProfile = async (req, res) => {
         const updatedFields = { name, surname, email };
 
         const user = await User.findByIdAndUpdate(req.user.id, updatedFields, {
-            new: true,
+            returnDocument: 'after',
             runValidators: true
         }).select('-password');
 

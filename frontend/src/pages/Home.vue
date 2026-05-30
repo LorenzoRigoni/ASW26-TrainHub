@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getInitials, getAvatarColor, ROLES} from '../utils/utils'
 import { showToast } from '../utils/toast.js'
+import { useAuthStore } from '../stores/auth.js'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -14,11 +15,7 @@ import AIChat from '../components/AIChat.vue'
 import axios from 'axios'
 
 
-const userLogged = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role') 
-})
+const auth = useAuthStore()
 const customersList = ref([])
 const stats = ref({ activeClientsCount: 0, totalPrograms: 0, activeNutritionalPlans: 0, pendingPrograms: 0 })
 const programsList = ref([])
@@ -129,11 +126,8 @@ const toggleSidebar = () => {
 
 const fetchData = async () => {
   try {
-    const token = localStorage.getItem('token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-
     try {
-      const notifRes = await axios.get('http://localhost:5000/api/notifications/unread', config)
+      const notifRes = await axios.get('http://localhost:5000/api/notifications/unread', auth.apiConfig)
       if (notifRes.data && notifRes.data.data) {
         recentNotifications.value = notifRes.data.data.slice(0, 3)
       }
@@ -143,20 +137,20 @@ const fetchData = async () => {
       showToast("Errore nel caricamento delle notifiche: " + notifErr, "error")
     }
 
-    if (userLogged.value.role === ROLES.PERSONAL_TRAINER) {
+    if (auth.user.role === ROLES.PERSONAL_TRAINER) {
       const [clientsRes, statsRes, programsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/users/my-clients', config),
-        axios.get('http://localhost:5000/api/users/trainer-stats', config),
-        axios.get('http://localhost:5000/api/users/programs-list', config)
+        axios.get('http://localhost:5000/api/users/my-clients', auth.apiConfig),
+        axios.get('http://localhost:5000/api/users/trainer-stats', auth.apiConfig),
+        axios.get('http://localhost:5000/api/users/programs-list', auth.apiConfig)
       ])
 
       customersList.value = clientsRes.data?.data || []
       stats.value = statsRes.data?.data || { activeClientsCount: 0, totalPrograms: 0, activeNutritionalPlans: 0, pendingPrograms: 0 }
       programsList.value = programsRes.data?.data || []
-    } else if (userLogged.value.role === ROLES.CLIENTE) {
+    } else if (auth.user.role === ROLES.CLIENTE) {
       const [programsRes, activeRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/training-programs/my-programs', config),
-        axios.get('http://localhost:5000/api/training-programs/active', config).catch(() => ({ data: { data: null } }))
+        axios.get('http://localhost:5000/api/training-programs/my-programs', auth.apiConfig),
+        axios.get('http://localhost:5000/api/training-programs/active', auth.apiConfig).catch(() => ({ data: { data: null } }))
       ])
 
       programsList.value = (programsRes.data?.data || []).map(p => ({
@@ -180,16 +174,16 @@ onMounted(fetchData)
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu :isOpen="sidebarOpen" :role = "userLogged.role" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen" :role = "auth.user.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="dashboard-home">
         <div class="page-header">
           <div class="header-text">
-            <h1 class="welcome-title">{{ greeting }}, {{ userLogged.name }}</h1>
+            <h1 class="welcome-title">{{ greeting }}, {{ auth.user.name }}</h1>
             <p class="welcome-sub">Ecco il riepilogo della tua attività</p>
           </div>
-          <button v-if="userLogged.role === ROLES.CLIENTE" class="btn-primary" @click=""> 
+          <button v-if="auth.user.role === ROLES.CLIENTE" class="btn-primary" @click=""> 
             <i class="fa fa-play"></i> Inizia Allenamento
           </button>
         </div>
@@ -218,7 +212,7 @@ onMounted(fetchData)
 
 
         <!-- PERSONAL TRAINER -->
-        <template v-if="userLogged.role === ROLES.PERSONAL_TRAINER">
+        <template v-if="auth.user.role === ROLES.PERSONAL_TRAINER">
           <div class="stats-grid">
             <StatCard
               v-for="card in statCardsPT" :key="card.label"
@@ -283,7 +277,7 @@ onMounted(fetchData)
         </template>
 
         <!--  CLIENTE -->
-        <template v-else-if="userLogged.role === ROLES.CLIENTE">
+        <template v-else-if="auth.user.role === ROLES.CLIENTE">
           <div class="action-cards-grid">
             <ActionCard
               icon="fa fa-book" icon-color="#4a90d9" icon-bg="rgba(74,144,217,0.12)"
@@ -379,7 +373,7 @@ onMounted(fetchData)
         </template>
 
         <!--  NUTRIZIONISTA -->
-        <template v-else-if="userLogged.role === ROLES.NUTRIZIONISTA">
+        <template v-else-if="auth.user.role === ROLES.NUTRIZIONISTA">
 
           <div class="stats-grid stats-grid--3">
             <StatCard

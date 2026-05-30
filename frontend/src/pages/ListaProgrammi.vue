@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { ROLES } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
+import { useAuthStore } from '../stores/auth.js'
 import axios from 'axios'
 
 import MainList from '../components/MainList.vue'
@@ -11,21 +12,14 @@ import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 
 const router = useRouter()
+const auth = useAuthStore()
 const programs = ref([])
-const userLogged = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role') 
-})
 const sidebarOpen = ref(true)
 
 const fetchData = async () => {
   try {
-    const token = localStorage.getItem('token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-
-    if (userLogged.value.role === ROLES.PERSONAL_TRAINER) {
-      const res = await axios.get('http://localhost:5000/api/training-programs/trainer-programs', config)
+    if (auth.user.role === ROLES.PERSONAL_TRAINER) {
+      const res = await axios.get('http://localhost:5000/api/training-programs/trainer-programs', auth.apiConfig)
       programs.value = res.data.data.map(p => ({
         id: p._id,
         title: p.title || `Programma di ${p.athleteId?.name || 'Cliente'} ${p.athleteId?.surname || ''}`,
@@ -35,7 +29,7 @@ const fetchData = async () => {
         status: p.programStatus
       }))
     } else {
-      const res = await axios.get('http://localhost:5000/api/training-programs/my-programs', config)
+      const res = await axios.get('http://localhost:5000/api/training-programs/my-programs', auth.apiConfig)
       programs.value = res.data.data.map(p => ({
         id: p._id,
         title: p.title || `Scheda creata da ${p.trainerId?.surname || 'Trainer'}`,
@@ -66,14 +60,14 @@ const goToDetail = (id) => {
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="lista-programmi">
         <div class="header-text">
           <h1 class="programmi-title">Elenco programmi di allenamento</h1>
           <p class="programmi-sub">
-            {{ userLogged.role === ROLES.PERSONAL_TRAINER ? 'Gestisci i piani dei tuoi atleti' : 'Visualizza i tuoi progressi' }}
+            {{ auth.user.role === ROLES.PERSONAL_TRAINER ? 'Gestisci i piani dei tuoi atleti' : 'Visualizza i tuoi progressi' }}
           </p>
         </div>
 
@@ -87,7 +81,7 @@ const goToDetail = (id) => {
             @click="goToDetail(p.id)"
           >
             <template #subtitle>
-              <span v-if="userLogged.role === 'trainer'">
+              <span v-if="auth.user.role === 'trainer'">
                 {{ p.client }}
               </span>
               <span v-else>

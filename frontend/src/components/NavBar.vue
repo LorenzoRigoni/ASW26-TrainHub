@@ -2,10 +2,12 @@
 import { ref, onMounted } from 'vue'
 import { useNotifications } from '../utils/useNotifications'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
 import profileImage from '../assets/profileImage.png'
 
 const emit = defineEmits(['toggle-sidebar'])
+const auth = useAuthStore()
 const router = useRouter()
 const { unreadCount } = useNotifications()
 
@@ -21,7 +23,7 @@ const goToSettings = () => {
 const previewImage = ref(profileImage)
 
 onMounted(() => {
-  const pathImgProfilo = localStorage.getItem('user_image')
+  const pathImgProfilo = auth.user.profilePicture
   if (pathImgProfilo) {
     previewImage.value = `http://localhost:5000${pathImgProfilo}`
   }

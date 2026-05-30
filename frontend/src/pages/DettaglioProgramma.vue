@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { ROLES } from '../utils/utils.js'
 import { useRoute, useRouter} from 'vue-router'
 import { showToast } from '../utils/toast.js'
+import { useAuthStore } from '../stores/auth.js'
 import axios from 'axios'
 
 import Navbar from '../components/NavBar.vue'
@@ -11,22 +12,16 @@ import SplitListItem from '../components/SplitListItem.vue'
 
 const route = useRoute()
 const router = useRouter()
-const userLogged = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role') 
-})
+const auth = useAuthStore()
 const sidebarOpen = ref(true)
 const program = ref(null)
 const loading = ref(true)
 
 const fetchData = async () => {
   try {
-    const token = localStorage.getItem('token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
     const programId = route.params.id
 
-    const programRes = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, config)
+    const programRes = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, auth.apiConfig)
     const rawProgram = programRes.data.data
 
     program.value = {
@@ -62,7 +57,7 @@ const toggleSidebar = () => {
 
 const goToSplit = (split, program) => {
   const splitIdentificator = split._id || split.splitId
-  if (userLogged.value.role === 'trainer') {
+  if (auth.user.role === 'trainer') {
     router.push(`/programmi/dettaglio-programma/${program._id}/dettaglio-split/${split._id}/${program.athleteId._id}`)
   } else {
     router.push(`/programmi/dettaglio-programma/${program._id}/dettaglio-split/${split._id}`)
@@ -73,7 +68,7 @@ const goToSplit = (split, program) => {
 <template>
     <div id="app">
         <Navbar @toggle-sidebar="toggleSidebar" />
-        <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
+        <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
         
         <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
             <div v-if="loading" class="loader-container">

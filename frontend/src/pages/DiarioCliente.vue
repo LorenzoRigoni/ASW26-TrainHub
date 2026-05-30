@@ -4,6 +4,7 @@ import axios from 'axios'
 import { useRoute } from 'vue-router'
 import { ROLES } from '../utils/utils.js'
 import { showToast } from '../utils/toast.js'
+import { useAuthStore } from '../stores/auth.js'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import {Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend} from 'chart.js'
@@ -23,17 +24,15 @@ ChartJS.register(
 const route = useRoute()
 const sidebarOpen = ref(true)
 
-const currentUser = ref({
-  role: localStorage.getItem('user_role')
-})
+const auth = useAuthStore()
 
 const displayedUser = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role'),
-  email: localStorage.getItem('user_email') || '',
-  birthDate: localStorage.getItem('user_birth_date') || '',
-  image: localStorage.getItem('user_image') || defaultAvatar
+  name: auth.user.name, 
+  surname: auth.user.surname, 
+  role: auth.user.role,
+  email: auth.user.email,
+  birthDate: auth.user.birthDate,
+  image: auth.user.image
 })
 
 const toggleSidebar = () => {
@@ -44,9 +43,7 @@ const diaryEntries = ref([])
 
 const fetchAthleteInfo = async (id) => {
   try {
-    const token = localStorage.getItem('token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-    const response = await axios.get(`http://localhost:5000/api/users/athlete/${id}`, config)
+    const response = await axios.get(`http://localhost:5000/api/users/athlete/${id}`, auth.apiConfig)
     const data = response.data.data
     displayedUser.value = {
       name: data.name,
@@ -63,15 +60,12 @@ const fetchAthleteInfo = async (id) => {
 
 const fetchDiaryEntries = async () => {
   try {
-    const token = localStorage.getItem('token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-    
     let url = 'http://localhost:5000/api/personal-diary/body-diary'
     if (route.params.id) {
       url = `http://localhost:5000/api/personal-diary/body-diary/athlete/${route.params.id}`
     }
     
-    const response = await axios.get(url, config)
+    const response = await axios.get(url, auth.apiConfig)
 
     diaryEntries.value = (response.data.data || []).map((entry) => ({
       date: entry.date ? new Date(entry.date).toISOString().split('T')[0] : '',
@@ -121,7 +115,6 @@ const openModal = () => {
   showModal.value = true
 }
 
-//TODO: Aggiungere argomenti. Prendere dati da backend, serve per mostrare una registrazione passata del diario.
 const openModalCompiled = () => {
   form.value = {
     date: today,
@@ -141,9 +134,6 @@ const closeModal = () => {
 
 const saveEntry = async () => {
   try {
-    const token = localStorage.getItem('token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-
     const payload = {
       date: form.value.date,
       activity: form.value.activity,
@@ -154,7 +144,7 @@ const saveEntry = async () => {
       weight: form.value.weight
     }
 
-    const response = await axios.post('http://localhost:5000/api/personal-diary/body-diary', payload, config)
+    const response = await axios.post('http://localhost:5000/api/personal-diary/body-diary', payload, auth.apiConfig)
     const entry = response.data.data
 
     diaryEntries.value.push({
@@ -267,7 +257,7 @@ const adherenceOptions = {
 <template>
      <div id="app">
         <Navbar @toggle-sidebar="toggleSidebar" />
-        <SideMenu :isOpen="sidebarOpen" :role="currentUser.role" @close="sidebarOpen = false" />
+        <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
         <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
           <div class="diary">
             <div class="diary-header">
@@ -292,7 +282,7 @@ const adherenceOptions = {
                   </div>
                 </div>
               </div>
-              <button v-if="currentUser.role === ROLES.CLIENTE"  class="btn-primary add-btn" @click="openModal">
+              <button v-if="auth.user.role === ROLES.CLIENTE"  class="btn-primary add-btn" @click="openModal">
                 <i class="fa fa-plus"></i> Registra dati
               </button>
             </div>

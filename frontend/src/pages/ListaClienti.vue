@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { ROLES, getAvatarColor, getInitials } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
+import { useAuthStore } from '../stores/auth.js'
 
 import axios from 'axios'
 import MainList from '../components/MainList.vue'
@@ -12,13 +13,8 @@ import SideMenu from '../components/SideMenu.vue'
 import profileImage from '../assets/profileImage.png'
 
 const router = useRouter()
+const auth = useAuthStore()
 const customers = ref([])
-
-const userLogged = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role') 
-})
 
 const sidebarOpen = ref(true)
 
@@ -28,9 +24,7 @@ const toggleSidebar = () => {
 
 const fetchClients = async () => {
   try {
-    const token = localStorage.getItem('token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-    const response = await axios.get('http://localhost:5000/api/users/my-clients', config)
+    const response = await axios.get('http://localhost:5000/api/users/my-clients', auth.apiConfig)
     customers.value = response.data.data || []
     customers.value.forEach((c) => {
       if (c.profilePicture) {
@@ -58,7 +52,7 @@ const goToDetail = (id) => {
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu :isOpen="sidebarOpen" :role = "userLogged.role" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen" :role = "auth.user.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="lista-clienti">

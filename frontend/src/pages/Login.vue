@@ -1,13 +1,15 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 import axios from 'axios'
 
-//variabili reattive che aggiornano UI. Quando si modifica in nome, ricordiamoci di aggiornare anche v-model nell'html
 const username = ref('')
 const password = ref('')
 const error = ref('')
+
 const router = useRouter()
+const auth = useAuthStore()
 
 const login = async () => {
   try {
@@ -19,14 +21,7 @@ const login = async () => {
     })
 
     if (response.data.success) {
-      localStorage.setItem('token', response.data.token)
-      localStorage.setItem('user_name', response.data.data.name)
-      localStorage.setItem('user_surname', response.data.data.surname)
-      localStorage.setItem('user_role', response.data.data.role)
-      localStorage.setItem('user_username', response.data.data.username)
-      localStorage.setItem('user_email', response.data.data.email)
-      localStorage.setItem('user_birth_date', response.data.data.dateOfBirth || '')
-      localStorage.setItem('user_image', response.data.data.profilePicture || '')
+      auth.setSession(response.data.data, response.data.token)
       router.push('/home')
     }
   } catch (err) {

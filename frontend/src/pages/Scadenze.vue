@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { calculateDaysLeft} from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
+import { useAuthStore } from '../stores/auth.js'
 
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
@@ -13,6 +14,7 @@ import AppModal from '../components/Modal.vue'
 
 
 const router = useRouter()
+const auth = useAuthStore()
 const sidebarOpen = ref(true)
 const showModal = ref(false)
 const loading = ref(true)
@@ -24,12 +26,6 @@ const selectedDeadline = ref(null)
 
 const today = new Date().toISOString().split('T')[0]
 
-const userLogged = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role') 
-})
-
 const newDeadline = ref({
   athleteId: '',
   title: 'Nuovo Programma',
@@ -37,15 +33,12 @@ const newDeadline = ref({
   notes: ''
 })
 
-const token = localStorage.getItem('token')
-const config = { headers: { Authorization: `Bearer ${token}` } }
-
 const fetchData = async () => {
   loading.value = true
   try {
     const [resSca, resAth] = await Promise.all([
-      axios.get('http://localhost:5000/api/deadlines', config),
-      axios.get('http://localhost:5000/api/users/my-clients', config)
+      axios.get('http://localhost:5000/api/deadlines', auth.apiConfig),
+      axios.get('http://localhost:5000/api/users/my-clients', auth.apiConfig)
     ])
     deadlines.value = resSca.data.data
     athletes.value = resAth.data.data
@@ -74,7 +67,7 @@ const createProgram = async () => {
       title: programForm.value.title,
       startDate: programForm.value.startDate,
       endDate: programForm.value.endDate
-    }, config)
+    }, auth.apiConfig)
 
     if (res.data.success) {
       showToast("Programma creato con successo!", "success")
@@ -91,7 +84,7 @@ const saveNewDeadline = async () => {
     showToast("Atleta o data di scadenza mancante", "error")
   }
   try {
-    await axios.post('http://localhost:5000/api/deadlines', newDeadline.value, config)
+    await axios.post('http://localhost:5000/api/deadlines', newDeadline.value, auth.apiConfig)
     showModal.value = false
     fetchData()
     showToast("Scadenza creata con successo!", "success")
@@ -144,7 +137,7 @@ const saveDeadlineChanges = async () => {
         dueDate: selectedDeadline.value.dueDate,
         notes: selectedDeadline.value.notes
       },
-      config
+      auth.apiConfig
     );
 
     if (response.data.success) {
@@ -202,7 +195,7 @@ const formattedDeadlines = computed(() => {
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="lista-scadenze">

@@ -2,16 +2,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
+import { useAuthStore } from '../stores/auth.js'
 import axios from 'axios'
 import { ROLES } from '../utils/utils.js'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 
-const userLogged = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role') 
-})
+const auth = useAuthStore()
 
 const route = useRoute()
 const router = useRouter()
@@ -35,26 +32,19 @@ const clients = ref([])
 const nutritionists = ref([])
 const loading = ref(false)
 
-const getAuthConfig = () => {
-  const token = localStorage.getItem('token')
-  return { headers: { Authorization: `Bearer ${token}` } }
-}
-
 const fetchData = async () => {
   loading.value = true
   try {
-    const config = getAuthConfig()
-    
     const [clientsRes, nutriRes] = await Promise.all([
-      axios.get('http://localhost:5000/api/users/my-clients', config),
-      axios.get('http://localhost:5000/api/users/nutritionists', config)
+      axios.get('http://localhost:5000/api/users/my-clients', auth.apiConfig),
+      axios.get('http://localhost:5000/api/users/nutritionists', auth.apiConfig)
     ])
     
     clients.value = (clientsRes.data?.data || []).map(c => ({ id: c.id, name: c.name, surname: c.surname }))
     nutritionists.value = nutriRes.data?.data || []
 
     if (isEditMode.value) {
-      const res = await axios.get(`http://localhost:5000/api/nutrition-requests/${requestId.value}`, config)
+      const res = await axios.get(`http://localhost:5000/api/nutrition-requests/${requestId.value}`, auth.apiConfig)
       const data = res.data.data
       form.value = {
         title: data.title,
@@ -86,13 +76,12 @@ const goBack = () => {
 
 const saveRequest = async () => {
   try {
-    const config = getAuthConfig()
     const payload = { ...form.value }
     
     if (isEditMode.value) {
-      await axios.put(`http://localhost:5000/api/nutrition-requests/${requestId.value}`, payload, config)
+      await axios.put(`http://localhost:5000/api/nutrition-requests/${requestId.value}`, payload, auth.apiConfig)
     } else {
-      await axios.post('http://localhost:5000/api/nutrition-requests', payload, config)
+      await axios.post('http://localhost:5000/api/nutrition-requests', payload, auth.apiConfig)
     }
     
     showToast(isEditMode.value ? 'Richiesta aggiornata correttamente!' : 'Richiesta inviata correttamente!', "success")
@@ -109,18 +98,18 @@ const pageTitle = computed(() =>
 )
 
 const canEditForm = computed(() => {
-  return userLogged.value.role === ROLES.PERSONAL_TRAINER
+  return auth.user.role === ROLES.PERSONAL_TRAINER
 })
 
 const canEditStatus = computed(() => {
-  return userLogged.value.role === ROLES.NUTRIZIONISTA
+  return auth.user.role === ROLES.NUTRIZIONISTA
 })
 </script>
 
 <template>
      <div id="app">
         <Navbar @toggle-sidebar="toggleSidebar" />
-        <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
+        <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
         
         <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
             <div v-if="loading" class="loader-container">

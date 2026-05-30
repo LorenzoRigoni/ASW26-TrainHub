@@ -9,17 +9,12 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { formatPrograms } from '../utils/utils.js'
 import { showToast } from '../utils/toast.js'
-
+import { useAuthStore } from '../stores/auth.js'
 
 const router = useRouter()
+const auth = useAuthStore()
 const programs = ref([])
 const loading = ref(true)
-const userLogged = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role') 
-})
-
 const sidebarOpen = ref(true)
 
 const toggleSidebar = () => {
@@ -30,13 +25,10 @@ const goToDetail = (id) => {
   router.push(`/bozze/dettaglio-bozza`)
 }
 
-const token = localStorage.getItem('token')
-const config = { headers: { Authorization: `Bearer ${token}` } }
-
 const fetchBozze = async () => {
   loading.value = true
   try {
-    const res = await axios.get('http://localhost:5000/api/training-programs/trainer-programs', config)
+    const res = await axios.get('http://localhost:5000/api/training-programs/trainer-programs', auth.apiConfig)
     const allPrograms = res.data.data || res.data
     programs.value = allPrograms.filter(p => p.programStatus === 'draft')
   } catch (error) {
@@ -58,7 +50,7 @@ const formattedPrograms = computed(() => {
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="lista-programmi">

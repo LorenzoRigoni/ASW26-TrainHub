@@ -1,12 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { showToast } from '../utils/toast.js'
+import { useAuthStore } from '../stores/auth.js'
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
 
+const auth = useAuthStore()
 const sidebarOpen = ref(true)
 const notifications = ref([])
 const loading = ref(true)
@@ -14,12 +16,6 @@ const loading = ref(true)
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
-
-const userLogged = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role') 
-})
 
 const getNotificationDetails = (type) => {
   switch (type) {
@@ -41,9 +37,7 @@ const getNotificationDetails = (type) => {
 const fetchNotifications = async () => {
   try {
     loading.value = true
-    const token = localStorage.getItem('token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-    const response = await axios.get('http://localhost:5000/api/notifications', config)
+    const response = await axios.get('http://localhost:5000/api/notifications', auth.apiConfig)
     
     notifications.value = (response.data.data || []).map(n => {
       const details = getNotificationDetails(n.type)
@@ -70,9 +64,7 @@ const openNotification = async (notification) => {
   if (notification.isRead) return
 
   try {
-    const token = localStorage.getItem('token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-    await axios.patch(`http://localhost:5000/api/notifications/${notification.id}/read`, {}, config)
+    await axios.patch(`http://localhost:5000/api/notifications/${notification.id}/read`, {}, auth.apiConfig)
     notification.isRead = true
   } catch (error) {
     showToast("Errore nel segnare la notifica come letta: " + error, "error")
@@ -81,9 +73,7 @@ const openNotification = async (notification) => {
 
 const hideNotification = async (notification) => {
   try {
-    const token = localStorage.getItem('token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-    await axios.patch(`http://localhost:5000/api/notifications/${notification.id}/hide`, {}, config)
+    await axios.patch(`http://localhost:5000/api/notifications/${notification.id}/hide`, {}, auth.apiConfig)
     
     notifications.value = notifications.value.filter(n => n.id !== notification.id)
   } catch (error) {
@@ -95,7 +85,7 @@ const hideNotification = async (notification) => {
 <template>
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
-    <SideMenu :isOpen="sidebarOpen" :role="userLogged.role"  @close="sidebarOpen = false"/>
+    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role"  @close="sidebarOpen = false"/>
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="page-header">
         <div class="header-text">
