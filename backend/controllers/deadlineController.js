@@ -28,15 +28,6 @@ exports.createDeadline = async (req, res) => {
             notes
         });
 
-        await createNotification(
-            req.user.id,
-            'deadline_created',
-            'Nuova scadenza',
-            `Hai una nuova scadenza: ${title}`,
-            deadline._id,
-            'Deadline'
-        );
-
         res.status(200).json({ success: true, data: deadline });
     } catch (error) {
         handleError(res, error, 'Errore creazione scadenza');

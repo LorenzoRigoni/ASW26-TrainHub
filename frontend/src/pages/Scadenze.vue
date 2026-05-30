@@ -58,16 +58,26 @@ const fetchData = async () => {
 
 onMounted(fetchData)
 
-const createProgram = async (deadline) => {
+const programForm = ref({
+  title: '',
+  sessions: 3,
+  startDate: today,
+  endDate: today
+})
+
+const createProgram = async () => {
   try {
     const res = await axios.post('http://localhost:5000/api/training-programs/init', {
-      athleteId: deadline.athleteId._id,
-      deadlineId: deadline.id || deadline._id,
-      sessionsPerWeek: parseInt(sessions),
-      title: newDeadline.value.title || `Programma - ${deadline.athleteId.surname}`
+      athleteId: selectedDeadline.value.athleteId?._id || selectedDeadline.value.athleteId?.id,
+      deadlineId: selectedDeadline.id || selectedDeadline._id,
+      sessionsPerWeek: programForm.value.sessions,
+      title: programForm.value.title,
+      startDate: programForm.value.startDate,
+      endDate: programForm.value.endDate
     }, config)
 
     if (res.data.success) {
+      showToast("Programma creato con successo!", "success")
       router.push(`/bozze/dettaglio-bozza/${res.data.data._id}`)
     }
   } catch (error) {
@@ -93,14 +103,6 @@ const saveNewDeadline = async () => {
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
-
-
-const programForm = ref({
-  title: '',
-  sessions: 3,
-  startDate: today,
-  endDate: today
-})
 
 const openProgramModal = (deadline) => {
   selectedDeadline.value = deadline
@@ -221,7 +223,7 @@ const formattedDeadlines = computed(() => {
             v-for="s in formattedDeadlines"
             :key="s.id"
             icon="fa fa-calendar-check-o"
-            :title="`${s.athleteId?.name || ''} ${s.athleteId?.surname || ''}`"
+            :title="`${s.athleteId?.name || ''} ${s.athleteId?.surname || ''} - ${s.title}`"
             :status="s.statusText"
             :statusClass="s.statusClass"
             :iconClass="s.iconClass"

@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const TrainingProgram = require('../models/trainingProgram');
 const NutritionPlan = require('../models/nutritionPlan');
+const Deadline = require('../models/deadline')
 const path = require('path');
 const fs = require('fs');
 
@@ -57,9 +58,9 @@ exports.getTrainerStats = async (req, res) => {
 
         const totalPrograms = await TrainingProgram.countDocuments({ trainerId });
 
-        const pendingPrograms = await TrainingProgram.countDocuments({ 
+        const pendingPrograms = await Deadline.countDocuments({ 
             trainerId, 
-            programStatus: 'draft' 
+            status: 'pending'
         });
 
         const clients = await User.find({ assignedTrainerId: trainerId });

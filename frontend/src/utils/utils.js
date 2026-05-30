@@ -44,7 +44,7 @@ export const calculateDaysLeft = (dueDate) => {
 
 export const formatPrograms = (programs) => {
   return programs.map((p) => {
-    const dateToUse = p.dueDate || p.createdAt;
+    const dateToUse = p.startDate;
     const daysLeft = calculateDaysLeft(dateToUse);
 
     const athleteName = p.athleteId?.name || '';

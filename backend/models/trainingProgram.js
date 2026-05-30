@@ -80,7 +80,15 @@ const trainingProgramSchema = new mongoose.Schema({
                 default: ''
             }
         }], default: []
-    }]
+    }],
+
+    startDate: {
+        type: Date
+    },
+
+    endDate: {
+        type: Date
+    }
 }, {
     timestamps: true
 });

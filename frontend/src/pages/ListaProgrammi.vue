@@ -39,6 +39,7 @@ const fetchData = async () => {
       programs.value = res.data.data.map(p => ({
         id: p._id,
         title: p.title || `Scheda creata da ${p.trainerId?.surname || 'Trainer'}`,
+        trainer: `${p.trainerId?.name || 'Trainer'} ${p.trainerId?.surname || ''}`,
         category: p.splits[0]?.name || 'Generale',
         date: new Date(p.createdAt).toLocaleDateString(),
         status: p.programStatus
@@ -86,7 +87,14 @@ const goToDetail = (id) => {
             @click="goToDetail(p.id)"
           >
             <template #subtitle>
-              {{p.client}} - {{ p.date }}
+              <span v-if="userLogged.role === 'trainer'">
+                {{ p.client }}
+              </span>
+              <span v-else>
+                {{ p.trainer }}
+              </span>
+              
+              - {{p.date}}
             </template>
           </MainListItem>
         </MainList>

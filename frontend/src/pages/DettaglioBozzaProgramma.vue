@@ -89,7 +89,7 @@ const saveDraft = async () => {
     }
 
     await axios.put(`http://localhost:5000/api/training-programs/draft/${programId}`, payload, config)
-    showToast("Draft salveto con successo!", "success")
+    showToast("Draft salvato con successo!", "success")
     router.push('/bozze')
   } catch (error) {
     showToast("Errore nel salvataggio del draft: " + error, "error")
@@ -99,7 +99,7 @@ const saveDraft = async () => {
 const publishProgram = async () => {
   try {
     await axios.patch(`http://localhost:5000/api/training-programs/publish/${program.value._id}`, {}, config)
-    showToast("Programma caricato con successo!", "success")
+    showToast("Programma pubblicato con successo!", "success")
     router.push('/programmi')
   } catch (error) {
     showToast("Errore nella pubblicazione: " + error, "error")

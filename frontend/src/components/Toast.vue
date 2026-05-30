@@ -8,9 +8,6 @@ import { toastState } from '../utils/toast'
       v-if="toastState.show" 
       :class="['toast-popup', `toast-${toastState.type}`]"
     >
-      <span class="toast-icon">
-        {{ toastState.type === 'success' ? '✅' : '❌' }}
-      </span>
       <span class="toast-message">{{ toastState.message }}</span>
       <button class="toast-close" @click="toastState.show = false">&times;</button>
     </div>

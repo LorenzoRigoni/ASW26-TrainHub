@@ -93,7 +93,7 @@ exports.getTrainerPrograms = async (req, res) => {
 
 exports.initProgram = async (req, res) => {
     try {
-        const { athleteId, deadlineId, sessionsPerWeek, title } = req.body;
+        const { athleteId, deadlineId, sessionsPerWeek, title, startDate, endDate } = req.body;
 
         if (!athleteId || !sessionsPerWeek) return badRequest(res, 'Dati mancanti');
 
@@ -113,7 +113,9 @@ exports.initProgram = async (req, res) => {
             title: title || "Nuovo Piano di Allenamento",
             sessionsPerWeek: parseInt(sessionsPerWeek),
             programStatus: 'draft',
-            splits: splits
+            splits: splits,
+            startDate: startDate,
+            endDate: endDate
         });
 
         if (deadlineId) {
@@ -155,7 +157,7 @@ exports.saveDraft = async (req, res) => {
                     notes: req.body.notes 
                 } 
             },
-            { new: true }
+            { returnDocument: 'after' }
         ).populate('splits.rows.exercise');
 
         res.status(200).json({ success: true, data: updated });
