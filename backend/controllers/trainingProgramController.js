@@ -167,11 +167,13 @@ exports.saveDraft = async (req, res) => {
 
 exports.publishProgram = async (req, res) => {
     try {
-        const program = await TrainingProgram.findById(req.params.id);
-        if (!program) return notFound(res);
+        const program = await TrainingProgram.findByIdAndUpdate(
+            req.params.id,
+            { programStatus: 'active' },
+            { returnDocument: 'after' }
+        );
 
-        program.programStatus = 'active';
-        await program.save();
+        if (!program) return notFound(res);
 
         await createNotification(
             program.athleteId,

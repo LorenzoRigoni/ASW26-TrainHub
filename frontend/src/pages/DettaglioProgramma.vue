@@ -83,9 +83,6 @@ const goToSplit = (split, program) => {
             <template v-else-if="program">
                 <div class="header-text">
                     <h1 class="program-title">{{ program.title }}</h1>
-                    <p class="badge-status" :class="program.programStatus">
-                        {{ program.data }}
-                    </p>
                 </div>
                 
                 <div class="program-container">

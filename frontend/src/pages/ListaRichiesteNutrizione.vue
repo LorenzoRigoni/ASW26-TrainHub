@@ -9,7 +9,6 @@ import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
-import Footer from '../components/Footer.vue'
 
 const router = useRouter()
 

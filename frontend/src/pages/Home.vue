@@ -319,7 +319,7 @@ onMounted(fetchData)
               <p class="card-label">Ultimo allenamento</p>
               <template v-if="giorniDaUltimo !== null">
                 <p class="card-value">{{ giorniDaUltimo }} <span class="unit">{{ giorniDaUltimo === 1 ? 'giorno fa' : 'giorni fa' }}</span></p>
-                <p class="card-sub">{{ ultimoAllenamento.data }}</p>
+                <!--<p class="card-sub">{{ ultimoAllenamento.data }}</p>-->
               </template>
               <template v-else>
                 <p class="card-sub">Nessun allenamento registrato</p>
@@ -352,7 +352,7 @@ onMounted(fetchData)
               </ListItem>
             </PanelList>
 
-            <PanelList
+            <!--<PanelList
               title="Piani Nutrizionali"
               :is-empty="pianiNutrizionali.length === 0"
               empty-icon="fa fa-file-pdf-o"
@@ -373,7 +373,7 @@ onMounted(fetchData)
                   <i class="fa fa-download arrow" style="color:#9ca3af"></i>
                 </template>
               </ListItem>
-            </PanelList>
+            </PanelList>-->
           </div>
 
         </template>
