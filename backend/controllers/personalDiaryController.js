@@ -181,9 +181,26 @@ exports.createBodyDiary = async (req, res) => {
           sleepHours
         } = req.body;
 
+        // Normalize date to 00:00:00 for the current day or provided date
+        const targetDate = date ? new Date(date) : new Date();
+        targetDate.setHours(0, 0, 0, 0);
+
+        // Check if an entry already exists for this date and athlete
+        const existingEntry = await BodyDiary.findOne({
+            athleteId: req.user.id,
+            date: targetDate
+        });
+
+        if (existingEntry) {
+            return res.status(400).json({
+                success: false,
+                message: 'Hai già inserito una registrazione per questa data. Modifica quella esistente se necessario.'
+            });
+        }
+
         const diary = await BodyDiary.create({
             athleteId: req.user.id,
-            date: date ? new Date(date) : Date.now(),
+            date: targetDate,
             activity: activity || 'on',
             adherence: adherence || 'Media',
             steps: steps ?? 0,
