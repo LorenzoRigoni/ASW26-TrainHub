@@ -16,34 +16,85 @@ const {
   uploadAvatar
 } = require('../controllers/userController');
 
-//Routes for trainer
-
 /**
- * @route GET /api/users/my-clients
- * @desc Get all the clients assigned to the logged trainer or nutritionist
- * @access Private (trainer, nutritionist)
+ * @swagger
+ * /api/users/my-clients:
+ *   get:
+ *     summary: Get all the clients assigned to the logged trainer or nutritionist
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Clients retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized
  */
 router.get('/my-clients', protect, authorize('trainer', 'nutritionist'), getMyClients);
 
 /**
- * @route GET /api/users/trainer-stats
- * @desc Get the stats of the trainer
- * @access Private (trainer)
+ * @swagger
+ * /api/users/trainer-stats:
+ *   get:
+ *     summary: Get the stats of the trainer
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Stats retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *       401:
+ *         description: Unauthorized
  */
 router.get('/trainer-stats', protect, authorize('trainer'), getTrainerStats);
 
 /**
- * @route GET /api/users/programs-list
- * @desc Get the list of the programs created by the trainer
- * @access Private (trainer)
+ * @swagger
+ * /api/users/programs-list:
+ *   get:
+ *     summary: Get the list of the programs created by the trainer
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Programs list retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/TrainingProgram'
+ *       401:
+ *         description: Unauthorized
  */
 router.get('/programs-list', protect, authorize('trainer'), getTrainerProgramsList);
 
-/**
- * @route PUT /api/users/:athleteId/assign-trainer
- * @desc Assign a trainer to athlete
- * @access Private (trainer)
- */
 /**
  * @swagger
  * /api/users/{athleteId}/assign-trainer:
@@ -84,25 +135,9 @@ router.get('/programs-list', protect, authorize('trainer'), getTrainerProgramsLi
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Trainer assigned successfully
- *                 data:
- *                   type: object
- *                   properties:
- *                     athleteId:
- *                       type: string
- *                     athleteName:
- *                       type: string
- *                     trainerId:
- *                       type: string
- *                     trainerName:
- *                       type: string
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       401:
+ *         description: Unauthorized
  *       404:
  *         description: Trainer or athlete not found
  *       500:
@@ -110,48 +145,181 @@ router.get('/programs-list', protect, authorize('trainer'), getTrainerProgramsLi
  */
 router.put('/:athleteId/assign-trainer', protect, authorize('trainer'), assignTrainerToAthlete);
 
-//Routes for nutritionist
-
 /**
- * @route GET /api/users/my-nutrition-athletes
- * @desc Get all the athletes assigned to the logged nutritionist
- * @access Private (nutritionist)
- */
-//router.get('/my-nutrition-athletes', protect, authorize('nutritionist'), getNutritionistAthletes);
-
-/**
- * @route PUT /api/users/:athleteId/assign-nutritionist
- * @desc Assign a nutritionist to athlete
- * @access Private (nutritionist)
+ * @swagger
+ * /api/users/{athleteId}/assign-nutritionist:
+ *   put:
+ *     summary: Assign a nutritionist to athlete
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: athleteId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nutritionistId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Nutritionist assigned successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Nutritionist or athlete not found
  */
 router.put('/:athleteId/assign-nutritionist', protect, authorize('nutritionist'), assignNutritionistToAthlete);
 
-//General routes
-
 /**
- * @route GET /api/users/trainers
- * @desc Get all the trainers
- * @access Public
+ * @swagger
+ * /api/users/trainers:
+ *   get:
+ *     summary: Get all the trainers
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Trainers retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
  */
 router.get('/trainers', getAllTrainers);
 
 /**
- * @route GET /api/users/nutritionists
- * @desc Get all the nutritionists
- * @access Public
+ * @swagger
+ * /api/users/nutritionists:
+ *   get:
+ *     summary: Get all the nutritionists
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Nutritionists retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
  */
 router.get('/nutritionists', getAllNutritionists);
 
 /**
- * @route GET /api/users/athlete/:athleteId
- * @desc Get all the details of an athlete
- * @access Private (trainer and nutritionist)
+ * @swagger
+ * /api/users/athlete/{athleteId}:
+ *   get:
+ *     summary: Get all the details of an athlete
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: athleteId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Athlete details retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Athlete not found
  */
 router.get('/athlete/:athleteId', protect, authorizeAthleteAccess, getAthleteDetail);
 
+/**
+ * @swagger
+ * /api/users/update:
+ *   put:
+ *     summary: Update profile (alternative endpoint)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               surname:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated
+ *       401:
+ *         description: Unauthorized
+ */
 router.put('/update', protect, updateProfile);
 
-// Rotta per la foto profilo (usa lo stesso nome del campo del frontend: 'avatar')
+/**
+ * @swagger
+ * /api/users/upload-avatar:
+ *   post:
+ *     summary: Upload profile picture
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               avatar:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Avatar uploaded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       401:
+ *         description: Unauthorized
+ *       400:
+ *         description: No file uploaded
+ */
 router.post('/upload-avatar', protect, upload.single('avatar'), uploadAvatar);
 
 module.exports = router;

@@ -22,96 +22,332 @@ const {
 // ==================== Workout Progress Routes ====================
 
 /**
- * @route GET /api/personal-diary/workout-progress/:id
- * @desc Get a specific workout progress record
- * @access Private (client)
+ * @swagger
+ * /api/personal-diary/workout-progress/{id}:
+ *   get:
+ *     summary: Get a specific workout progress record
+ *     tags: [Personal Diary]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Workout progress retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/WorkoutProgress'
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Progress not found
  */
 router.get('/workout-progress/:id', protect, authorize('client'), getWorkoutProgressById);
 
 /**
- * @route GET /api/personal-diary/workout-progress
- * @desc Get all workout progress records for the logged athlete
- * @access Private (client)
+ * @swagger
+ * /api/personal-diary/workout-progress:
+ *   get:
+ *     summary: Get all workout progress records for the logged athlete
+ *     tags: [Personal Diary]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Workout progress retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/WorkoutProgress'
+ *       401:
+ *         description: Unauthorized
  */
 router.get('/workout-progress', protect, authorize('client'), getMyWorkoutProgress);
 
 
 /**
- * @route GET /api/personal-diary/workout-progress/by-date/:date
- * @desc Get workout progress records for a specific date
- * @access Private (client)
+ * @swagger
+ * /api/personal-diary/workout-progress/by-date/{date}:
+ *   get:
+ *     summary: Get workout progress records for a specific date
+ *     tags: [Personal Diary]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Workout progress retrieved
+ *       401:
+ *         description: Unauthorized
  */
 router.get('/workout-progress/by-date/:date', protect, authorize('client'), getWorkoutProgressByDate);
 
 /**
- * @route POST /api/personal-diary/workout-progress
- * @desc Create a new workout progress record
- * @access Private (client)
+ * @swagger
+ * /api/personal-diary/workout-progress:
+ *   post:
+ *     summary: Create a new workout progress record
+ *     tags: [Personal Diary]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/WorkoutProgress'
+ *     responses:
+ *       201:
+ *         description: Workout progress created
+ *       401:
+ *         description: Unauthorized
  */
 router.post('/workout-progress', protect, authorize('client'), createWorkoutProgress);
 
 /**
- * @route PATCH /api/personal-diary/workout-progress/:id
- * @desc Update a workout progress record
- * @access Private (client)
+ * @swagger
+ * /api/personal-diary/workout-progress/{id}:
+ *   patch:
+ *     summary: Update a workout progress record
+ *     tags: [Personal Diary]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/WorkoutProgress'
+ *     responses:
+ *       200:
+ *         description: Workout progress updated
+ *       401:
+ *         description: Unauthorized
  */
 router.patch('/workout-progress/:id', protect, authorize('client'), updateWorkoutProgress);
 
 /**
- * @route DELETE /api/personal-diary/workout-progress/:id
- * @desc Delete a workout progress record
- * @access Private (client)
+ * @swagger
+ * /api/personal-diary/workout-progress/{id}:
+ *   delete:
+ *     summary: Delete a workout progress record
+ *     tags: [Personal Diary]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Workout progress deleted
+ *       401:
+ *         description: Unauthorized
  */
 router.delete('/workout-progress/:id', protect, authorize('client'), deleteWorkoutProgress);
 
 // ==================== Body Diary Routes ====================
 
 /**
- * @route GET /api/personal-diary/body-diary
- * @desc Get all body diary records for the logged athlete
- * @access Private (client)
+ * @swagger
+ * /api/personal-diary/body-diary:
+ *   get:
+ *     summary: Get all body diary records for the logged athlete
+ *     tags: [Personal Diary]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Body diary entries retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/BodyDiary'
+ *       401:
+ *         description: Unauthorized
  */
 router.get('/body-diary', protect, authorize('client'), getMyBodyDiary);
 
 /**
- * @route GET /api/personal-diary/body-diary/athlete/:clientId
- * @desc Get all body diary records for a specific athlete
- * @access Private (trainer, nutritionist)
+ * @swagger
+ * /api/personal-diary/body-diary/athlete/{clientId}:
+ *   get:
+ *     summary: Get all body diary records for a specific athlete
+ *     tags: [Personal Diary]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: clientId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Body diary entries retrieved
+ *       401:
+ *         description: Unauthorized
  */
 router.get('/body-diary/athlete/:clientId', protect, authorizeAthleteAccess, getBodyDiaryByAthleteId);
 
 /**
- * @route GET /api/personal-diary/body-diary/by-date-range/:startDate/:endDate
- * @desc Get body diary records within a date range
- * @access Private (client)
+ * @swagger
+ * /api/personal-diary/body-diary/by-date-range/{startDate}/{endDate}:
+ *   get:
+ *     summary: Get body diary records within a date range
+ *     tags: [Personal Diary]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: startDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: path
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Body diary entries retrieved
+ *       401:
+ *         description: Unauthorized
  */
 router.get('/body-diary/by-date-range/:startDate/:endDate', protect, authorize('client'), getBodyDiaryByDateRange);
 
 /**
- * @route GET /api/personal-diary/body-diary/:id
- * @desc Get a specific body diary record
- * @access Private (client)
+ * @swagger
+ * /api/personal-diary/body-diary/{id}:
+ *   get:
+ *     summary: Get a specific body diary record
+ *     tags: [Personal Diary]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Body diary entry retrieved
+ *       401:
+ *         description: Unauthorized
  */
 router.get('/body-diary/:id', protect, authorize('client'), getBodyDiaryById);
 
 /**
- * @route POST /api/personal-diary/body-diary
- * @desc Create a new body diary record
- * @access Private (client)
+ * @swagger
+ * /api/personal-diary/body-diary:
+ *   post:
+ *     summary: Create a new body diary record
+ *     tags: [Personal Diary]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/BodyDiary'
+ *     responses:
+ *       201:
+ *         description: Body diary entry created
+ *       401:
+ *         description: Unauthorized
  */
 router.post('/body-diary', protect, authorize('client'), createBodyDiary);
 
 /**
- * @route PATCH /api/personal-diary/body-diary/:id
- * @desc Update a body diary record
- * @access Private (client)
+ * @swagger
+ * /api/personal-diary/body-diary/{id}:
+ *   patch:
+ *     summary: Update a body diary record
+ *     tags: [Personal Diary]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/BodyDiary'
+ *     responses:
+ *       200:
+ *         description: Body diary entry updated
+ *       401:
+ *         description: Unauthorized
  */
 router.patch('/body-diary/:id', protect, authorize('client'), updateBodyDiary);
 
 /**
- * @route DELETE /api/personal-diary/body-diary/:id
- * @desc Delete a body diary record
- * @access Private (client)
+ * @swagger
+ * /api/personal-diary/body-diary/{id}:
+ *   delete:
+ *     summary: Delete a body diary record
+ *     tags: [Personal Diary]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Body diary entry deleted
+ *       401:
+ *         description: Unauthorized
  */
 router.delete('/body-diary/:id', protect, authorize('client'), deleteBodyDiary);
 

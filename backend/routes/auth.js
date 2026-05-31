@@ -12,17 +12,12 @@ const {
 const { protect } = require('../middleware/auth');
 
 /**
- * @route POST /api/auth/register
- * @desc Register a new user
- * @access Public
- */
-/**
  * @swagger
  * /api/auth/register:
  *   post:
  *     summary: Register a new user
  *     tags: [Auth]
- *     description: Creates a new user (default role is client)
+ *     description: Creates a new user (default role is client).
  *     requestBody:
  *       required: true
  *       content:
@@ -58,24 +53,32 @@ const { protect } = require('../middleware/auth');
  *     responses:
  *       201:
  *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
  *       400:
  *         description: Validation error or user already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/register', register);
 
-/**
- * @route   POST /api/auth/login
- * @desc    Login an user
- * @access  Public
- */
 /**
  * @swagger
  * /api/auth/login:
  *   post:
  *     summary: Login user
  *     tags: [Auth]
+ *     description: Authenticate a user and return a JWT token.
  *     requestBody:
  *       required: true
  *       content:
@@ -94,17 +97,33 @@ router.post('/register', register);
  *                 example: 123456
  *     responses:
  *       200:
- *         description: Login successful (returns JWT token)
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 token:
+ *                   type: string
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *       401:
  *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/login', login);
 
-/**
- * @route   GET /api/auth/userinfo
- * @desc    Get the logged user info
- * @access  Private
- */
 /**
  * @swagger
  * /api/auth/userinfo:
@@ -116,18 +135,31 @@ router.post('/login', login);
  *     responses:
  *       200:
  *         description: User data retrieved
- *       404:
- *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
  *       401:
  *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get('/userinfo', protect, getUserInfo);
 
-/**
- * @route   PUT /api/auth/updateprofile
- * @desc    Update an user profile
- * @access  Private
- */
 /**
  * @swagger
  * /api/auth/updateprofile:
@@ -145,19 +177,27 @@ router.get('/userinfo', protect, getUserInfo);
  *             properties:
  *               name:
  *                 type: string
+ *               surname:
+ *                 type: string
  *               email:
  *                 type: string
+ *               dateOfBirth:
+ *                 type: string
+ *                 format: date
  *     responses:
  *       200:
  *         description: Profile updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
  */
 router.put('/updateprofile', protect, updateProfile);
 
-/**
- * @route   PUT /api/auth/updatepassword
- * @desc    Change the password
- * @access  Private
- */
 /**
  * @swagger
  * /api/auth/update-password:
@@ -183,14 +223,19 @@ router.put('/updateprofile', protect, updateProfile);
  *     responses:
  *       200:
  *         description: Password updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Invalid old password
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
  */
 router.put('/update-password', protect, updatePassword);
 
-/**
- * @route   POST /api/auth/logout
- * @desc    Logout
- * @access  Private
- */
 /**
  * @swagger
  * /api/auth/logout:
@@ -202,6 +247,12 @@ router.put('/update-password', protect, updatePassword);
  *     responses:
  *       200:
  *         description: Logged out
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       401:
+ *         description: Unauthorized
  */
 router.post('/logout', protect, logout);
 
