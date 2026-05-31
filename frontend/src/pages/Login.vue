@@ -3,8 +3,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { getErrorMessage } from '../utils/utils.js'
-import axios from 'axios'
 import { API_URL } from '../utils/config.js'
+import axios from 'axios'
 
 const username = ref('')
 const password = ref('')

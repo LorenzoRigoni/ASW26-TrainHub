@@ -5,6 +5,7 @@ import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
 import { API_URL } from '../utils/config.js'
 import { getErrorMessage } from '../utils/utils.js'
+import { useSidebarStore } from '../stores/sidebar.js'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -12,10 +13,7 @@ import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
 
 const auth = useAuthStore()
-const sidebarOpen = ref(true)
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
+const sidebar = useSidebarStore()
 
 const nutritionPlans = ref([])
 const clients = ref([])
@@ -139,12 +137,9 @@ const closeModal = () => {
 </script>
 <template>
   <div id="app">
-
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen"  :role="auth.user.role"  @close="sidebarOpen = false"/>
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div class="page-header">
         <div class="header-text">
           <h1>Piani alimentari</h1>

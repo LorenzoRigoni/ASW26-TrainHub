@@ -1,16 +1,18 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import axios from 'axios'
 import { useRoute } from 'vue-router'
 import { API_URL } from '../utils/config.js'
 import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
-import Navbar from '../components/NavBar.vue'
-import SideMenu from '../components/SideMenu.vue'
+import { useSidebarStore } from '../stores/sidebar.js'
 import {Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend} from 'chart.js'
 import { Line } from 'vue-chartjs'
+
 import defaultAvatar from '../assets/profileImage.png'
+import axios from 'axios'
+import Navbar from '../components/NavBar.vue'
+import SideMenu from '../components/SideMenu.vue'
 
 ChartJS.register(
   CategoryScale,
@@ -23,8 +25,7 @@ ChartJS.register(
 )
 
 const route = useRoute()
-const sidebarOpen = ref(true)
-
+const sidebar = useSidebarStore()
 const auth = useAuthStore()
 
 const displayedUser = ref({ 
@@ -35,10 +36,6 @@ const displayedUser = ref({
   birthDate: auth.user.birthDate,
   image: auth.user.image
 })
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
 
 const diaryEntries = ref([])
 

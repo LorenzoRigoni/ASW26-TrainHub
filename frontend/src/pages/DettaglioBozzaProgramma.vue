@@ -1,29 +1,26 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { ROLES, getErrorMessage } from '../utils/utils.js'
+import { ref, onMounted } from 'vue'
+import { getErrorMessage } from '../utils/utils.js'
 import { useRouter, useRoute } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
 import { API_URL } from '../utils/config.js'
+import { useSidebarStore } from '../stores/sidebar.js'
 
 import axios from 'axios'
-
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
-
-import MainList from '../components/MainList.vue'
-import ListItem from '../components/MainListItem.vue'
 
 
 const route = useRoute()
 const router = useRouter()
 
 const auth = useAuthStore()
+const sidebar = useSidebarStore()
 
 const program = ref(null)
 const exercisesDb = ref([])
 const loading = ref(true)
-const sidebarOpen = ref(true)
 
 const fetchData = async () => {
   try {
@@ -102,17 +99,12 @@ const publishProgram = async () => {
   }
 }
 
-const toggleSidebar = () => { 
-  sidebarOpen.value = !sidebarOpen.value 
-}
-
 </script>
 <template>
   <div id="app">
-    <Navbar @toggle-sidebar="toggleSidebar" />
-    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div v-if="loading" class="loader">Caricamento in corso...</div>
 
       <template v-else-if="program">

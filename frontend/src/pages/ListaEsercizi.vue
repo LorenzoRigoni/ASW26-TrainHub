@@ -2,21 +2,23 @@
 import { ref, onMounted, watch } from 'vue'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
-import axios from 'axios'
 import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { API_URL } from '../utils/config.js'
+import { useSidebarStore } from '../stores/sidebar.js'
+
+import axios from 'axios'
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 
 const auth = useAuthStore()
+const sidebar = useSidebarStore()
+
 const exercises = ref([])
 const loading = ref(true)
-const sidebarOpen = ref(true)
 const selectedPattern = ref('')
 const showModal = ref(false)
-
 const isEditing = ref(false)
 const currentExerciseId = ref(null)
 
@@ -32,10 +34,6 @@ const patterns = [
   'Spinta verticale', 'Accosciata', 'Estensione anca', 
   'Complementare tirata', 'Complementare spinta'
 ]
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
 
 const handleFileUpload = (e) => {
   newExercise.value.image = e.target.files[0]
@@ -133,11 +131,9 @@ onMounted(() => {
 
 <template>
   <div id="app">
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div class="lista-esercizi">
         <div class="header-container">
           <div class="header-text">

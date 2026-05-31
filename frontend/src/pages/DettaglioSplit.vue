@@ -5,18 +5,16 @@ import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { useRoute, useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { useSidebarStore } from '../stores/sidebar.js'
+
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 
 const router = useRouter()
 const route = useRoute()
-
 const auth = useAuthStore()
-
-const handleResize = () => {
-  sidebarOpen.value = window.innerWidth >= 769
-}
+const sidebar = useSidebarStore()
 
 const isClient = computed(() => auth.user.role === 'client')
 const isTrainer = computed(() => auth.user.role === 'trainer')
@@ -25,10 +23,6 @@ const loading = ref(false)
 const todayDate = computed(() =>
   new Date().toLocaleDateString('it-IT')
 )
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
 
 const programId = route.params.programId
 const splitId = route.params.splitId
@@ -106,8 +100,6 @@ const saveAllProgress = async () => {
 }
 
 onMounted(() => {
-  handleResize()
-  window.addEventListener('resize', handleResize)
   fetchData()
 })
 
@@ -120,11 +112,9 @@ const goBack = () => {
 
 <template>
   <div id="app">
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="ui.sidebarOpen" :role="auth.user.role"  @close="sidebarOpen = false"/>
-
-    <main class="main-content" :class="{ 'sidebar-open': ui.sidebarOpen }" >
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div v-if="loading" class="loader-container">
         <i class="fa fa-spinner fa-spin"></i> Caricamento dati...
       </div>

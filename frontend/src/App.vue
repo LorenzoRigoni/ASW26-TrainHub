@@ -1,23 +1,20 @@
 <script setup>
 import { ref } from 'vue'
 import Toast from './components/Toast.vue'
-import { onMounted, onUnmounted } from 'vue'
-import { useUIStore } from './stores/ui'
+import { onMounted, onUnmounted, watch } from 'vue'
+import { useSidebarStore } from './stores/sidebar'
+import { useRoute } from 'vue-router'
 
-const UIStore = useUIStore()
+const sidebar = useSidebarStore()
+const route = useRoute()
 
-const handleResize = () => {
-  UIStore.setSidebarByWidth()
-}
-
-onMounted(() => {
-  handleResize()
-  window.addEventListener('resize', handleResize)
+//per rimuovre sidebarin mobile subito dopo la navigazione
+watch(() => route.path, () => {
+  if (window.innerWidth < 768) {
+    sidebar.close()
+  }
 })
 
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
-})
 </script>
 
 <template>

@@ -5,6 +5,7 @@ import { getInitials, getAvatarColor, ROLES, getErrorMessage } from '../utils/ut
 import { API_URL } from '../utils/config.js'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { useSidebarStore } from '../stores/sidebar.js'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -22,8 +23,7 @@ const stats = ref({ activeClientsCount: 0, totalPrograms: 0, activeNutritionalPl
 const programsList = ref([])
 const recentNotifications = ref([])
 const activeProgram = ref(null)
-const sidebarOpen = ref(true)
-
+const sidebar = useSidebarStore()
 const router = useRouter()
 
 const greeting = computed(() => {
@@ -114,15 +114,11 @@ const goToProgramsList = () => {
 }
 
 const goToNutritionPlanRequestDetail = () => {
-  router.push('/programmi')
+  router.push('/piani-alimentari')
 }
 
 const goToNutritionPlanDetail = () => {
   router.push('/programmi')
-}
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
 }
 
 const fetchData = async () => {
@@ -173,11 +169,9 @@ onMounted(fetchData)
 
 <template>
   <div id="app">
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen" :role = "auth.user.role" @close="sidebarOpen = false" />
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div class="dashboard-home">
         <div class="page-header">
           <div class="header-text">

@@ -4,6 +4,7 @@ import { calculateDaysLeft, getErrorMessage } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { useSidebarStore } from '../stores/sidebar.js'
 import { API_URL } from '../utils/config.js'
 
 import axios from 'axios'
@@ -16,7 +17,7 @@ import AppModal from '../components/Modal.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
-const sidebarOpen = ref(true)
+const sidebar = useSidebarStore()
 const showModal = ref(false)
 const loading = ref(true)
 const deadlines = ref([])
@@ -92,10 +93,6 @@ const saveNewDeadline = async () => {
   } catch (error) {
     showToast("Errore nella creazione della scadenza: " + getErrorMessage(error), "error")
   }
-}
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
 }
 
 const openProgramModal = (deadline) => {
@@ -194,11 +191,9 @@ const formattedDeadlines = computed(() => {
 </script>
 <template>
   <div id="app">
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div class="lista-scadenze">
         <div class="page-header">
           <div class="header-text">

@@ -3,18 +3,18 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
-import axios from 'axios'
+import { useSidebarStore } from '../stores/sidebar.js'
 import { API_URL } from '../utils/config.js'
 import { ROLES, getErrorMessage } from '../utils/utils.js'
+
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
+import axios from 'axios'
 
 const auth = useAuthStore()
-
 const route = useRoute()
 const router = useRouter()
-
-const sidebarOpen = ref(true)
+const sidebar = useSidebarStore()
 const requestId = computed(() => route.params.id)
 const isEditMode = computed(() => !!requestId.value)
 
@@ -67,10 +67,6 @@ const fetchData = async () => {
 
 onMounted(fetchData)
 
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
-
 const goBack = () => {
   router.push('/richieste-nutrizione')
 }
@@ -109,10 +105,9 @@ const canEditStatus = computed(() => {
 
 <template>
      <div id="app">
-        <Navbar @toggle-sidebar="toggleSidebar" />
-        <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
-        
-        <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+        <Navbar @toggle-sidebar="sidebar.toggle" />
+        <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+        <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
             <div v-if="loading" class="loader-container">
               <i class="fa fa-spinner fa-spin"></i> Caricamento...
             </div>

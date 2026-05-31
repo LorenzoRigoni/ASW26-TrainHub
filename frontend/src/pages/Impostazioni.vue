@@ -4,11 +4,11 @@ import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore} from '../stores/auth.js'
-import axios from 'axios'
+import { useSidebarStore } from '../stores/sidebar.js'
 import { API_URL } from '../utils/config.js'
 
 import profileImage from '../assets/profileImage.png'
-
+import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
@@ -16,22 +16,16 @@ import ListItem from '../components/MainListItem.vue'
 import ActionCard from '../components/ActionCard.vue'
 
 const auth = useAuthStore()
-const sidebarOpen = ref(true)
+const sidebar = useSidebarStore()
 const loading = ref(false)
 const fileInput = ref(null)
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
-
 const showModal = ref(false)
-
 const today = new Date().toISOString().split('T')[0]
-
 const router = useRouter()
 const emit = defineEmits(['apri-richiesta'])
-
 const previewImage = ref(profileImage)
 const selectedFile = ref(null)
+const passLoading = ref(false)
 
 const userFields = ref({
   name: '',
@@ -46,7 +40,6 @@ const passwordFields = ref({
   newPassword: '',
   confirmPassword: ''
 })
-const passLoading = ref(false)
 
 const fetchUserData = async () => {
   try {
@@ -165,12 +158,9 @@ onMounted(() => {
 
 <template>
   <div id="app">
-
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen"  :role="auth.user.role" @close="sidebarOpen = false" />
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div class="header">
         <div class="header-text">
            <h1>Impostazioni</h1>

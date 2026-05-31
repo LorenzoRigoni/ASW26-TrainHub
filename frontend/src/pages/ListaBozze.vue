@@ -1,25 +1,24 @@
 <script setup>
 import { ref, onMounted, computed} from 'vue'
-import MainList from '../components/MainList.vue'
-import MainListItem from '../components/MainListItem.vue'
 import { ROLES, formatPrograms, getErrorMessage } from '../utils/utils.js'
-import Navbar from '../components/NavBar.vue'
-import SideMenu from '../components/SideMenu.vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { useSidebarStore } from '../stores/sidebar.js'
 import { API_URL } from '../utils/config.js'
+
+import MainList from '../components/MainList.vue'
+import MainListItem from '../components/MainListItem.vue'
+import Navbar from '../components/NavBar.vue'
+import SideMenu from '../components/SideMenu.vue'
+import axios from 'axios'
 
 const router = useRouter()
 const auth = useAuthStore()
 const programs = ref([])
 const loading = ref(true)
-const sidebarOpen = ref(true)
+const sidebar = useSidebarStore()
 
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
 
 const goToDetail = (id) => {
   router.push(`/bozze/dettaglio-bozza`)
@@ -48,11 +47,9 @@ const formattedPrograms = computed(() => {
 
 <template>
   <div id="app">
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div class="lista-programmi">
         <div class="header-text">
           <h1>Bozze Programmi</h1>

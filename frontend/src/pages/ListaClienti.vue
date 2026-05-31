@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
 import { API_URL } from '../utils/config.js'
+import { useSidebarStore } from '../stores/sidebar.js'
 
 import axios from 'axios'
 import MainList from '../components/MainList.vue'
@@ -16,12 +17,7 @@ import profileImage from '../assets/profileImage.png'
 const router = useRouter()
 const auth = useAuthStore()
 const customers = ref([])
-
-const sidebarOpen = ref(true)
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
+const sidebar = useSidebarStore()
 
 const fetchClients = async () => {
   try {
@@ -51,11 +47,9 @@ const goToDetail = (id) => {
 
 <template>
   <div id="app">
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen" :role = "auth.user.role" @close="sidebarOpen = false" />
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div class="lista-clienti">
         <div class="header-text">
             <h1 class="title">Elenco clienti</h1>
