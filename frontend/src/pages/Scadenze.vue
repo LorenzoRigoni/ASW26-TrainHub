@@ -1,15 +1,20 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { calculateDaysLeft} from '../utils/utils.js'
+import { useRouter } from 'vue-router'
+import { showToast } from '../utils/toast.js'
+import { useAuthStore } from '../stores/auth.js'
+
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
-import { useRouter } from 'vue-router'
-import Footer from '../components/Footer.vue'
 import AppModal from '../components/Modal.vue'
 
+
 const router = useRouter()
+const auth = useAuthStore()
 const sidebarOpen = ref(true)
 const showModal = ref(false)
 const loading = ref(true)
@@ -21,12 +26,6 @@ const selectedDeadline = ref(null)
 
 const today = new Date().toISOString().split('T')[0]
 
-const userLogged = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role') 
-})
-
 const newDeadline = ref({
   athleteId: '',
   title: 'Nuovo Programma',
@@ -34,20 +33,17 @@ const newDeadline = ref({
   notes: ''
 })
 
-const token = localStorage.getItem('token')
-const config = { headers: { Authorization: `Bearer ${token}` } }
-
 const fetchData = async () => {
   loading.value = true
   try {
     const [resSca, resAth] = await Promise.all([
-      axios.get('http://localhost:5000/api/deadlines', config),
-      axios.get('http://localhost:5000/api/users/my-clients', config)
+      axios.get('http://localhost:5000/api/deadlines', auth.apiConfig),
+      axios.get('http://localhost:5000/api/users/my-clients', auth.apiConfig)
     ])
     deadlines.value = resSca.data.data
     athletes.value = resAth.data.data
   } catch (error) {
-    console.error("Errore caricamento:", error)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   } finally {
     loading.value = false
   }
@@ -55,62 +51,51 @@ const fetchData = async () => {
 
 onMounted(fetchData)
 
-const getPriorityClass = (dueDate) => {
-  const diffTime = new Date(dueDate) - new Date()
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-  if (diffDays < 0) return 'status-expired'
-  if (diffDays <= 3) return 'status-urgent'
-  return 'status-upcoming'
-}
-
-const createProgram = async (deadline) => {
-  const sessions = prompt(`Quanti split settimanali per ${deadline.athleteId.name}?`, "3")
-  if (!sessions || isNaN(sessions)) return
-  console.log(deadline)
-  try {
-    const res = await axios.post('http://localhost:5000/api/training-programs/init', {
-      athleteId: deadline.athleteId._id,
-      deadlineId: deadline.id || deadline._id,
-      sessionsPerWeek: parseInt(sessions),
-      title: newDeadline.value.title || `Programma - ${deadline.athleteId.surname}`
-    }, config)
-
-    if (res.data.success) {
-      router.push(`/bozze/dettaglio-bozza/${res.data.data._id}`)
-    }
-  } catch (error) {
-    console.error("Errore creazione programma:", error)
-    alert("Errore nell'inizializzazione del programma.")
-  }
-}
-
-const saveNewDeadline = async () => {
-  console.log(newDeadline.value)
-  if (!newDeadline.value.athleteId || !newDeadline.value.dueDate) {
-    alert("Compila tutti i campi obbligatori")
-    return
-  }
-  try {
-    await axios.post('http://localhost:5000/api/deadlines', newDeadline.value, config)
-    showModal.value = false
-    fetchData()
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
-
-
 const programForm = ref({
   title: '',
   sessions: 3,
   startDate: today,
   endDate: today
 })
+
+const createProgram = async () => {
+  try {
+    const res = await axios.post('http://localhost:5000/api/training-programs/init', {
+      athleteId: selectedDeadline.value.athleteId?._id || selectedDeadline.value.athleteId?.id,
+      deadlineId: selectedDeadline.id || selectedDeadline._id,
+      sessionsPerWeek: programForm.value.sessions,
+      title: programForm.value.title,
+      startDate: programForm.value.startDate,
+      endDate: programForm.value.endDate
+    }, auth.apiConfig)
+
+    if (res.data.success) {
+      showToast("Programma creato con successo!", "success")
+      router.push(`/bozze/dettaglio-bozza/${res.data.data._id}`)
+    }
+  } catch (error) {
+    showToast("Errore nella creazione del programma: " + error, "error")
+  }
+}
+
+const saveNewDeadline = async () => {
+  console.log(newDeadline.value)
+  if (!newDeadline.value.athleteId || !newDeadline.value.dueDate) {
+    showToast("Atleta o data di scadenza mancante", "error")
+  }
+  try {
+    await axios.post('http://localhost:5000/api/deadlines', newDeadline.value, auth.apiConfig)
+    showModal.value = false
+    fetchData()
+    showToast("Scadenza creata con successo!", "success")
+  } catch (error) {
+    showToast("Errore nella creazione della scadenza: " + error, "error")
+  }
+}
+
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
+}
 
 const openProgramModal = (deadline) => {
   selectedDeadline.value = deadline
@@ -140,7 +125,7 @@ const openDeadlineDetail = (deadline) => {
 
 const saveDeadlineChanges = async () => {
   if (!selectedDeadline.value || !selectedDeadline.value._id) {
-    alert("Nessuna scadenza selezionata");
+    showToast("Nessuna scadenza selezionata", "error")
     return;
   }
 
@@ -152,26 +137,65 @@ const saveDeadlineChanges = async () => {
         dueDate: selectedDeadline.value.dueDate,
         notes: selectedDeadline.value.notes
       },
-      config
+      auth.apiConfig
     );
 
     if (response.data.success) {
       showDeadlineModal.value = false;
       selectedDeadline.value = null;
       await fetchData();
+      showToast("Scadenza aggiornata con successo!", "success")
     }
   } catch (error) {
-    console.error("Errore durante l'aggiornamento della scadenza:", error);
-    alert(error.response?.data?.message || "Impossibile modificare la scadenza");
+    showToast("Errore durante l'aggiornamento della scadenza: " + error, "error");
   }
 };
+
+const formattedDeadlines = computed(() => {
+  return deadlines.value.map((d) => {
+    const daysLeft = calculateDaysLeft(d.dueDate)
+
+    let statusClass = ''
+    let iconClass = ''
+
+    if (daysLeft <= 0) {
+      statusClass = 'status-red'
+      iconClass = 'icon-red'
+    } 
+    else if (daysLeft < 5) {
+      statusClass = 'status-orange'
+      iconClass = 'icon-orange'
+    } 
+    else if (daysLeft <= 10) {
+      statusClass = 'status-yellow'
+      iconClass = 'icon-yellow'
+    } 
+    else {
+      statusClass = 'status-green'
+      iconClass = 'icon-green'
+    }
+
+    return {
+      ...d,
+      statusText:
+        daysLeft === 0
+          ? 'Oggi'
+          : daysLeft === 1
+          ? '1 giorno'
+          : `${daysLeft} giorni`,
+
+      statusClass,
+      iconClass
+    }
+  })
+})
 
 </script>
 <template>
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="lista-scadenze">
@@ -189,12 +213,13 @@ const saveDeadlineChanges = async () => {
 
         <MainList v-else>
           <ListItem
-            v-for="s in deadlines"
+            v-for="s in formattedDeadlines"
             :key="s.id"
             icon="fa fa-calendar-check-o"
-            :title="`${s.athleteId?.name || ''} ${s.athleteId?.surname || ''}`"
-            :status="s.status === 'pending' ? 'In attesa' : 'Completata'"
-            :class="getPriorityClass(s.dueDate)"
+            :title="`${s.athleteId?.name || ''} ${s.athleteId?.surname || ''} - ${s.title}`"
+            :status="s.statusText"
+            :statusClass="s.statusClass"
+            :iconClass="s.iconClass"
             @click="openDeadlineDetail(s)"
           >
             <template #subtitle>

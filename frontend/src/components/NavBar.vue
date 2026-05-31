@@ -2,10 +2,12 @@
 import { ref, onMounted } from 'vue'
 import { useNotifications } from '../utils/useNotifications'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
 import profileImage from '../assets/profileImage.png'
 
 const emit = defineEmits(['toggle-sidebar'])
+const auth = useAuthStore()
 const router = useRouter()
 const { unreadCount } = useNotifications()
 
@@ -14,10 +16,14 @@ const goToNotifications = () => {
   router.push('/home/notifiche')
 }
 
+const goToSettings = () => {
+  router.push('/home/impostazioni')
+}
+
 const previewImage = ref(profileImage)
 
 onMounted(() => {
-  const pathImgProfilo = localStorage.getItem('user_image')
+  const pathImgProfilo = auth.user.profilePicture
   if (pathImgProfilo) {
     previewImage.value = `http://localhost:5000${pathImgProfilo}`
   }
@@ -37,15 +43,13 @@ onMounted(() => {
     </div>
 
     <div class="navbar-actions">
-      <!-- NOTIFICATION BELL -->
       <button class="notification-btn" @click="goToNotifications" aria-label="Notifiche">
         <i class="fa fa-bell"></i>
         <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
       </button>
 
-      <!-- PROFILE BUTTON -->
-      <button class="profile-button" aria-label="Profilo utente">
-        <img :src="previewImage" alt="User profile" class="user-icon" />
+      <button class="avatar" aria-label="Profilo utente" @click="goToSettings">
+        <img :src="previewImage" alt="User profile"/>
       </button>
     </div>
   </nav>
@@ -142,31 +146,23 @@ onMounted(() => {
   border: 2px solid white;
 }
 
-.profile-button {
-  background: none;
-  border: 2px solid #1e1548;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+.avatar{
+  border: none; 
 }
 
-.profile-button:hover {
-  background-color: #f0f0f0;
-  border-color: #4a5eff;
+.avatar:hover{
+  border: none; 
+  cursor: pointer; 
+} 
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* evita stretching */
+  display: block;
+  border-radius: 50%;
 }
 
-.user-icon {
-  height: 30px;
-  width: auto;
-  border-radius: 50%;
-  object-fit: cover;
-}
 
 @media (max-width: 768px) {
   .logo-icon {

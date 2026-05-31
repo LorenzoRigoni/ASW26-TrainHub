@@ -78,7 +78,9 @@ exports.login = async (req, res) => {
             });
         }
 
-        const user = await User.findOne({ username }).select('+password');
+        const user = await User.findOne({ username }).select(
+            '+password -assignedTrainerId -assignedNutritionistId'
+        );
 
         if (!user) {
             return res.status(401).json({

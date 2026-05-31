@@ -2,6 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { ROLES } from '../utils/utils.js'
 import { useRoute, useRouter } from 'vue-router'
+import { showToast } from '../utils/toast.js'
+import { useAuthStore } from '../stores/auth.js'
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -12,12 +14,14 @@ const sidebarOpen = ref(false)
 const router = useRouter()
 const route = useRoute()
 
+const auth = useAuthStore()
+
 const handleResize = () => {
   sidebarOpen.value = window.innerWidth >= 769
 }
 
-const isClient = computed(() => userLogged.value.role === 'client')
-const isTrainer = computed(() => userLogged.value.role === 'trainer')
+const isClient = computed(() => auth.user.role === 'client')
+const isTrainer = computed(() => auth.user.role === 'trainer')
 
 const loading = ref(false)
 const todayDate = computed(() =>
@@ -27,12 +31,6 @@ const todayDate = computed(() =>
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
-
-const userLogged = ref({ 
-  name: localStorage.getItem('user_name'), 
-  surname: localStorage.getItem('user_surname'), 
-  role: localStorage.getItem('user_role') 
-})
 
 const programId = route.params.programId
 const splitId = route.params.splitId
@@ -45,10 +43,7 @@ const splitExercises = ref([])
 const fetchData = async () => {
   loading.value = true
   try {
-    const token = localStorage.getItem('token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-
-    const programRes = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, config)
+    const programRes = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, auth.apiConfig)
     const currentSplit = programRes.data.data.splits.find(s => s._id === splitId)
 
     if (currentSplit && currentSplit.rows) {
@@ -64,7 +59,7 @@ const fetchData = async () => {
     }
 
     const urlParamAthlete = isTrainer.value ? `/${athleteId}` : ''
-    const logsRes = await axios.get(`http://localhost:5000/api/exercise-logs/${programId}/${splitId}${urlParamAthlete}`, config)
+    const logsRes = await axios.get(`http://localhost:5000/api/exercise-logs/${programId}/${splitId}${urlParamAthlete}`, auth.apiConfig)
 
     Object.keys(exerciseLogs.value).forEach(key => exerciseLogs.value[key] = [])
 
@@ -79,7 +74,7 @@ const fetchData = async () => {
       }
     })
   } catch (err) {
-    console.error("Errore nel caricamento dei dati di split:", err)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   } finally {
     loading.value = false
   }
@@ -87,9 +82,6 @@ const fetchData = async () => {
 
 const saveAllProgress = async () => {
   try {
-    const token = localStorage.getItem('token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-
     const savePromises = Object.keys(currentWeekInput.value).map(async (exId) => {
       const input = currentWeekInput.value[exId]
       if (input.load !== '' || input.reps !== '') {
@@ -98,7 +90,7 @@ const saveAllProgress = async () => {
           load: Number(input.load),
           reps: Number(input.reps),
           notes: input.notes
-        }, config)
+        }, auth.apiConfig)
       }
     })
 
@@ -108,9 +100,10 @@ const saveAllProgress = async () => {
       currentWeekInput.value[key] = { load: '', reps: '', notes: '' }
     })
 
+    showToast("Progressi salvati correttamente!", "success")
     await fetchData()
   } catch (err) {
-    console.error(err.response?.data?.message || "Errore durante il salvataggio dei dati")
+    showToast("Errore nel salvataggio dei progressi: " + error, "error")
   }
 }
 
@@ -131,7 +124,7 @@ const goBack = () => {
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu :isOpen="sidebarOpen" :role="userLogged.role"  @close="sidebarOpen = false"/>
+    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role"  @close="sidebarOpen = false"/>
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }" >
       <div v-if="loading" class="loader-container">

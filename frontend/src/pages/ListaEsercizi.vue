@@ -1,13 +1,15 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { showToast } from '../utils/toast.js'
+import { useAuthStore } from '../stores/auth.js'
 import axios from 'axios'
 import { ROLES } from '../utils/utils.js'
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
-import Footer from '../components/Footer.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 
+const auth = useAuthStore()
 const exercises = ref([])
 const loading = ref(true)
 const sidebarOpen = ref(true)
@@ -30,12 +32,6 @@ const patterns = [
   'Complementare tirata', 'Complementare spinta'
 ]
 
-const userLogged = {
-  name: localStorage.getItem('user_name'),
-  surname: localStorage.getItem('user_surname'),
-  role: localStorage.getItem('user_role')
-}
-
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
@@ -47,15 +43,11 @@ const handleFileChange = (e) => {
 const fetchData = async () => {
   loading.value = true
   try {
-    const token = localStorage.getItem('token')
     const params = selectedPattern.value ? { movementPattern: selectedPattern.value } : {}
-    const res = await axios.get('http://localhost:5000/api/exercises', {
-      headers: { Authorization: `Bearer ${token}` },
-      params
-    })
+    const res = await axios.get('http://localhost:5000/api/exercises', auth.apiConfig)
     exercises.value = res.data.data
   } catch (err) {
-    console.error("Errore nel caricamento esercizi:", err)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   } finally {
     loading.value = false
   }
@@ -97,8 +89,10 @@ const handleSubmit = async () => {
       formData.append('image', newExercise.value.image)
     }
 
+    const userHeaders = auth.apiConfig.headers
+
     const headers = {
-      Authorization: `Bearer ${token}`,
+      userHeaders,
       'Content-Type': 'multipart/form-data'
     }
 
@@ -109,21 +103,21 @@ const handleSubmit = async () => {
     }
 
     showModal.value = false
+    showToast("Esercizio salvato con successo!", "success")
     fetchData()
   } catch (err) {
-    console.log(err.response?.data?.message || "Si è verificato un errore")
+    showToast("Errore nel salvataggio dei dati: " + error, "error")
   }
 }
 
 const handleDelete = async (id) => {
   try {
     const token = localStorage.getItem('token')
-    await axios.delete(`http://localhost:5000/api/exercises/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    await axios.delete(`http://localhost:5000/api/exercises/${id}`, apiConfig)
+    showToast("Esercizio eliminato con successo!", "error")
     fetchData()
   } catch (err) {
-    console.log(err.response?.data?.message || "Impossibile eliminare l'esercizio")
+    showToast("Errore nel salvataggio dei dati: " + error, "error")
   }
 }
 
@@ -140,7 +134,7 @@ onMounted(() => {
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu :isOpen="sidebarOpen" :role="userLogged.role" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="lista-esercizi">
@@ -156,7 +150,7 @@ onMounted(() => {
               <option v-for="p in patterns" :key="p" :value="p">{{ p }}</option>
             </select>
             
-            <button v-if="userLogged.role === 'trainer'" class="btn-add" @click="openCreateModal">
+            <button v-if="auth.user.role === 'trainer'" class="btn-add" @click="openCreateModal">
               <i class="fa fa-plus"></i> Nuovo Esercizio
             </button>
           </div>
@@ -194,7 +188,7 @@ onMounted(() => {
                       {{ e.description || 'Nessuna descrizione disponibile per questo esercizio.' }}
                     </div>
 
-                    <div v-if="userLogged.role === 'trainer'" class="exercise-actions" >
+                    <div v-if="auth.user.role === 'trainer'" class="exercise-actions" >
                       <button class="btn-action edit" @click.stop="openEditModal(e)" title="Modifica">
                         <i class="fa fa-edit"></i>
                       </button>

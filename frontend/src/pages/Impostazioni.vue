@@ -2,6 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { ROLES } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
+import { showToast } from '../utils/toast.js'
+import { useAuthStore} from '../stores/auth.js'
 import axios from 'axios'
 
 import profileImage from '../assets/profileImage.png'
@@ -12,6 +14,7 @@ import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
 import ActionCard from '../components/ActionCard.vue'
 
+const auth = useAuthStore()
 const sidebarOpen = ref(true)
 const loading = ref(false)
 const fileInput = ref(null)
@@ -43,27 +46,21 @@ const passwordFields = ref({
 })
 const passLoading = ref(false)
 
-const token = localStorage.getItem('token')
-const config = { headers: { Authorization: `Bearer ${token}` } }
-
 const fetchUserData = async () => {
   try {
-    const res = await axios.get('http://localhost:5000/api/auth/userinfo', config)
-    const user = res.data.data
-
     userFields.value = {
-      name: user.name || '',
-      surname: user.surname || '',
-      username: user.username || '',
-      email: user.email || '',
-      role: user.role || ''
+      name: auth.user.name || '',
+      surname: auth.user.surname || '',
+      username: auth.user.username || '',
+      email: auth.user.email || '',
+      role: auth.user.role || ''
     }
 
-    if (user.profilePicture) {
-      previewImage.value = `http://localhost:5000${user.profilePicture}`
+    if (auth.user.profilePicture) {
+      previewImage.value = `http://localhost:5000${auth.user.profilePicture}`
     }
   } catch (error) {
-    console.error("Errore durante il caricamento dei dati utente:", error)
+    showToast("Errore nel caricamento dei dati: " + error, "error")
   }
 }
 
@@ -93,12 +90,12 @@ const saveSettings = async () => {
 
       const imgRes = await axios.post('http://localhost:5000/api/users/upload-avatar', formData, {
         headers: {
-          ...config.headers,
+          ...auth.apiConfig.headers,
           'Content-Type': 'multipart/form-data'
         }
       })
       
-      localStorage.setItem('user_profile_picture', imgRes.data.profilePicture)
+      auth.updateUserData({ profilePicture: imgRes.data.profilePicture })
       selectedFile.value = null
     }
 
@@ -108,17 +105,11 @@ const saveSettings = async () => {
       email: userFields.value.email
     }
 
-    const textRes = await axios.put('http://localhost:5000/api/users/update', payload, config)
-    const updatedUser = textRes.data.data
-
-    localStorage.setItem('user_name', updatedUser.name)
-    localStorage.setItem('user_surname', updatedUser.surname)
-    localStorage.setItem('user_username', updatedUser.username)
-    localStorage.setItem('user_email', updatedUser.email)
-    localStorage.setItem('user_image', updatedUser.profileImage)
-    console.log('Dati Salvati')
+    const textRes = await axios.put('http://localhost:5000/api/users/update', payload, auth.apiConfig)
+    auth.updateUserData(textRes.data.data)
+    showToast("Dati salvati correttamente!", "success")
   } catch (error) {
-    console.error("Errore durante il salvataggio dei dati:", error)
+    showToast("Errore nel salvataggio dei dati: " + error, "error")
   } finally {
     loading.value = false
   }
@@ -126,11 +117,11 @@ const saveSettings = async () => {
 
 const changePassword = async () => {
   if (!passwordFields.value.newPassword) {
-    alert("Compila tutti i campi della password.")
+    showToast("Il campo della nuova password non è compilato", "error")
     return
   }
   if (passwordFields.value.newPassword !== passwordFields.value.confirmPassword) {
-    alert("La nuova password e la conferma non coincidono!")
+    showToast("La nuova password e la conferma non coincidono", "error")
     return
   }
 
@@ -140,16 +131,20 @@ const changePassword = async () => {
       newPassword: passwordFields.value.newPassword
     }
     
-    const res = await axios.put('http://localhost:5000/api/auth/update-password', payload, config)
+    const res = await axios.put('http://localhost:5000/api/auth/update-password', payload, auth.apiConfig)
     
-    localStorage.setItem('token', res.data.data.token)
+    const newToken = res.data.data?.token
+    if (newToken) {
+      auth.updateToken(newToken)
+    }
 
     passwordFields.value = {
       newPassword: '',
       confirmPassword: ''
     }
+    showToast("Password cambiata con successo!", "success")
   } catch (error) {
-    console.error("Errore durante il cambio password:", error)
+    showToast("Errore nel cambio di password: " + error, "error")
   } finally {
     passLoading.value = false
   }
@@ -165,7 +160,7 @@ onMounted(() => {
 
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu :isOpen="sidebarOpen"  :role="userFields.role" @close="sidebarOpen = false" />
+    <SideMenu :isOpen="sidebarOpen"  :role="auth.user.role" @close="sidebarOpen = false" />
 
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="header">

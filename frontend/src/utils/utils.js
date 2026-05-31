@@ -27,25 +27,6 @@ export const getAvatarColor = (seed = '') => {
   return avatarColors[Math.abs(hash) % avatarColors.length]
 }
 
-export const statusClasses = {
-  //status clienti
-  attivo: 'badge-attivo',
-  inattivo: 'badge-inattivo',
-  perso: 'badge-perso',
-
-  //attività diario
-  on: 'status-on',
-  off: 'status-off',
-
-  //status notifiche
-  nuova: 'badge-nuova',
-  warning: 'badge-warning',
-  success: 'badge-success',
-  info: 'badge-info'
-
-}
-
-
 //funzione per calcolo giorni mancanti alla scadenza
 export const calculateDaysLeft = (dueDate) => {
   const today = new Date()
@@ -60,34 +41,10 @@ export const calculateDaysLeft = (dueDate) => {
   return diffDays
 }
 
-//Imposta stato e colore in base ai giorni che mancano alla scadenza
-export const getStatusData = (dueDate) => {
-  const daysLeft = calculateDaysLeft(dueDate)
-
-  if (daysLeft < 5) {
-    return {
-      text: `${daysLeft} giorni`,
-      color: 'red'
-    }
-  }
-
-  if (daysLeft <= 10) {
-    return {
-      text: `${daysLeft} giorni`,
-      color: 'yellow'
-    }
-  }
-
-  return {
-    text: `${daysLeft} giorni`,
-    color: 'green'
-  }
-}
-
 
 export const formatPrograms = (programs) => {
   return programs.map((p) => {
-    const dateToUse = p.dueDate || p.createdAt;
+    const dateToUse = p.startDate;
     const daysLeft = calculateDaysLeft(dateToUse);
 
     const athleteName = p.athleteId?.name || '';
@@ -96,8 +53,8 @@ export const formatPrograms = (programs) => {
     let statusClass = '';
     let iconClass = '';
 
-    if (daysLeft <= 0) { statusClass = 'status-orange'; iconClass = 'icon-orange'; }
-    else if (daysLeft < 5) { statusClass = 'status-red'; iconClass = 'icon-red'; }
+    if (daysLeft <= 0) { statusClass = 'status-red'; iconClass = 'icon-red'; }
+    else if (daysLeft < 5) { statusClass = 'status-orange'; iconClass = 'icon-orange'; }
     else if (daysLeft <= 10) { statusClass = 'status-yellow'; iconClass = 'icon-yellow'; }
     else { statusClass = 'status-green'; iconClass = 'icon-green'; }
 

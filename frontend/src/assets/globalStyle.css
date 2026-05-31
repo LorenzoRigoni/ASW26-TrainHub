@@ -142,8 +142,8 @@
 }
 
 .avatar {
-  width: 40px;
   height: 40px;
+  width: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -176,3 +176,16 @@
   border: 1px solid #dee2e6;
 }
 
+
+
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  font-family: 'Century Gothic', 'Century Gothic', Futura, sans-serif;
+}
