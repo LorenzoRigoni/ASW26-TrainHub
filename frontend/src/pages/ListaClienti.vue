@@ -26,14 +26,11 @@ const toggleSidebar = () => {
 const fetchClients = async () => {
   try {
     const response = await axios.get(`${API_URL}/api/users/my-clients`, auth.apiConfig)
-    customers.value = response.data.data || []
-    customers.value.forEach((c) => {
-      if (c.profilePicture) {
-        c.profilePicture = `${API_URL}${c.profilePicture}`
-      } else {
-        c.profilePicture = profileImage
-      }
-    })
+    const data = response.data.data || []
+    customers.value = data.map(c => ({
+      ...c,
+      profilePicture: c.profilePicture ? `${API_URL}${c.profilePicture}` : profileImage
+    }))
   } catch (error) {
     showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   }
@@ -97,10 +94,10 @@ const goToDetail = (id) => {
 
 .user-icon {
   height: 50px;
-  width: auto;
+  width: 50px;
   border-radius: 50%;
   object-fit: cover;
-  margin-right: 10pt;
+  margin-right: 15px;
 }
 
 </style>
