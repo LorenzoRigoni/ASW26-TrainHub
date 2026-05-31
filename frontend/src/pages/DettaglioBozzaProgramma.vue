@@ -192,43 +192,42 @@ const toggleSidebar = () => {
 </template>
 
 <style scoped>
-.split{
-  background-color: white;
-  margin-bottom: 20pt;
-  border-radius: 10pt;
-  padding: 10pt;
+.split {
+  background: white;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  padding: 16px;
 }
 
 .split-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
   margin-bottom: 20px;
-  gap: 20px;
 }
 
-.split-header h2 {
-  margin: 0;
-  font-size: 18pt;
-  font-weight: bold;
-}
-
-.exercise-card {
-  padding: 10px;
-  margin-top: 7px;
+.split-header .secondary-button {
+  width: 100%;
+  justify-content: center;
 }
 
 .exercise-row {
   display: flex;
-  align-items:center;
+  flex-direction: column;
   gap: 12px;
   width: 100%;
+  padding: 14px;
+  background: #f9fafb;
+  border-radius: 14px;
+  margin-bottom: 12px;
 }
+
 
 .input-group {
   display: flex;
   flex-direction: column;
-  margin-bottom: 10pt;
+  width: 100%;
 }
 
 .input-group label {
@@ -238,23 +237,16 @@ const toggleSidebar = () => {
   color: #6b7280;
 }
 
-.exercise-select {
-  flex: 2;
-  min-width: 220px;
-}
-
-.technique-field {
-  flex: 1.5;
-  min-width: 180px;
-}
-
+.exercise-select,
+.technique-field,
 .small-input {
-  width: 90px;
+  width: 100%;
 }
 
 .input-group input,
 .input-group select {
-  height: 46px;
+  width: 100%;
+  height: 48px;
   border: 1px solid #d1d5db;
   border-radius: 14px;
   padding: 0 14px;
@@ -267,7 +259,7 @@ const toggleSidebar = () => {
 .input-group input:focus,
 .input-group select:focus {
   border-color: #1e1548;
-  background: #fff;
+  background: white;
   box-shadow: 0 0 0 4px rgba(30, 21, 72, 0.08);
 }
 
@@ -276,20 +268,62 @@ const toggleSidebar = () => {
   cursor: pointer;
 }
 
-@media (max-width: 1000px) {
-  .exercise-row {
-    flex-wrap: wrap;
-    align-items: stretch;
+.delete-button {
+  width: 20%;
+  height: 46px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.actions button {
+  width: 100%;
+  justify-content: center;
+}
+
+
+@media (min-width: 768px) {
+
+  .split-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
 
-  .exercise-select,
-  .technique-field,
-  .small-input {
-    width: 100%;
+  .split-header .secondary-button {
+    width: auto;
+  }
+
+  .exercise-row {
+    display: grid;
+    grid-template-columns:
+      2fr
+      1.4fr
+      80px
+      80px
+      80px
+      52px;
+    align-items: end;
+    gap: 12px;
+    background: transparent;
+    padding: 0;
   }
 
   .delete-button {
-    width: 100%;
+    width: 46px;
+  }
+
+  .actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .actions button {
+    width: auto;
   }
 }
+
 </style>

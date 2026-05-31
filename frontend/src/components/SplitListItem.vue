@@ -53,105 +53,172 @@ defineProps({
 </template>
 
 <style scoped>
+.exercise-item {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid #edf2f7;
+  border-radius: 16px;
+  background: #fafafa;
+  transition: all 0.2s ease;
+}
+
+.exercise-item:active {
+  transform: scale(0.99);
+}
+
+.main-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.image-box {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.ex-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid #eee;
+  padding: 4px;
+}
+
+.ex-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #f3f4f6;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 1.2rem;
+}
+
+.details {
+  min-width: 0;
+  flex: 1;
+}
+
+.ex-name {
+  display: block;
+  font-weight: 700;
+  color: #1a202c;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.ex-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 0.82rem;
+}
+
+.tag {
+  background: rgba(49,130,206,.12);
+  color: #3182ce;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.technique {
+  color: #e53e3e;
+  font-style: italic;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.stat-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+  border: 1px solid #edf2f7;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: .04em;
+}
+
+.value {
+  margin-top: 4px;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #2d3748;
+}
+
+.ex-notes {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #4a5568;
+  background: #fffaf0;
+  padding: 12px;
+  border-radius: 12px;
+  border-left: 4px solid #f6ad55;
+}
+
+
+@media (min-width: 768px) {
+
   .exercise-item {
-    display: flex;
-    flex-wrap: wrap;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 0;
+
+    background: transparent;
+    border: none;
     border-bottom: 1px solid #edf2f7;
-    gap: 1rem;
+    border-radius: 0;
+
+    padding: 18px 0;
+  }
+
+  .exercise-item:hover {
+    transform: translateY(-1px);
   }
 
   .main-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
     flex: 1;
-    min-width: 200px;
-  }
-
-  .image-box {
-    width: 50px;
-    height: 50px;
-    flex-shrink: 0;
-  }
-
-  .ex-thumb {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    border-radius: 6px;
-    background: white;
-    border: 1px solid #eee;
-  }
-
-  .ex-placeholder {
-    width: 100%;
-    height: 100%;
-    background: #f3f4f6;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #9ca3af;
-  }
-
-  .ex-name {
-    display: block;
-    font-weight: 600;
-    color: #1a202c;
-    font-size: 1rem;
-  }
-
-  .ex-meta {
-    font-size: 0.8rem;
-    color: #718096;
-    margin-top: 2px;
-  }
-
-  .tag {
-    color: #3182ce;
-    font-weight: 600;
-  }
-
-  .technique {
-    color: #e53e3e;
-    font-style: italic;
-    margin-left: 5px;
+    min-width: 280px;
   }
 
   .stats {
     display: flex;
-    gap: 1.5rem;
+    gap: 18px;
+    margin-left: auto;
   }
 
   .stat-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    color: #a0aec0;
-    letter-spacing: 0.05em;
-  }
-
-  .value {
-    font-weight: 700;
-    color: #2d3748;
+    background: transparent;
+    border: none;
+    padding: 0;
+    min-width: 60px;
   }
 
   .ex-notes {
     width: 100%;
-    font-size: 0.85rem;
-    color: #4a5568;
-    background: #fffaf0;
-    padding: 0.5rem;
-    border-radius: 4px;
-    border-left: 3px solid #f6ad55;
-    margin-top: 0.5rem;
+    margin-top: 8px;
   }
+}
+
 </style>
