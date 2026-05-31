@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { ROLES } from '../utils/utils.js'
+import { API_URL } from '../utils/config.js'
+import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { useRoute, useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
@@ -43,7 +44,7 @@ const splitExercises = ref([])
 const fetchData = async () => {
   loading.value = true
   try {
-    const programRes = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, auth.apiConfig)
+    const programRes = await axios.get(`${API_URL}/api/training-programs/${programId}`, auth.apiConfig)
     const currentSplit = programRes.data.data.splits.find(s => s._id === splitId)
 
     if (currentSplit && currentSplit.rows) {
@@ -59,7 +60,7 @@ const fetchData = async () => {
     }
 
     const urlParamAthlete = isTrainer.value ? `/${athleteId}` : ''
-    const logsRes = await axios.get(`http://localhost:5000/api/exercise-logs/${programId}/${splitId}${urlParamAthlete}`, auth.apiConfig)
+    const logsRes = await axios.get(`${API_URL}/api/exercise-logs/${programId}/${splitId}${urlParamAthlete}`, auth.apiConfig)
 
     Object.keys(exerciseLogs.value).forEach(key => exerciseLogs.value[key] = [])
 
@@ -74,7 +75,7 @@ const fetchData = async () => {
       }
     })
   } catch (err) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(err), "error")
   } finally {
     loading.value = false
   }
@@ -85,7 +86,7 @@ const saveAllProgress = async () => {
     const savePromises = Object.keys(currentWeekInput.value).map(async (exId) => {
       const input = currentWeekInput.value[exId]
       if (input.load !== '' || input.reps !== '') {
-        return axios.post(`http://localhost:5000/api/exercise-logs/${programId}/${splitId}`, {
+        return axios.post(`${API_URL}/api/exercise-logs/${programId}/${splitId}`, {
           exerciseId: exId,
           load: Number(input.load),
           reps: Number(input.reps),
@@ -103,7 +104,7 @@ const saveAllProgress = async () => {
     showToast("Progressi salvati correttamente!", "success")
     await fetchData()
   } catch (err) {
-    showToast("Errore nel salvataggio dei progressi: " + error, "error")
+    showToast("Errore nel salvataggio dei progressi: " + getErrorMessage(err), "error")
   }
 }
 

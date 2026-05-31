@@ -1,10 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import { ROLES } from '../utils/utils.js'
+import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { API_URL } from '../utils/config.js'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
@@ -25,19 +26,19 @@ const selectedRequestId = ref(null)
 
 const fetchClients = async () => {
   try {
-    const response = await axios.get('http://localhost:5000/api/users/my-clients', auth.apiConfig)
+    const response = await axios.get(`${API_URL}/api/users/my-clients`, auth.apiConfig)
     clients.value = response.data.data || []
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   }
 }
 
 const fetchNutritionists = async () => {
   try {
-    const response = await axios.get('http://localhost:5000/api/users/nutritionists')
+    const response = await axios.get(`${API_URL}/api/users/nutritionists`)
     nutritionists.value = response.data.data || []
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   }
 }
 
@@ -54,10 +55,10 @@ const nutritionRequests = ref([])
 
 const loadRequests = async () => {
   try {
-    const response = await axios.get('http://localhost:5000/api/nutrition-requests', auth.apiConfig)
+    const response = await axios.get(`${API_URL}/api/nutrition-requests`, auth.apiConfig)
     nutritionRequests.value = response.data.data || []
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   }
 }
 

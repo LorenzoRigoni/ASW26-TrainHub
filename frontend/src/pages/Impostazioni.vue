@@ -1,10 +1,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { ROLES } from '../utils/utils.js'
+import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore} from '../stores/auth.js'
 import axios from 'axios'
+import { API_URL } from '../utils/config.js'
 
 import profileImage from '../assets/profileImage.png'
 
@@ -57,10 +58,10 @@ const fetchUserData = async () => {
     }
 
     if (auth.user.profilePicture) {
-      previewImage.value = `http://localhost:5000${auth.user.profilePicture}`
+      previewImage.value = `${API_URL}${auth.user.profilePicture}`
     }
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   }
 }
 
@@ -88,7 +89,7 @@ const saveSettings = async () => {
       const formData = new FormData()
       formData.append('avatar', selectedFile.value)
 
-      const imgRes = await axios.post('http://localhost:5000/api/users/upload-avatar', formData, {
+      const imgRes = await axios.post(`${API_URL}/api/users/upload-avatar`, formData, {
         headers: {
           ...auth.apiConfig.headers,
           'Content-Type': 'multipart/form-data'
@@ -105,11 +106,11 @@ const saveSettings = async () => {
       email: userFields.value.email
     }
 
-    const textRes = await axios.put('http://localhost:5000/api/users/update', payload, auth.apiConfig)
+    const textRes = await axios.put(`${API_URL}/api/users/update`, payload, auth.apiConfig)
     auth.updateUserData(textRes.data.data)
     showToast("Dati salvati correttamente!", "success")
   } catch (error) {
-    showToast("Errore nel salvataggio dei dati: " + error, "error")
+    showToast("Errore nel salvataggio dei dati: " + getErrorMessage(error), "error")
   } finally {
     loading.value = false
   }
@@ -131,7 +132,7 @@ const changePassword = async () => {
       newPassword: passwordFields.value.newPassword
     }
     
-    const res = await axios.put('http://localhost:5000/api/auth/update-password', payload, auth.apiConfig)
+    const res = await axios.put(`${API_URL}/api/auth/update-password`, payload, auth.apiConfig)
     
     const newToken = res.data.data?.token
     if (newToken) {
@@ -144,7 +145,7 @@ const changePassword = async () => {
     }
     showToast("Password cambiata con successo!", "success")
   } catch (error) {
-    showToast("Errore nel cambio di password: " + error, "error")
+    showToast("Errore nel cambio di password: " + getErrorMessage(error), "error")
   } finally {
     passLoading.value = false
   }

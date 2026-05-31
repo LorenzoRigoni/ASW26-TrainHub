@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ROLES } from '../utils/utils.js'
+import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { useRoute, useRouter} from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { API_URL } from '../utils/config.js'
 import axios from 'axios'
 
 import Navbar from '../components/NavBar.vue'
@@ -21,7 +22,7 @@ const fetchData = async () => {
   try {
     const programId = route.params.id
 
-    const programRes = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, auth.apiConfig)
+    const programRes = await axios.get(`${API_URL}/api/training-programs/${programId}`, auth.apiConfig)
     const rawProgram = programRes.data.data
 
     program.value = {
@@ -43,7 +44,7 @@ const fetchData = async () => {
       }))
     }
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   } finally {
     loading.value = false
   }

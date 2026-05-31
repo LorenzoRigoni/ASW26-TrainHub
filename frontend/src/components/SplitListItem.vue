@@ -1,5 +1,6 @@
 <script setup>
 import ExerciseListItem from './ExerciseListItem.vue'
+import { API_URL } from '../utils/config.js'
 
 defineProps({
   name: { type: String, required: true },
@@ -17,7 +18,7 @@ defineProps({
   <li class="exercise-item">
     <div class="main-info">
       <div class="image-box">
-        <img v-if="image" :src="`http://localhost:5000${image}`" class="ex-thumb" />
+        <img v-if="image" :src="`${API_URL}${image}`" class="ex-thumb" />
         <div v-else class="ex-placeholder"><i class="fa fa-dumbbell"></i></div>
       </div>
 

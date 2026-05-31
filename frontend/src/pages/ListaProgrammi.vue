@@ -1,10 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ROLES } from '../utils/utils.js'
+import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
 import axios from 'axios'
+import { API_URL } from '../utils/config.js'
 
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
@@ -19,7 +20,7 @@ const sidebarOpen = ref(true)
 const fetchData = async () => {
   try {
     if (auth.user.role === ROLES.PERSONAL_TRAINER) {
-      const res = await axios.get('http://localhost:5000/api/training-programs/trainer-programs', auth.apiConfig)
+      const res = await axios.get(`${API_URL}/api/training-programs/trainer-programs`, auth.apiConfig)
       programs.value = res.data.data.map(p => ({
         id: p._id,
         title: p.title || `Programma di ${p.athleteId?.name || 'Cliente'} ${p.athleteId?.surname || ''}`,
@@ -29,7 +30,7 @@ const fetchData = async () => {
         status: p.programStatus
       }))
     } else {
-      const res = await axios.get('http://localhost:5000/api/training-programs/my-programs', auth.apiConfig)
+      const res = await axios.get(`${API_URL}/api/training-programs/my-programs`, auth.apiConfig)
       programs.value = res.data.data.map(p => ({
         id: p._id,
         title: p.title || `Scheda creata da ${p.trainerId?.surname || 'Trainer'}`,
@@ -40,7 +41,7 @@ const fetchData = async () => {
       }))
     }
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   }
 }
 

@@ -1,7 +1,8 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getInitials, getAvatarColor, ROLES} from '../utils/utils'
+import { getInitials, getAvatarColor, ROLES, getErrorMessage } from '../utils/utils'
+import { API_URL } from '../utils/config.js'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
 
@@ -127,21 +128,21 @@ const toggleSidebar = () => {
 const fetchData = async () => {
   try {
     try {
-      const notifRes = await axios.get('http://localhost:5000/api/notifications/unread', auth.apiConfig)
+      const notifRes = await axios.get(`${API_URL}/api/notifications/unread`, auth.apiConfig)
       if (notifRes.data && notifRes.data.data) {
         recentNotifications.value = notifRes.data.data.slice(0, 3)
       }
 
       if (!recentNotifications.value) recentNotifications.value = []
     } catch (notifErr) {
-      showToast("Errore nel caricamento delle notifiche: " + notifErr, "error")
+      showToast("Errore nel caricamento delle notifiche: " + getErrorMessage(notifErr), "error")
     }
 
     if (auth.user.role === ROLES.PERSONAL_TRAINER) {
       const [clientsRes, statsRes, programsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/users/my-clients', auth.apiConfig),
-        axios.get('http://localhost:5000/api/users/trainer-stats', auth.apiConfig),
-        axios.get('http://localhost:5000/api/users/programs-list', auth.apiConfig)
+        axios.get(`${API_URL}/api/users/my-clients`, auth.apiConfig),
+        axios.get(`${API_URL}/api/users/trainer-stats`, auth.apiConfig),
+        axios.get(`${API_URL}/api/users/programs-list`, auth.apiConfig)
       ])
 
       customersList.value = clientsRes.data?.data || []
@@ -149,8 +150,8 @@ const fetchData = async () => {
       programsList.value = programsRes.data?.data || []
     } else if (auth.user.role === ROLES.CLIENTE) {
       const [programsRes, activeRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/training-programs/my-programs', auth.apiConfig),
-        axios.get('http://localhost:5000/api/training-programs/active', auth.apiConfig).catch(() => ({ data: { data: null } }))
+        axios.get(`${API_URL}/api/training-programs/my-programs`, auth.apiConfig),
+        axios.get(`${API_URL}/api/training-programs/active`, auth.apiConfig).catch(() => ({ data: { data: null } }))
       ])
 
       programsList.value = (programsRes.data?.data || []).map(p => ({
@@ -163,7 +164,7 @@ const fetchData = async () => {
       activeProgram.value = activeRes.data.data
     }
   } catch(error){
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   }
 }
 
@@ -345,29 +346,6 @@ onMounted(fetchData)
                 </template>
               </ListItem>
             </PanelList>
-
-            <!--<PanelList
-              title="Piani Nutrizionali"
-              :is-empty="pianiNutrizionali.length === 0"
-              empty-icon="fa fa-file-pdf-o"
-              empty-text="Nessun piano disponibile"
-            >
-              <ListItem
-                v-for="p in pianiNutrizionali" :key="p.id"
-                :title="p.titolo"
-                :subtitle="p.fileName"
-                @click="goToNutritionPlanDetail(p.id)"
-              >
-                <template #left>
-                  <div class="icon-wrap" style="background:rgba(224,92,154,0.1)">
-                    <i class="fa fa-file-pdf-o" style="color:#e05c9a"></i>
-                  </div>
-                </template>
-                <template #right>
-                  <i class="fa fa-download arrow" style="color:#9ca3af"></i>
-                </template>
-              </ListItem>
-            </PanelList>-->
           </div>
 
         </template>

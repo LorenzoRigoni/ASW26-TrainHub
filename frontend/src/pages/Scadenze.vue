@@ -1,9 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { calculateDaysLeft} from '../utils/utils.js'
+import { calculateDaysLeft, getErrorMessage } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { API_URL } from '../utils/config.js'
 
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
@@ -37,13 +38,13 @@ const fetchData = async () => {
   loading.value = true
   try {
     const [resSca, resAth] = await Promise.all([
-      axios.get('http://localhost:5000/api/deadlines', auth.apiConfig),
-      axios.get('http://localhost:5000/api/users/my-clients', auth.apiConfig)
+      axios.get(`${API_URL}/api/deadlines`, auth.apiConfig),
+      axios.get(`${API_URL}/api/users/my-clients`, auth.apiConfig)
     ])
     deadlines.value = resSca.data.data
     athletes.value = resAth.data.data
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   } finally {
     loading.value = false
   }
@@ -60,7 +61,7 @@ const programForm = ref({
 
 const createProgram = async () => {
   try {
-    const res = await axios.post('http://localhost:5000/api/training-programs/init', {
+    const res = await axios.post(`${API_URL}/api/training-programs/init`, {
       athleteId: selectedDeadline.value.athleteId?._id || selectedDeadline.value.athleteId?.id,
       deadlineId: selectedDeadline.id || selectedDeadline._id,
       sessionsPerWeek: programForm.value.sessions,
@@ -74,7 +75,7 @@ const createProgram = async () => {
       router.push(`/bozze/dettaglio-bozza/${res.data.data._id}`)
     }
   } catch (error) {
-    showToast("Errore nella creazione del programma: " + error, "error")
+    showToast("Errore nella creazione del programma: " + getErrorMessage(error), "error")
   }
 }
 
@@ -84,12 +85,12 @@ const saveNewDeadline = async () => {
     showToast("Atleta o data di scadenza mancante", "error")
   }
   try {
-    await axios.post('http://localhost:5000/api/deadlines', newDeadline.value, auth.apiConfig)
+    await axios.post(`${API_URL}/api/deadlines`, newDeadline.value, auth.apiConfig)
     showModal.value = false
     fetchData()
     showToast("Scadenza creata con successo!", "success")
   } catch (error) {
-    showToast("Errore nella creazione della scadenza: " + error, "error")
+    showToast("Errore nella creazione della scadenza: " + getErrorMessage(error), "error")
   }
 }
 
@@ -131,7 +132,7 @@ const saveDeadlineChanges = async () => {
 
   try {
     const response = await axios.put(
-      `http://localhost:5000/api/deadlines/${selectedDeadline.value._id}`,
+      `${API_URL}/api/deadlines/${selectedDeadline.value._id}`,
       {
         title: selectedDeadline.value.title,
         dueDate: selectedDeadline.value.dueDate,
@@ -147,7 +148,7 @@ const saveDeadlineChanges = async () => {
       showToast("Scadenza aggiornata con successo!", "success")
     }
   } catch (error) {
-    showToast("Errore durante l'aggiornamento della scadenza: " + error, "error");
+    showToast("Errore durante l'aggiornamento della scadenza: " + getErrorMessage(error), "error");
   }
 };
 

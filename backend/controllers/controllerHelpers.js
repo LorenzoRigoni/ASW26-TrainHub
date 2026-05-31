@@ -1,4 +1,23 @@
 const handleError = (res, error, message = 'Server error') => {
+    // Mongoose Validation Error
+    if (error.name === 'ValidationError') {
+        const messages = Object.values(error.errors).map(val => val.message);
+        return res.status(400).json({
+            success: false,
+            message: messages.join(', '),
+            error: error.message
+        });
+    }
+
+    // Mongoose Duplicate Key Error
+    if (error.code === 11000) {
+        return res.status(400).json({
+            success: false,
+            message: 'Un elemento con questi dati esiste già (duplicato)',
+            error: error.message
+        });
+    }
+
     return res.status(500).json({
         success: false,
         message,

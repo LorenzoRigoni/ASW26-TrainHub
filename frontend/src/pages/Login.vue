@@ -2,7 +2,9 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { getErrorMessage } from '../utils/utils.js'
 import axios from 'axios'
+import { API_URL } from '../utils/config.js'
 
 const username = ref('')
 const password = ref('')
@@ -15,7 +17,7 @@ const login = async () => {
   try {
     error.value = ''
 
-    const response = await axios.post('http://localhost:5000/api/auth/login', {
+    const response = await axios.post(`${API_URL}/api/auth/login`, {
       username: username.value,
       password: password.value
     })
@@ -25,11 +27,7 @@ const login = async () => {
       router.push('/home')
     }
   } catch (err) {
-    if (err.response) {
-      error.value = err.response.data.message || 'Errore durante il login'
-    } else {
-      error.value = 'Impossibile connettersi al server'
-    }
+    error.value = getErrorMessage(err)
   }
 }
 

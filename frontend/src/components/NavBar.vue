@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useNotifications } from '../utils/useNotifications'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { API_URL } from '../utils/config.js'
 
 import profileImage from '../assets/profileImage.png'
 
@@ -25,7 +26,7 @@ const previewImage = ref(profileImage)
 onMounted(() => {
   const pathImgProfilo = auth.user.profilePicture
   if (pathImgProfilo) {
-    previewImage.value = `http://localhost:5000${pathImgProfilo}`
+    previewImage.value = `${API_URL}${pathImgProfilo}`
   }
 })
 </script>

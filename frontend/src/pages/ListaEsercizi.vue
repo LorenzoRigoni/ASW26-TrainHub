@@ -3,7 +3,8 @@ import { ref, onMounted, watch } from 'vue'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
 import axios from 'axios'
-import { ROLES } from '../utils/utils.js'
+import { ROLES, getErrorMessage } from '../utils/utils.js'
+import { API_URL } from '../utils/config.js'
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
 import Navbar from '../components/NavBar.vue'
@@ -36,7 +37,7 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
-const handleFileChange = (e) => {
+const handleFileUpload = (e) => {
   newExercise.value.image = e.target.files[0]
 }
 
@@ -44,10 +45,10 @@ const fetchData = async () => {
   loading.value = true
   try {
     const params = selectedPattern.value ? { movementPattern: selectedPattern.value } : {}
-    const res = await axios.get('http://localhost:5000/api/exercises', auth.apiConfig)
+    const res = await axios.get(`${API_URL}/api/exercises`, auth.apiConfig)
     exercises.value = res.data.data
   } catch (err) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(err), "error")
   } finally {
     loading.value = false
   }
@@ -97,27 +98,27 @@ const handleSubmit = async () => {
     }
 
     if (isEditing.value) {
-      await axios.put(`http://localhost:5000/api/exercises/${currentExerciseId.value}`, formData, { headers })
+      await axios.put(`${API_URL}/api/exercises/${currentExerciseId.value}`, formData, { headers })
     } else {
-      await axios.post('http://localhost:5000/api/exercises', formData, { headers })
+      await axios.post(`${API_URL}/api/exercises`, formData, { headers })
     }
 
     showModal.value = false
     showToast("Esercizio salvato con successo!", "success")
     fetchData()
   } catch (err) {
-    showToast("Errore nel salvataggio dei dati: " + error, "error")
+    showToast("Errore nel salvataggio dei dati: " + getErrorMessage(err), "error")
   }
 }
 
 const handleDelete = async (id) => {
   try {
     const token = localStorage.getItem('token')
-    await axios.delete(`http://localhost:5000/api/exercises/${id}`, apiConfig)
+    await axios.delete(`${API_URL}/api/exercises/${id}`, auth.apiConfig)
     showToast("Esercizio eliminato con successo!", "error")
     fetchData()
   } catch (err) {
-    showToast("Errore nel salvataggio dei dati: " + error, "error")
+    showToast("Errore nel salvataggio dei dati: " + getErrorMessage(err), "error")
   }
 }
 
@@ -165,7 +166,7 @@ onMounted(() => {
             :title="e.name"
             :status="e.movementPattern"
             :description="e.description || 'Nessuna descrizione presente.'"
-            :image="e.image ? `http://localhost:5000${e.image}` : null"
+            :image="e.image ? `${API_URL}${e.image}` : null"
           >
             <template #subtitle>
               <div class="exercise-row">
@@ -174,7 +175,7 @@ onMounted(() => {
                   <div class="image-container">
                     <img
                       v-if="e.image"
-                      :src="`http://localhost:5000${e.image}`"
+                      :src="`${API_URL}${e.image}`"
                       class="exercise-img"
                       @error="(el) => el.target.src = 'https://placehold.co/60x60?text=Error'"
                     />

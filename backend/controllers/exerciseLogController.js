@@ -1,4 +1,5 @@
 const ExerciseLog = require('../models/exerciseLog');
+const { handleError } = require('./controllerHelpers');
 
 exports.getLogsBySplit = async (req, res) => {
     try {
@@ -18,7 +19,7 @@ exports.getLogsBySplit = async (req, res) => {
 
         res.status(200).json({ success: true, data: logs });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Errore nel recupero storico', error: error.message });
+        handleError(res, error, 'Errore nel recupero storico');
     }
 };
 
@@ -64,6 +65,6 @@ exports.createOrUpdateLog = async (req, res) => {
 
         res.status(200).json({ success: true, data: log });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Errore nel salvataggio progressi: ' + error.message });
+        handleError(res, error, 'Errore nel salvataggio progressi');
     }
 };

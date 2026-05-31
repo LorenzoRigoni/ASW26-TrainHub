@@ -4,7 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
 import axios from 'axios'
-import { ROLES } from '../utils/utils.js'
+import { API_URL } from '../utils/config.js'
+import { ROLES, getErrorMessage } from '../utils/utils.js'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 
@@ -36,15 +37,15 @@ const fetchData = async () => {
   loading.value = true
   try {
     const [clientsRes, nutriRes] = await Promise.all([
-      axios.get('http://localhost:5000/api/users/my-clients', auth.apiConfig),
-      axios.get('http://localhost:5000/api/users/nutritionists', auth.apiConfig)
+      axios.get(`${API_URL}/api/users/my-clients`, auth.apiConfig),
+      axios.get(`${API_URL}/api/users/nutritionists`, auth.apiConfig)
     ])
     
     clients.value = (clientsRes.data?.data || []).map(c => ({ id: c.id, name: c.name, surname: c.surname }))
     nutritionists.value = nutriRes.data?.data || []
 
     if (isEditMode.value) {
-      const res = await axios.get(`http://localhost:5000/api/nutrition-requests/${requestId.value}`, auth.apiConfig)
+      const res = await axios.get(`${API_URL}/api/nutrition-requests/${requestId.value}`, auth.apiConfig)
       const data = res.data.data
       form.value = {
         title: data.title,
@@ -58,7 +59,7 @@ const fetchData = async () => {
       }
     }
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   } finally {
     loading.value = false
   }
@@ -79,15 +80,15 @@ const saveRequest = async () => {
     const payload = { ...form.value }
     
     if (isEditMode.value) {
-      await axios.put(`http://localhost:5000/api/nutrition-requests/${requestId.value}`, payload, auth.apiConfig)
+      await axios.put(`${API_URL}/api/nutrition-requests/${requestId.value}`, payload, auth.apiConfig)
     } else {
-      await axios.post('http://localhost:5000/api/nutrition-requests', payload, auth.apiConfig)
+      await axios.post(`${API_URL}/api/nutrition-requests`, payload, auth.apiConfig)
     }
     
     showToast(isEditMode.value ? 'Richiesta aggiornata correttamente!' : 'Richiesta inviata correttamente!', "success")
     goBack()
   } catch (error) {
-    showToast("Errore nella richiesta: " + error, "error")
+    showToast("Errore nella richiesta: " + getErrorMessage(error), "error")
   }
 }
 

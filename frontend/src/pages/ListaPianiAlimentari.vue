@@ -3,6 +3,8 @@ import { onMounted, ref } from 'vue'
 import axios from 'axios'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { API_URL } from '../utils/config.js'
+import { getErrorMessage } from '../utils/utils.js'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -61,23 +63,23 @@ const calculateStatus = (startDate, endDate) => {
 const loadPlans = async () => {
   try {
     const url = auth.user.role === 'nutritionist' 
-      ? 'http://localhost:5000/api/nutrition-plans/nutritionist/plans' 
-      : 'http://localhost:5000/api/nutrition-plans/my-plans'
+      ? `${API_URL}/api/nutrition-plans/nutritionist/plans` 
+      : `${API_URL}/api/nutrition-plans/my-plans`
     
     const response = await axios.get(url, auth.apiConfig)
     nutritionPlans.value = response.data.data
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   }
 }
 
 const loadClients = async () => {
   if (auth.user.role !== 'nutritionist') return
   try {
-    const response = await axios.get('http://localhost:5000/api/users/my-clients', auth.apiConfig)
+    const response = await axios.get(`${API_URL}/api/users/my-clients`, auth.apiConfig)
     clients.value = response.data.data
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   }
 }
 
@@ -101,7 +103,7 @@ const savePlan = async () => {
     formData.append('pdfFile', selectedFile.value); 
 
     const response = await axios.post(
-      'http://localhost:5000/api/nutrition-plans', 
+      `${API_URL}/api/nutrition-plans`, 
       formData, 
       {
         headers: { 
@@ -118,12 +120,12 @@ const savePlan = async () => {
     showToast("Piano alimentare salvato con successo!", "success")
     await loadPlans();
   } catch (error) {
-    showToast("Errore nel salvataggio dei dati: " + error, "error")
+    showToast("Errore nel salvataggio dei dati: " + getErrorMessage(error), "error")
   }
 }
 
 const downloadPdf = (plan) => {
-  const fileUrl = `http://localhost:5000${plan.pdfUrl}`
+  const fileUrl = `${API_URL}${plan.pdfUrl}`
   window.open(fileUrl, '_blank')
 }
 

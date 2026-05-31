@@ -1,9 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { ROLES } from '../utils/utils.js'
+import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { useRouter, useRoute } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { API_URL } from '../utils/config.js'
 
 import axios from 'axios'
 
@@ -27,7 +28,7 @@ const sidebarOpen = ref(true)
 const fetchData = async () => {
   try {
     const programId = route.params.id
-    const resProgram = await axios.get(`http://localhost:5000/api/training-programs/${programId}`, auth.apiConfig)
+    const resProgram = await axios.get(`${API_URL}/api/training-programs/${programId}`, auth.apiConfig)
     const rawProgram = resProgram.data.data
 
     if (rawProgram && rawProgram.splits) {
@@ -45,10 +46,10 @@ const fetchData = async () => {
       showToast("Struttura dei dati del programma non valida", "error")
     }
 
-    const resEx = await axios.get('http://localhost:5000/api/exercises', auth.apiConfig)
+    const resEx = await axios.get(`${API_URL}/api/exercises`, auth.apiConfig)
     exercisesDb.value = resEx.data.data
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   } finally {
     loading.value = false
   }
@@ -83,21 +84,21 @@ const saveDraft = async () => {
       notes: program.value.notes
     }
 
-    await axios.put(`http://localhost:5000/api/training-programs/draft/${programId}`, payload, auth.apiConfig)
+    await axios.put(`${API_URL}/api/training-programs/draft/${programId}`, payload, auth.apiConfig)
     showToast("Draft salvato con successo!", "success")
     router.push('/bozze')
   } catch (error) {
-    showToast("Errore nel salvataggio del draft: " + error, "error")
+    showToast("Errore nel salvataggio del draft: " + getErrorMessage(error), "error")
   }
 }
 
 const publishProgram = async () => {
   try {
-    await axios.patch(`http://localhost:5000/api/training-programs/publish/${program.value._id}`, {}, auth.apiConfig)
+    await axios.patch(`${API_URL}/api/training-programs/publish/${program.value._id}`, {}, auth.apiConfig)
     showToast("Programma pubblicato con successo!", "success")
     router.push('/programmi')
   } catch (error) {
-    showToast("Errore nella pubblicazione: " + error, "error")
+    showToast("Errore nella pubblicazione: " + getErrorMessage(error), "error")
   }
 }
 

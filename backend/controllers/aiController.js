@@ -4,6 +4,7 @@ const Deadline = require('../models/deadline');
 const BodyDiary = require('../models/bodyDiary');
 const NutritionRequest = require('../models/nutritionRequest');
 const Exercise = require('../models/exercise');
+const { handleError } = require('./controllerHelpers');
 
 exports.chat = async (req, res) => {
     try {        
@@ -128,10 +129,6 @@ ${navMap}
         });
 
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Errore nel processare la richiesta AI',
-            error: error.message
-        });
+        handleError(res, error, 'Errore nel processare la richiesta AI');
     }
 };

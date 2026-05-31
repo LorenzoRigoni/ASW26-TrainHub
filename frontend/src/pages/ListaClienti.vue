@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ROLES, getAvatarColor, getInitials } from '../utils/utils.js'
+import { ROLES, getAvatarColor, getInitials, getErrorMessage } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { API_URL } from '../utils/config.js'
 
 import axios from 'axios'
 import MainList from '../components/MainList.vue'
@@ -24,17 +25,17 @@ const toggleSidebar = () => {
 
 const fetchClients = async () => {
   try {
-    const response = await axios.get('http://localhost:5000/api/users/my-clients', auth.apiConfig)
+    const response = await axios.get(`${API_URL}/api/users/my-clients`, auth.apiConfig)
     customers.value = response.data.data || []
     customers.value.forEach((c) => {
       if (c.profilePicture) {
-        c.profilePicture = `http://localhost:5000${c.profilePicture}`
+        c.profilePicture = `${API_URL}${c.profilePicture}`
       } else {
         c.profilePicture = profileImage
       }
     })
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   }
 }
 

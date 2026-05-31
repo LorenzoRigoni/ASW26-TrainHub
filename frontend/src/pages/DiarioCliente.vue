@@ -2,7 +2,8 @@
 import { onMounted, ref, computed } from 'vue'
 import axios from 'axios'
 import { useRoute } from 'vue-router'
-import { ROLES } from '../utils/utils.js'
+import { API_URL } from '../utils/config.js'
+import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
 import Navbar from '../components/NavBar.vue'
@@ -43,7 +44,7 @@ const diaryEntries = ref([])
 
 const fetchAthleteInfo = async (id) => {
   try {
-    const response = await axios.get(`http://localhost:5000/api/users/athlete/${id}`, auth.apiConfig)
+    const response = await axios.get(`${API_URL}/api/users/athlete/${id}`, auth.apiConfig)
     const data = response.data.data
     displayedUser.value = {
       name: data.name,
@@ -51,18 +52,18 @@ const fetchAthleteInfo = async (id) => {
       role: data.role,
       email: data.email,
       birthDate: data.dateOfBirth ? new Date(data.dateOfBirth).toLocaleDateString('it-IT') : 'gg/mm/aaaa',
-      image: data.profilePicture ? `http://localhost:5000${data.profilePicture}` : defaultAvatar
+      image: data.profilePicture ? `${API_URL}${data.profilePicture}` : defaultAvatar
     }
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   }
 }
 
 const fetchDiaryEntries = async () => {
   try {
-    let url = 'http://localhost:5000/api/personal-diary/body-diary'
+    let url = `${API_URL}/api/personal-diary/body-diary`
     if (route.params.id) {
-      url = `http://localhost:5000/api/personal-diary/body-diary/athlete/${route.params.id}`
+      url = `${API_URL}/api/personal-diary/body-diary/athlete/${route.params.id}`
     }
     
     const response = await axios.get(url, auth.apiConfig)
@@ -77,7 +78,7 @@ const fetchDiaryEntries = async () => {
       weight: entry.weight ?? 0
     }))
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   }
 }
 
@@ -144,7 +145,7 @@ const saveEntry = async () => {
       weight: form.value.weight
     }
 
-    const response = await axios.post('http://localhost:5000/api/personal-diary/body-diary', payload, auth.apiConfig)
+    const response = await axios.post(`${API_URL}/api/personal-diary/body-diary`, payload, auth.apiConfig)
     const entry = response.data.data
 
     diaryEntries.value.push({
@@ -160,7 +161,7 @@ const saveEntry = async () => {
     showToast("Dati salvati correttamente!", "success")
     closeModal()
   } catch (error) {
-    showToast("Errore nel salvataggio dei dati: " + error, "error")
+    showToast("Errore nel salvataggio dei dati: " + getErrorMessage(error), "error")
   }
 }
 

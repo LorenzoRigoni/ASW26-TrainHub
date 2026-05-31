@@ -1,6 +1,8 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue'
 import axios from 'axios'
+import { API_URL } from '../utils/config.js'
+import { getErrorMessage } from '../utils/utils.js'
 
 const isOpen = ref(false)
 const messages = ref([])
@@ -39,7 +41,7 @@ const sendMessage = async () => {
   loading.value = true
 
   try {
-    const res = await axios.post('http://localhost:5000/api/ai/chat', 
+    const res = await axios.post(`${API_URL}/api/ai/chat`, 
       { message: text },
       { headers: { Authorization: `Bearer ${token}` } }
     )
@@ -52,7 +54,7 @@ const sendMessage = async () => {
   } catch (err) {
     messages.value.push({
       role: 'bot',
-      text: err.response?.data?.message || 'Errore nel chatbot. Assicurati di aver configurato la chiave API.'
+      text: getErrorMessage(err) || 'Errore nel chatbot. Assicurati di aver configurato la chiave API.'
     })
   } finally {
     loading.value = false

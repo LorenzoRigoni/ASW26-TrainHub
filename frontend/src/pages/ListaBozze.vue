@@ -2,14 +2,14 @@
 import { ref, onMounted, computed} from 'vue'
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
-import { ROLES } from '../utils/utils.js'
+import { ROLES, formatPrograms, getErrorMessage } from '../utils/utils.js'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-import { formatPrograms } from '../utils/utils.js'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { API_URL } from '../utils/config.js'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -28,11 +28,11 @@ const goToDetail = (id) => {
 const fetchBozze = async () => {
   loading.value = true
   try {
-    const res = await axios.get('http://localhost:5000/api/training-programs/trainer-programs', auth.apiConfig)
+    const res = await axios.get(`${API_URL}/api/training-programs/trainer-programs`, auth.apiConfig)
     const allPrograms = res.data.data || res.data
     programs.value = allPrograms.filter(p => p.programStatus === 'draft')
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   } finally {
     loading.value = false
   }

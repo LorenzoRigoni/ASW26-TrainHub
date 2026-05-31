@@ -4,6 +4,7 @@ const NutritionPlan = require('../models/nutritionPlan');
 const Deadline = require('../models/deadline')
 const path = require('path');
 const fs = require('fs');
+const { handleError, notFound, badRequest, forbidden } = require('./controllerHelpers');
 
 exports.getMyClients = async (req, res) => {
     try {
@@ -13,7 +14,7 @@ exports.getMyClients = async (req, res) => {
         } else if (req.user.role === 'nutritionist') {
             query = { assignedNutritionistId: req.user.id };
         } else {
-            return res.status(403).json({ success: false, message: 'Unauthorized role' });
+            return forbidden(res, 'Unauthorized role');
         }
 
         const clients = await User.find(query)
@@ -48,7 +49,7 @@ exports.getMyClients = async (req, res) => {
         }));
         res.status(200).json({ success: true, data: clientsWithStatus });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        handleError(res, error, 'Errore nel recupero dei clienti');
     }
 };
 
@@ -96,7 +97,7 @@ exports.getTrainerStats = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        handleError(res, error, 'Errore nel recupero delle statistiche');
     }
 };
 
@@ -115,7 +116,7 @@ exports.getTrainerProgramsList = async (req, res) => {
 
         res.status(200).json({ success: true, data: formattedPrograms });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        handleError(res, error, 'Errore nel recupero dei programmi');
     }
 };
 
@@ -135,18 +136,12 @@ exports.assignTrainerToAthlete = async (req, res) => {
 
         const trainer = await User.findById(trainerIdToAssign);
         if (!trainer || trainer.role !== 'trainer') {
-            return res.status(404).json({
-                success: false,
-                message: 'Trainer not found or invalid role'
-            });
+            return notFound(res, 'Trainer not found or invalid role');
         }
 
         const athlete = await User.findById(athleteId);
         if (!athlete || athlete.role !== 'client') {
-            return res.status(404).json({
-                success: false,
-                message: 'Athlete not found or invalid role'
-            });
+            return notFound(res, 'Athlete not found or invalid role');
         }
 
         athlete.assignedTrainerId = trainerIdToAssign;
@@ -164,11 +159,7 @@ exports.assignTrainerToAthlete = async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error assigning trainer',
-            error: error.message
-        });
+        handleError(res, error, 'Errore nell\'assegnazione del trainer');
     }
 };
 
@@ -188,18 +179,12 @@ exports.assignNutritionistToAthlete = async (req, res) => {
 
         const nutritionist = await User.findById(nutritionistIdToAssign);
         if (!nutritionist || nutritionist.role !== 'nutritionist') {
-            return res.status(404).json({
-                success: false,
-                message: 'Nutritionist not found or invalid role'
-            });
+            return notFound(res, 'Nutritionist not found or invalid role');
         }
 
         const athlete = await User.findById(athleteId);
         if (!athlete || athlete.role !== 'client') {
-            return res.status(404).json({
-                success: false,
-                message: 'Athlete not found or invalid role'
-            });
+            return notFound(res, 'Athlete not found or invalid role');
         }
 
         athlete.assignedNutritionistId = nutritionistIdToAssign;
@@ -217,11 +202,7 @@ exports.assignNutritionistToAthlete = async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error assigning nutritionist',
-            error: error.message
-        });
+        handleError(res, error, 'Errore nell\'assegnazione del nutrizionista');
     }
 };
 
@@ -243,11 +224,7 @@ exports.getAllTrainers = async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching trainers',
-            error: error.message
-        });
+        handleError(res, error, 'Errore nel recupero dei trainer');
     }
 };
 
@@ -269,11 +246,7 @@ exports.getAllNutritionists = async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching nutritionists',
-            error: error.message
-        });
+        handleError(res, error, 'Errore nel recupero dei nutrizionisti');
     }
 };
 
@@ -293,14 +266,14 @@ exports.updateProfile = async (req, res) => {
             data: user
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        handleError(res, error, 'Errore nell\'aggiornamento del profilo');
     }
 };
 
 exports.uploadAvatar = async (req, res) => {
     try {
         if (!req.file) {
-            return res.status(400).json({ success: false, message: 'Nessun file caricato o formato non valido.' });
+            return badRequest(res, 'Nessun file caricato o formato non valido.');
         }
 
         const user = await User.findById(req.user.id);
@@ -320,7 +293,7 @@ exports.uploadAvatar = async (req, res) => {
             profilePicture: user.profilePicture
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        handleError(res, error, 'Errore nell\'upload dell\'avatar');
     }
 };
 
@@ -330,10 +303,7 @@ exports.getAthleteDetail = async (req, res) => {
             .select('name surname email dateOfBirth profilePicture role');
 
         if (!athlete || athlete.role !== 'client') {
-            return res.status(404).json({
-                success: false,
-                message: 'Athlete not found'
-            });
+            return notFound(res, 'Athlete not found');
         }
 
         res.status(200).json({
@@ -349,10 +319,6 @@ exports.getAthleteDetail = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching athlete details',
-            error: error.message
-        });
+        handleError(res, error, 'Errore nel recupero dei dettagli dell\'atleta');
     }
 };

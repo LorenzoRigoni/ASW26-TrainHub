@@ -1,4 +1,5 @@
 const User = require('../models/user')
+const { handleError } = require('./controllerHelpers');
 
 /**
  * Register of the user.
@@ -44,19 +45,7 @@ exports.register = async (req, res) => {
 
         sendTokenResponse(user, 201, res, 'User registered successfully');
     } catch (error) {
-        if (error.name === 'ValidationError') {
-            const messages = Object.values(error.errors).map(err => err.message);
-            return res.status(400).json({
-                success: false,
-                message: messages.join(', ')
-            });
-        }
-
-        res.status(500).json({
-            success: false,
-            message: 'Error registering user',
-            error: error.message
-        });
+        return handleError(res, error, 'Error registering user');
     }
 };
 
@@ -102,11 +91,7 @@ exports.login = async (req, res) => {
 
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error logging in',
-            error: error.message
-        });
+        return handleError(res, error, 'Error logging in');
     }
 };
 
@@ -137,11 +122,7 @@ exports.getUserInfo = async (req, res) => {
 
     } catch (error) {
         console.error('Get me error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching user profile',
-            error: error.message
-        });
+        return handleError(res, error, 'Error fetching user profile');
     }
 };
 
@@ -187,20 +168,7 @@ exports.updateProfile = async (req, res) => {
 
     } catch (error) {
         console.error('Update profile error:', error);
-
-        if (error.name === 'ValidationError') {
-            const messages = Object.values(error.errors).map(err => err.message);
-            return res.status(400).json({
-                success: false,
-                message: messages.join(', ')
-            });
-        }
-
-        res.status(500).json({
-            success: false,
-            message: 'Error updating profile',
-            error: error.message
-        });
+        return handleError(res, error, 'Error updating profile');
     }
 };
 
@@ -237,11 +205,7 @@ exports.updatePassword = async (req, res) => {
 
     } catch (error) {
         console.error('Update password error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error updating password',
-            error: error.message
-        });
+        return handleError(res, error, 'Error updating password');
     }
 };
 

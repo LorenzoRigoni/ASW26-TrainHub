@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { getErrorMessage } from '../utils/utils.js'
+import { API_URL } from '../utils/config.js'
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -37,7 +39,7 @@ const getNotificationDetails = (type) => {
 const fetchNotifications = async () => {
   try {
     loading.value = true
-    const response = await axios.get('http://localhost:5000/api/notifications', auth.apiConfig)
+    const response = await axios.get(`${API_URL}/api/notifications`, auth.apiConfig)
     
     notifications.value = (response.data.data || []).map(n => {
       const details = getNotificationDetails(n.type)
@@ -52,7 +54,7 @@ const fetchNotifications = async () => {
       }
     })
   } catch (error) {
-    showToast("Errore nel caricamento dei dati: " + error, "error")
+    showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
   } finally {
     loading.value = false
   }
@@ -64,20 +66,20 @@ const openNotification = async (notification) => {
   if (notification.isRead) return
 
   try {
-    await axios.patch(`http://localhost:5000/api/notifications/${notification.id}/read`, {}, auth.apiConfig)
+    await axios.patch(`${API_URL}/api/notifications/${notification.id}/read`, {}, auth.apiConfig)
     notification.isRead = true
   } catch (error) {
-    showToast("Errore nel segnare la notifica come letta: " + error, "error")
+    showToast("Errore nel segnare la notifica come letta: " + getErrorMessage(error), "error")
   }
 }
 
 const hideNotification = async (notification) => {
   try {
-    await axios.patch(`http://localhost:5000/api/notifications/${notification.id}/hide`, {}, auth.apiConfig)
+    await axios.patch(`${API_URL}/api/notifications/${notification.id}/hide`, {}, auth.apiConfig)
     
     notifications.value = notifications.value.filter(n => n.id !== notification.id)
   } catch (error) {
-    showToast("Errore nel nascondere la notifica: " + error, "error")
+    showToast("Errore nel nascondere la notifica: " + getErrorMessage(error), "error")
   }
 }
 </script>
