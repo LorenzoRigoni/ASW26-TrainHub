@@ -180,12 +180,12 @@ exports.updateProfile = async (req, res) => {
  */
 exports.updatePassword = async (req, res) => {
     try {
-        const { newPassword } = req.body;
+        const { oldPassword, newPassword } = req.body;
 
-        if (!newPassword) {
+        if (!oldPassword || !newPassword) {
             return res.status(400).json({
                 success: false,
-                message: 'Please provide new password'
+                message: 'Please provide both current and new password'
             });
         }
 
@@ -198,14 +198,24 @@ exports.updatePassword = async (req, res) => {
             });
         }
 
+        // Check if current password matches
+        const isMatch = await loggedUser.matchPassword(oldPassword);
+
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Password corrente errata'
+            });
+        }
+
         loggedUser.password = newPassword;
         await loggedUser.save();
 
-        sendTokenResponse(loggedUser, 200, res, 'Password updated successfully');
+        sendTokenResponse(loggedUser, 200, res, 'Password aggiornata con successo');
 
     } catch (error) {
         console.error('Update password error:', error);
-        return handleError(res, error, 'Error updating password');
+        return handleError(res, error, 'Errore durante l\'aggiornamento della password');
     }
 };
 

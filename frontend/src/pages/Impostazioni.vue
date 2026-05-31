@@ -42,6 +42,7 @@ const userFields = ref({
 })
 
 const passwordFields = ref({
+  currentPassword: '',
   newPassword: '',
   confirmPassword: ''
 })
@@ -117,6 +118,10 @@ const saveSettings = async () => {
 }
 
 const changePassword = async () => {
+  if (!passwordFields.value.currentPassword) {
+    showToast("Inserisci la password attuale", "error")
+    return
+  }
   if (!passwordFields.value.newPassword) {
     showToast("Il campo della nuova password non è compilato", "error")
     return
@@ -129,6 +134,7 @@ const changePassword = async () => {
   passLoading.value = true
   try {
     const payload = {
+      oldPassword: passwordFields.value.currentPassword,
       newPassword: passwordFields.value.newPassword
     }
     
@@ -140,6 +146,7 @@ const changePassword = async () => {
     }
 
     passwordFields.value = {
+      currentPassword: '',
       newPassword: '',
       confirmPassword: ''
     }
@@ -257,6 +264,11 @@ onMounted(() => {
             </div>
 
             <div class="form-grid">
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Password attuale</label>
+                <input type="password" v-model="passwordFields.currentPassword" placeholder="Inserisci la password corrente per confermare" />
+              </div>
+
               <div class="form-group">
                 <label>Nuova password</label>
                 <input type="password" v-model="passwordFields.newPassword" />

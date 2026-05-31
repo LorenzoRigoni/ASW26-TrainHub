@@ -111,6 +111,9 @@ const bodyDiarySchema = new mongoose.Schema({
         max: 24,
         default: null
     }
-});
+    });
 
-module.exports = mongoose.model('BodyDiary', bodyDiarySchema);
+    // Compound index to ensure only one entry per athlete per day
+    bodyDiarySchema.index({ athleteId: 1, date: 1 }, { unique: true });
+
+    module.exports = mongoose.model('BodyDiary', bodyDiarySchema);
