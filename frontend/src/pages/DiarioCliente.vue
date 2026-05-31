@@ -704,7 +704,7 @@ const adherenceOptions = {
   background: #1e1548;
   border-radius: 28px;
   padding: 28px 34px;
-  display: flex;
+  display: flow-root;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 28px;
@@ -760,13 +760,16 @@ const adherenceOptions = {
 }
 
 .add-btn {
-  align-self: flex-start;
+  background-color: white;
+  color: black;
+  margin-top: 7px;
+  padding: 5pt;
 }
 
 .actions {
   display: flex;
   flex-direction: row;
-    margin:0;
+  margin:0;
 }
 
 .actions button {
@@ -775,6 +778,9 @@ const adherenceOptions = {
 }
 
 @media (min-width: 768px) {
+  .diary-header{
+      display: flex;
+  }
 
   .diary-table thead {
     display: table-header-group;
@@ -814,7 +820,7 @@ const adherenceOptions = {
   }
 
   .add-btn {
-    align-self: center;
+    align-self: flex-start;
   }
 
   .modal {

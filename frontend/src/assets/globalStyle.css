@@ -1,16 +1,26 @@
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  font-family: 'Century Gothic', 'Century Gothic', Futura, sans-serif;
+}
+
 .main-content {
   margin-top: 60px;
-  padding: 16px;
-  padding-bottom: 50px;
+  padding: 10px;
   min-height: calc(100vh - 60px);
   background: #f4f6f9;
   transition: margin-left .3s ease;
 }
 
 
-@media (min-width: 769px) {
+@media (min-width: 768px) {
   .main-content {
-    padding: 24px;
+    padding: 14px;
   }
 
   .main-content.sidebar-open {
@@ -177,15 +187,3 @@
 }
 
 
-
-
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  overflow-x: hidden;
-  font-family: 'Century Gothic', 'Century Gothic', Futura, sans-serif;
-}

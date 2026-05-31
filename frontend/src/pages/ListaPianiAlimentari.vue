@@ -245,7 +245,7 @@ const closeModal = () => {
 
 .modal {
   width: 100%;
-  max-width: 520px;
+  max-width: 100%;
   background: white;
   border-radius: 20px;
   padding: 28px;
@@ -261,13 +261,14 @@ const closeModal = () => {
 }
 
 .form-row {
-  display: flex;
-  align-items: center;
-  gap: 18px;
+   display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
 }
 
 .form-row label {
-  width: 120px;
+  width: auto;
   font-weight: 600;
   color: #333;
 }
@@ -275,7 +276,7 @@ const closeModal = () => {
 .form-row input,
 .form-row select,
 .form-row textarea {
-  flex: 1;
+  width: 100%;
   border: 1px solid #d8dcf0;
   border-radius: 12px;
   padding: 10px 14px;
@@ -342,47 +343,20 @@ const closeModal = () => {
   font-style: italic;
 }
 
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0 !important;
-    padding: 16px;
-  }
-
-  .page-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .page-header button {
-    width: 100%;
-    max-width: none;
-  }
-
-  .modal {
-    width: calc(100% - 24px);
-    max-width: 100%;
-    padding: 20px;
-  }
-
+@media (min-width: 768px) {
   .form-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+    flex-direction: row;
+    align-items: center;
+    gap: 18px;
   }
 
   .form-row label {
-    width: auto;
+    width: 120px;
   }
 
-  .modal-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .btn-primary,
-  .btn-danger {
-    width: 100%;
-    justify-content: center;
+  .modal {
+    max-width: 520px;
+    padding: 28px;
   }
 }
 

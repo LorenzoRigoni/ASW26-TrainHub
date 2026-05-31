@@ -192,7 +192,7 @@ onMounted(() => {
 
                 <img :src="previewImage" class="avatar" style="cursor: pointer;" @click="triggerFileSelect" />
 
-                  <button class="secondary-btn" @click="triggerFileSelect">
+                  <button class="secondary-button" @click="triggerFileSelect">
                     Cambia foto
                   </button>
 
@@ -286,7 +286,6 @@ onMounted(() => {
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 15px;
-  margin-top: 15px;
   gap: 1rem;
   flex-wrap: wrap;
   padding: 0 5px 0 5px;
@@ -307,7 +306,6 @@ onMounted(() => {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
   margin-bottom:  15pt;
 }
 
@@ -324,6 +322,7 @@ onMounted(() => {
   padding: 10pt;
   font-size: 0.95rem;
   background: white;
+  width: 90%;
 }
 
 .form-group input:focus {
@@ -352,7 +351,7 @@ onMounted(() => {
 }
 
 .profile-layout {
-  display: flex;
+  display: flow-root;
   align-items: flex-start;
   margin-top: 2rem;
 }
@@ -365,8 +364,8 @@ onMounted(() => {
 }
 
 .avatar {
-  width: 170px;
-  height: 170px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   object-fit: cover;
   border: 5px solid white;
@@ -377,28 +376,27 @@ onMounted(() => {
 }
 
 .profile-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem 1.5rem; 
   width: 100%;
+  display: flow-root;
 }
 
 
-@media (max-width: 768px) {
+@media (min-width: 768px) {
 
   .profile-layout {
-    flex-direction: column;
-    align-items: center;
+    display: flex;
+    align-items: flex-start;
   }
 
   .profile-form {
-    width: 100%;
-    display: flow-root;
+     display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1.5rem; 
   }
 
   .avatar {
-    width: 140px;
-    height: 140px;
+    width: 170px;
+    height: 170px;
   }
 }
 </style>

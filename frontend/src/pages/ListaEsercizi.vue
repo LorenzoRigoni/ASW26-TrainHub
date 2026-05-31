@@ -248,14 +248,12 @@ onMounted(() => {
 
 .exercise-row {
   display: flex;
-  align-items: flex-start;
-  gap: 1.5rem;
-  margin-top: 12px;
+  margin-top: 5px;
   width: 100%;
 }
 
 .exercise-content {
-  display: flex;
+  display: flow-root;
   gap: 1rem;
   align-items: flex-start;
   width: 100%;
@@ -407,4 +405,14 @@ onMounted(() => {
   margin-top: 0.3rem;
 }
 
+.actions{
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .exercise-content {
+    display: flex;
+  }
+
+}
 </style>

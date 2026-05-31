@@ -63,32 +63,26 @@ const login = async () => {
 </template>
 
 <style scoped>
-
 .login-page {
   height: 100vh;
   background: #1e1548; 
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: 'Century Gothic', 'Century Gothic', Futura, sans-serif;
 }
-
 
 .login-card {
   background: #d9d9d9;
   padding: 40px 50px;
   border-radius: 15px;
-  width: 350px;
   text-align: center;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
-
 
 .logo img {
   width: 250px;
   margin-bottom: 25px;
 }
-
 
 .login-form {
   display: flex;
@@ -145,5 +139,11 @@ const login = async () => {
   color: red;
   margin-top: 10px;
   font-size: 13px;
+}
+
+@media (min-width: 768px) {
+  .login-card {
+  width: 40%;
+  }
 }
 </style>
