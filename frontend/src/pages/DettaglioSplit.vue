@@ -9,9 +9,6 @@ import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 
-//Spostare qqesto blocco a livello globale così di default per mobile il menù sarà chiuso, per il desktop sarà aperto
-const sidebarOpen = ref(false)
-
 const router = useRouter()
 const route = useRoute()
 
@@ -125,9 +122,9 @@ const goBack = () => {
   <div id="app">
     <Navbar @toggle-sidebar="toggleSidebar" />
 
-    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role"  @close="sidebarOpen = false"/>
+    <SideMenu :isOpen="ui.sidebarOpen" :role="auth.user.role"  @close="sidebarOpen = false"/>
 
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }" >
+    <main class="main-content" :class="{ 'sidebar-open': ui.sidebarOpen }" >
       <div v-if="loading" class="loader-container">
         <i class="fa fa-spinner fa-spin"></i> Caricamento dati...
       </div>
@@ -208,77 +205,119 @@ const goBack = () => {
 </template>
 
 <style scoped>
+.loader-container {
+  text-align: center;
+  padding: 48px 16px;
+  color: #1e1548;
+}
+
 .split-page {
-  max-width: 90%;
-  margin: 0 auto;
+  width: 100%;
+}
+
+.header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.back-btn {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: white;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: .2s ease;
+}
+
+.back-btn:active {
+  transform: scale(.96);
+}
+
+.split-subtitle {
+  margin-top: 4px;
+  color: #6b7280;
+  font-size: .92rem;
 }
 
 .exercise-card {
   background: white;
-  border-radius: 24px;
-  padding: 24px;
-  margin-bottom: 2rem;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.05);
 }
 
 .exercise-title {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
+.exercise-title h2 {
+  font-size: 1.1rem;
+  color: #1e1548;
+}
 
 .exercise-info {
-  margin-top: 8px;
-  color: #777;
-  font-size: 0.95rem;
+  margin-top: 4px;
+  color: #6b7280;
+  font-size: .92rem;
 }
 
 .last-session {
-  font-size: 0.9rem;
-  color: #666;
+  display: inline-flex;
+  align-items: center;
+  gap:4px;
+  width: fit-content;
+  background: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: .85rem;
+  color: #475569;
 }
-
 
 .table-wrapper {
-  overflow-x: auto;
-  border:1px solid #d1c5c5;
-  border-radius: 7pt;
-}
-
-.table-header,
-.table-row {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr;
-  align-items: center;
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .table-header {
-  font-weight: bold;
-  color: #0f0a2e;
-  padding: 10px;
-  border-bottom: 2px solid #eee;
-  background-color: #bfcaee;
-  border-top-left-radius: 7pt;
-  border-top-right-radius: 7pt;
+  display: none;
 }
 
 .table-row {
-  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 14px;
 }
 
-.table-row:last-child {
-  border-bottom: none;
+
+.table-row span:nth-child(1)::before {
+  content: "Data: ";
+  font-weight: 600;
+}
+
+.table-row span:nth-child(2)::before {
+  content: "Carico: ";
+  font-weight: 600;
+}
+
+.table-row span:nth-child(3)::before {
+  content: "Reps: ";
+  font-weight: 600;
 }
 
 .current-session {
-  background: #fff7d6;
-  border-radius: 14px;
-  margin-top: 8px;
+  background: #fff8db;
+  border: 1px solid #f3e5ab;
 }
 
 .current-session span {
@@ -288,104 +327,120 @@ const goBack = () => {
 
 .table-row input {
   width: 100%;
-  border: 1px solid #ddd;
+  min-height: 48px;
+  border: 1px solid #d1d5db;
   border-radius: 12px;
   padding: 12px;
-  font-size: 0.95rem;
-  background: white;
+  font-size: .95rem;
   outline: none;
-  transition: 0.2s;
+  transition: .2s ease;
 }
 
 .table-row input:focus {
   border-color: #1e1548;
+  box-shadow: 0 0 0 4px rgba(30,21,72,.08);
 }
 
 .table-row input:disabled {
-  background: #f3f3f3;
-  cursor: not-allowed;
+  background: #f3f4f6;
 }
 
 .save-container {
-  display: flex;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,.96);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid #e5e7eb;
+  padding: 14px 16px;
+  z-index: 999;
+}
+
+.save-btn {
+  width: 100%;
   justify-content: center;
-  margin-top: 32px;
 }
 
-.save-btn:hover {
-  transform: translateY(-2px);
+.split-page {
+  padding-bottom: 100px;
 }
 
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0 !important;
-    padding: 16px;
+
+@media (min-width: 768px) {
+
+  .split-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding-bottom: 0;
   }
-}
 
-@media (max-width: 768px) {
+  .exercise-card {
+    padding: 24px;
+    border-radius: 22px;
+  }
+
   .exercise-title {
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
   }
 
-  .table-header,
+  .table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+  }
+
+  .table-header {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+
+    padding: 14px 18px;
+
+    font-weight: 700;
+    background: #eef2ff;
+    color: #1e1548;
+  }
+
   .table-row {
-    grid-template-columns: 1fr 1fr 1fr;
-    font-size: 0.9rem;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+
+    gap: 16px;
+    align-items: center;
+
+    background: transparent;
+    border-radius: 0;
+    padding: 16px 18px;
+
+    border-top: 1px solid #edf2f7;
   }
 
-  .table-row input {
-    padding: 10px;
+  .table-row span::before {
+    content: none !important;
   }
 
   .save-container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    position: static;
+    padding: 0;
+    margin-top: 28px;
 
-    background: white;
-    padding: 14px 16px;
-    border-top: 1px solid #eee;
+    border: none;
+    background: transparent;
+    backdrop-filter: none;
 
     display: flex;
     justify-content: center;
-    z-index: 999;
   }
 
   .save-btn {
-    width: 100%;
-    justify-content: center;
+    width: auto;
   }
 
-  .split-page {
-    padding-bottom: 90px; 
+  .back-btn:hover {
+    transform: translateX(-2px);
+    background: #f8fafc;
   }
-}
-
-.back-btn {
-  background: white;
-  border: 1px solid #eee;
-  border-radius: 12px;
-  padding: 10px 12px;
-  cursor: pointer;
-  margin-right: 12px;
-  transition: 0.2s;
-}
-
-.back-btn:hover {
-  transform: translateX(-2px);
-  background: #f7f7f7;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.loader-container {
-  text-align: center; 
-  padding: 2rem;
 }
 </style>

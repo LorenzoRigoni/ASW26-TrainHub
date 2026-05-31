@@ -412,8 +412,8 @@ const adherenceOptions = {
             </div>
 
             <div class="actions">
-                <button class="btn-primary btn-red" @click="closeModal">Annulla</button>
-                <button class="btn-primary" @click="saveEntry">Conferma</button>
+                <button class="btn-primary btn-red" @click="closeModal"><i class="fa fa-undo" aria-hidden="true"></i>Annulla</button>
+                <button class="btn-primary" @click="saveEntry"><i class="fa fa-check" aria-hidden="true"></i>Conferma</button>
             </div>
         </div>
     </div>
@@ -430,6 +430,18 @@ const adherenceOptions = {
   box-shadow: 0 6px 18px rgba(0,0,0,0.08);
   margin-top: 10px;
 }
+
+.diary-table th:nth-child(2),
+.diary-table td:nth-child(2),
+.diary-table th:nth-child(4),
+.diary-table td:nth-child(4),
+.diary-table th:nth-child(5),
+.diary-table td:nth-child(5),
+.diary-table th:nth-child(7),
+.diary-table td:nth-child(7) {
+    display: none;
+}
+
 
 .diary-table thead {
   background: #1e1548;
@@ -526,70 +538,54 @@ const adherenceOptions = {
 .modal {
   width: 100%;
   max-width: 520px;
-  background: linear-gradient(to bottom, #ffffff, #f7f8fc);
-  border-radius: 22px;
-  padding: 28px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.18);
+  background: white;
+  border-radius: 18px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  animation: modalFade 0.25s ease;
+  gap: 14px;
 }
-
 
 .modal-header {
   margin-bottom: 5px;
 }
 
 .modal-header h2 {
+  font-size:14pt;
   margin: 0;
   color: #1e1548;
-  font-size: 1.45rem;
-  font-weight: 700;
 }
 
-.form-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
+.form-row,
 .form-column {
   display: flex;
   flex-direction: column;
-  gap: 10px;
 }
-
 
 .form-row label,
 .form-column label {
-  min-width: 140px;
+  font-size: 10pt;
   font-weight: 600;
-  color: #2b2b40;
-  font-size: 0.95rem;
+  min-width: unset;
+  margin-bottom: 2px;
 }
 
-.modal input[type="date"],
-.modal input[type="number"],
+.modal input,
 .modal select,
 .modal textarea {
-  flex: 1;
-  border: 1px solid #d8dcf0;
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-size: 0.95rem;
-  background: white;
-  transition: all 0.2s ease;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
 }
 
 .modal textarea {
   min-height: 100px;
   resize: vertical;
-  line-height: 1.5;
 }
 
-.modal input:focus,
+.modal input[type="date"]:focus, 
+.modal input[type="number"]:focus,
 .modal select:focus,
 .modal textarea:focus {
   outline: none;
@@ -648,15 +644,15 @@ const adherenceOptions = {
 }
 
 .hunger-value {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: #1e1548;
-  color: white;
+  font-size: 10pt;
+  background: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  width: 26px;
+  height: 26px;
+  line-height: 1;
+  transform: translateY(-1px);
 }
 
 
@@ -719,18 +715,12 @@ const adherenceOptions = {
 .client-info {
   display: flex;
   align-items: center;
-  gap: 26px;
 }
 
 .avatar-wrapper {
   flex-shrink: 0;
 }
 
-.avatar {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-}
 
 .avatar {
   object-fit: cover;
@@ -738,8 +728,8 @@ const adherenceOptions = {
 }
 
 .avatar {
-  width: 170px;
-  height: 170px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   object-fit: cover;
   border: 5px solid white;
@@ -752,7 +742,7 @@ const adherenceOptions = {
 
 .client-details h1 {
   margin: 0;
-  font-size: 2rem;
+  font-size: 16pt;
   color: #ffffff;
   font-weight: 700;
 }
@@ -766,41 +756,113 @@ const adherenceOptions = {
 
 .client-meta span {
   color: #fffdfd;
-  font-size: 1rem;
+  font-size: 10pt;
 }
 
 .add-btn {
   align-self: flex-start;
 }
 
-@media (max-width: 768px) {
-  .diary-header {
-    flex-direction: column;
-    align-items: stretch;
+.actions {
+  display: flex;
+  flex-direction: row;
+    margin:0;
+}
+
+.actions button {
+  width: 40%;
+
+}
+
+@media (min-width: 768px) {
+
+  .diary-table thead {
+    display: table-header-group;
+    background: #1e1548;
+    color: white;
+  }
+
+  .diary-table tbody tr {
+    display: table-row;
+  }
+
+  .diary-table td, .diary-table th {
+    display: table-cell !important;
+  }
+
+  .avatar{
+    height: 170px;
+    width: 170px;
+  }
+  .client-details h1 {
+    font-size: 24pt;
+  }
+  .client-meta span {
+    font-size: 14pt;
+  }
+
+  .header-row{
+    display:flex;
+    gap:12px;
   }
 
   .client-info {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .client-details h1 {
-    font-size: 1.6rem;
+    flex-direction: row;
+    text-align: left;
+    align-items: center;
+    gap: 18px;
   }
 
   .add-btn {
-    width: 100%;
-    justify-content: center;
+    align-self: center;
   }
-}
+
+  .modal {
+    max-width: 700px;
+    padding: 28px;
+    gap: 18px;
+  }
+
+  .modal-header h2 {
+    font-size: 18pt;
+  }
+  .form-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .form-column {
+    flex-direction: column;
+  }
+
+  .form-row label,
+  .form-column label {
+    min-width: 140px;
+    font-size: 0.95rem;
+  }
+
+  .modal input,
+  .modal select,
+  .modal textarea {
+    flex: 1;
+  }
 
 
-.header-row{
-  display: flex;
-}
+  .hunger-value {
+    width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
+  }
 
-.client-details p{
-  font-weight: bold;
-  margin-right: 5pt;
+  .actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .actions button {
+    width: auto;
+  }
 }
 </style>

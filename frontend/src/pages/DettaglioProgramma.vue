@@ -105,11 +105,74 @@ const goToSplit = (split, program) => {
 </template>
 
 <style scoped>
+.loader-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 16px;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.error-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 48px 16px;
+  color: #b00020;
+  font-weight: 500;
+}
+
+.program-title {
+  font-size: 1.7rem;
+  line-height: 1.2;
+  color: #1e1548;
+  margin-bottom: 10px;
+}
+
+.program-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 12px;
+}
+
+.program {
+  background: white;
+  border-radius: 18px;
+  padding: 18px 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  transition: all 0.2s ease;
+}
+
+.program:active {
+  transform: scale(0.99);
+}
+
+.split-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e1548;
+  margin-bottom: 14px;
+}
+
+.exercise-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+}
 
 .badge-status {
+  display: inline-flex;
+  align-items: center;
   padding: 6px 12px;
   border-radius: 999px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   text-transform: capitalize;
   white-space: nowrap;
@@ -125,57 +188,30 @@ const goToSplit = (split, program) => {
   color: #1565c0;
 }
 
-.loader-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 
-  gap: 10px;
-  padding: 40px;
+@media (min-width: 768px) {
 
-  font-size: 1rem;
-  color: #555;
-}
+  .program-title {
+    font-size: 2rem;
+  }
 
-.error-state {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  .program-container {
+    gap: 24px;
+  }
 
-  padding: 40px;
-  color: #b00020;
-  font-weight: 500;
-}
+  .program {
+    padding: 24px;
+    border-radius: 22px;
+  }
 
+  .split-title {
+    font-size: 1.3rem;
+    margin-bottom: 18px;
+  }
 
-.program {
-  background-color: #ffffff;
-  padding: 20pt;
-  border-radius: 20pt;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.program:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-}
-
-.program-container {
-  padding: 1rem 0; 
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-
-
-.exercise-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  .program:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
 }
 </style>

@@ -204,126 +204,136 @@ const canEditStatus = computed(() => {
 </template>
 
 <style scoped>
-.main-content{
-  max-width: 95%;
-  margin: 0 auto;
-  margin-top: 60px;
-}
-
-@media (max-width: 900px) {
-  .form-grid {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 16px;
-  }
-
-  .form-row.grow textarea {
-    min-height: 140px;
-  }
-
-  .col,
-  .col-left,
-  .col-right {
-    width: 100%;
-  }
+.loader-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  gap: 10px;
+  font-size: 1rem;
+  color: #1e1548;
 }
 
 .form-card {
- 
-  margin-top: 20px;
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
-  display: flex;
-  flex-direction: column;
-  margin: 20px auto 0; 
+  width: 100%;
+  margin-top: 18px;
+  background: white;
+  border-radius: 18px;
+  padding: 18px 16px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.05);
 }
+
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  grid-template-columns: 1fr;
+  gap: 12px;
 }
-
 
 .col {
   display: flex;
   flex-direction: column;
 }
 
-.col-right {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-row.grow {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.form-row.grow textarea {
-  flex: 1;
-  min-height: 220px;
-}
-
-.form-header {
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ececf3;
-}
-
 
 .form-row {
   display: flex;
   flex-direction: column;
-  margin-bottom: 16px;
   gap: 6px;
 }
 
 .form-row label {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #333;
+  color: #374151;
 }
+
 
 .form-row input,
 .form-row select,
 .form-row textarea {
   width: 100%;
   border: 1px solid #d8dcf0;
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-size: 0.95rem;
+  border-radius: 14px;
   background: #fff;
-  transition: all 0.2s ease;
+  padding: 12px 14px;
+  font-size: 0.95rem;
   outline: none;
+  transition: all .2s ease;
 }
+
+.form-row input,
+.form-row select {
+  min-height: 48px;
+}
+
+.form-row textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
 
 .form-row input:focus,
 .form-row select:focus,
 .form-row textarea:focus {
   border-color: #1e1548;
-  box-shadow: 0 0 0 3px rgba(30,21,72,0.12);
+  box-shadow: 0 0 0 4px rgba(30,21,72,0.10);
 }
 
-.form-row textarea {
-  min-height: 100px;
-  resize: vertical;
+.form-row input:disabled,
+.form-row select:disabled,
+.form-row textarea:disabled {
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: not-allowed;
 }
 
-.info-header {
-  max-width:90%;
-  margin: 20px auto 16px;
-}
-
-.loader-container {
+.form-row.grow {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-  font-size: 1.2rem;
-  color: #1e1548;
+  flex-direction: column;
 }
+
+.form-row.grow textarea {
+  min-height: 140px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.actions button {
+  width: 100%;
+  justify-content: center;
+}
+
+
+@media (min-width: 768px) {
+
+  .form-card {
+    padding: 24px;
+    border-radius: 22px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+  }
+
+  .form-row.grow textarea {
+    min-height: 220px;
+  }
+
+  .actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .actions button {
+    width: auto;
+  }
+}
+
 </style>
