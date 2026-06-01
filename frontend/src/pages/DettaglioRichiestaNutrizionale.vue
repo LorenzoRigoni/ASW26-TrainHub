@@ -11,6 +11,7 @@ import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import axios from 'axios'
 import BackButton from '../components/GoBackButton.vue'
+import AppModal from '../components/Modal.vue'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -18,6 +19,8 @@ const router = useRouter()
 const sidebar = useSidebarStore()
 const requestId = computed(() => route.params.id)
 const isEditMode = computed(() => !!requestId.value)
+const showPlanModal = ref(false)
+const selectedFile = ref(null)
 
 const form = ref({
   title: '',
@@ -29,6 +32,45 @@ const form = ref({
   endDate: '',
   notes: ''
 })
+
+const planForm = ref({
+  title: '',
+  athleteId: '',
+  notes: '',
+  startDate: '',
+  endDate: ''
+})
+
+const handleFileChange = (event) => {
+  selectedFile.value = event.target.files[0]
+}
+
+const savePlan = async () => {
+  if (!selectedFile.value) {
+    showToast("Selezionare un piano", "error")
+    return
+  }
+  try {
+    const formData = new FormData()
+    formData.append('title', planForm.value.title)
+    formData.append('athleteId', planForm.value.athleteId)
+    formData.append('startDate', planForm.value.startDate)
+    formData.append('endDate', planForm.value.endDate)
+    formData.append('notes', planForm.value.notes)
+    formData.append('pdfFile', selectedFile.value)
+
+    await axios.post(`${API_URL}/api/nutrition-plans`, formData, {
+      headers: { ...auth.apiConfig.headers, 'Content-Type': 'multipart/form-data' }
+    })
+
+    showPlanModal.value = false
+    planForm.value = { title: '', athleteId: '', notes: '', startDate: '', endDate: '' }
+    selectedFile.value = null
+    showToast("Piano alimentare salvato con successo!", "success")
+  } catch (error) {
+    showToast("Errore nel salvataggio: " + getErrorMessage(error), "error")
+  }
+}
 
 const clients = ref([])
 const nutritionists = ref([])
@@ -190,12 +232,63 @@ const canEditStatus = computed(() => {
                   </div>
                 </div>
                 <div class="actions">
-                  <button class="btn-primary btn-red" @click="goBack"><i class="fa fa-close"></i>Annulla</button>
-                  <button  @click="saveRequest" :class="isEditMode ? 'btn-primary btn-green' : 'btn-primary'"><i class="fa fa-check"></i>
-                    {{ isEditMode ? 'Salva' : 'Invia' }}
+                  <button class="btn-primary btn-red" @click="goBack">
+                    <i class="fa fa-close"></i>Annulla
+                  </button>
+                  <button v-if="canEditForm" @click="saveRequest" :class="isEditMode ? 'btn-primary btn-green' : 'btn-primary'">
+                    <i class="fa fa-check"></i> {{ isEditMode ? 'Salva' : 'Invia' }}
+                  </button>
+                  <button v-if="canEditStatus" class="btn-primary" @click="showPlanModal = true">
+                    <i class="fa fa-plus"></i> Carica piano
                   </button>
                 </div>
               </div>
+
+              <AppModal v-model="showPlanModal" title="Carica piano alimentare">
+                <div class="form-row">
+                  <label for="plan-title">Titolo</label>
+                  <input id="plan-title" type="text" placeholder="Nome piano" v-model="planForm.title" />
+                </div>
+
+                <div class="form-row">
+                  <label for="plan-client">Cliente</label>
+                  <select id="plan-client" v-model="planForm.athleteId">
+                    <option value="">Seleziona cliente</option>
+                    <option v-for="c in clients" :key="c.id" :value="c.id">
+                      {{ c.name }} {{ c.surname }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-row">
+                  <label for="plan-pdf">Allega PDF del Piano</label>
+                  <input id="plan-pdf" type="file" accept="application/pdf" @change="handleFileChange" required />
+                </div>
+
+                <div class="form-row">
+                  <label for="plan-startDate">Data inizio</label>
+                  <input id="plan-startDate" type="date" v-model="planForm.startDate" />
+                </div>
+
+                <div class="form-row">
+                  <label for="plan-endDate">Data fine</label>
+                  <input id="plan-endDate" type="date" v-model="planForm.endDate" />
+                </div>
+
+                <div class="form-row">
+                  <label for="plan-notes">Note</label>
+                  <textarea id="plan-notes" v-model="planForm.notes" placeholder="Note aggiuntive per il cliente"></textarea>
+                </div>
+
+                <template #actions>
+                  <button class="btn-primary btn-red" @click="showPlanModal = false">
+                    <i class="fa fa-close"></i> Annulla
+                  </button>
+                  <button class="btn-primary btn-green" @click="savePlan">
+                    <i class="fa fa-check"></i> Salva
+                  </button>
+                </template>
+              </AppModal>
             </template>
         </main>
      </div>

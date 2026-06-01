@@ -4,13 +4,14 @@ import axios from 'axios'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
 import { API_URL } from '../utils/config.js'
-import { getErrorMessage } from '../utils/utils.js'
+import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { useSidebarStore } from '../stores/sidebar.js'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
+import AppModal from '../components/Modal.vue'
 
 const auth = useAuthStore()
 const sidebar = useSidebarStore()
@@ -18,10 +19,10 @@ const sidebar = useSidebarStore()
 const nutritionPlans = ref([])
 const clients = ref([])
 const showModal = ref(false)
-
 const today = new Date().toISOString().split('T')[0]
+const selectedFile = ref(null)
 
-const form = ref({
+const planForm = ref({
   title: '',
   athleteId: '',
   notes: '',
@@ -29,7 +30,16 @@ const form = ref({
   endDate: today
 })
 
-const selectedFile = ref(null)
+const openModal = (plan) => {
+  planForm.value = {
+    title: plan.title,
+    athleteId: plan.athleteId?._id || plan.athleteId,
+    notes: plan.notes || '',
+    startDate: plan.startDate?.split('T')[0] || today,
+    endDate: plan.endDate?.split('T')[0] || today
+  }
+  showModal.value = true
+}
 
 const handleFileChange = (event) => {
   selectedFile.value = event.target.files[0]
@@ -112,7 +122,7 @@ const savePlan = async () => {
     );
 
     showModal.value = false;
-    form.value = { title: '', athleteId: '', notes: '', pdfFile: '', startDate: today, endDate: today };
+    planForm.value = { title: '', athleteId: '', notes: '', pdfFile: '', startDate: today, endDate: today };
     selectedFile.value = null;
     
     showToast("Piano alimentare salvato con successo!", "success")
@@ -127,12 +137,12 @@ const downloadPdf = (plan) => {
   window.open(fileUrl, '_blank')
 }
 
-const openModal = () => {
-  showModal.value = true
-}
-
-const closeModal = () => {
-  showModal.value = false
+const handleItemClick = (plan) => {
+  if (auth.user.role === ROLES.NUTRIZIONISTA) {
+    openModal(plan)
+  } else {
+    downloadPdf(plan)
+  }
 }
 </script>
 <template>
@@ -144,10 +154,6 @@ const closeModal = () => {
         <div class="header-text">
           <h1>Piani alimentari</h1>
         </div>
-        <button class="btn-primary" @click="openModal" v-if="auth.user.role === 'nutritionist'">
-          <i class="fa fa-plus"></i>
-          Carica piano alimentare
-        </button>
       </div>
 
       <MainList>
@@ -159,69 +165,43 @@ const closeModal = () => {
             ? `${plan.athleteId?.name} ${plan.athleteId?.surname} - Periodo dal ${formatDate(plan.startDate)} al ${formatDate(plan.endDate)}` 
             : `Dott. ${plan.nutritionistId?.name} ${plan.nutritionistId?.surname} - Periodo dal ${formatDate(plan.startDate)} al ${formatDate(plan.endDate)}`"
           :status="calculateStatus(plan.startDate, plan.endDate).text"
-          @click="downloadPdf(plan)"
+          @click="handleItemClick(plan)"
           style="cursor: pointer;"
         >
         </ListItem>
       </MainList>
+
+      <AppModal v-model="showModal" title="Piano alimentare">
+        <div class="form-row">
+          <label for="plan-title">Titolo</label>
+          <input id="plan-title" type="text" v-model="planForm.title" />
+        </div>
+
+        <div class="form-row">
+          <label for="plan-startDate">Data inizio</label>
+          <input id="plan-startDate" type="date" v-model="planForm.startDate" />
+        </div>
+
+        <div class="form-row">
+          <label for="plan-endDate">Data fine</label>
+          <input id="plan-endDate" type="date" v-model="planForm.endDate" />
+        </div>
+
+        <div class="form-row">
+          <label for="plan-notes">Note</label>
+          <textarea id="plan-notes" v-model="planForm.notes"></textarea>
+        </div>
+
+        <template #actions>
+          <button class="btn-primary btn-red" @click="showModal = false">
+            <i class="fa fa-close"></i> Chiudi
+          </button>
+          <button class="btn-primary" @click="downloadPdf(planForm)">
+            <i class="fa fa-download"></i> Scarica PDF
+          </button>
+        </template>
+      </AppModal>
     </main>
-
-    <div v-if="showModal" class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header">
-          <h2>Carica piano alimentare</h2>
-        </div>
-
-     
-        <div class="form-row">
-          <label for="title">Titolo</label>
-          <input id="title" type="text" placeholder="Nome piano" v-model="form.title"/>
-        </div>
-
-    
-        <div class="form-row">
-          <label for="client">Cliente</label>
-          <select id="client" v-model="form.athleteId">
-            <option value="">Seleziona cliente</option>
-            <option v-for="client in clients" :key="client.id" :value="client.id">
-              {{ client.name }} {{ client.surname }}
-            </option>
-          </select>
-        </div>
-
-        <div class="form-row full-width">
-          <label for="pdf-file">Allega PDF del Piano</label>
-          <input 
-            type="file" 
-            id="pdfFile" 
-            accept="application/pdf" 
-            @change="handleFileChange" 
-            required
-          />
-        </div>
-
-
-        <div class="form-row">
-          <label for="startDate">Data inizio</label>
-          <input id="startDate" type="date" v-model="form.startDate"/>
-        </div>
-
-        <div class="form-row">
-          <label for="endDate">Data fine</label>
-          <input id="endDate" type="date" v-model="form.endDate" />
-        </div>
-
-        <div class="form-row full-width">
-          <label for="note">Note</label>
-          <textarea id="note" v-model="form.notes" placeholder="Note aggiuntive per il cliente"></textarea>
-        </div>
-
-        <div class="modal-actions">
-          <button class="btn-primary btn-red" @click="closeModal">Annulla</button>
-          <button class="btn-primary" @click="savePlan">Crea piano</button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
