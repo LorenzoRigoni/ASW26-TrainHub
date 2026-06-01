@@ -14,6 +14,7 @@ import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import BackButton from '../components/GoBackButton.vue'
+import AppModal from '../components/Modal.vue'
 
 ChartJS.register(
   CategoryScale,
@@ -350,81 +351,78 @@ const adherenceOptions = {
           </div>
         </main>
     </div>
-    <div v-if="showModal && auth.user.role === ROLES.CLIENTE" class="modal-overlay">
-        <div class="modal">
+    <AppModal
+      v-model="showModal"
+      :title="isEditing ? 'Modifica registrazione' : 'Nuova registrazione'"
+      width="520px"
+    >
+      <div class="form-row">
+        <label for="data">Data</label>
+        <input id="data" type="date" v-model="form.date" />
+      </div>
 
-            <div class="modal-header">
-                <h2>Nuova registrazione</h2>
-            </div>
+      <div class="form-row">
+        <label for="activity">Attività</label>
+        <div id="activity" class="radio-group">
+          <label class="radio-card on-card">
+            <input type="radio" value="on" v-model="form.activity" />
+            ON
+          </label>
 
-            <!-- DATA -->
-            <div class="form-row">
-                <label for="data">Data</label>
-                <input id="data" type="date" v-model="form.date" />
-            </div>
-
-            <div class="form-row">
-                <label for="activity">Attività</label>
-                <div id="activity" class="radio-group">
-                    <label class="radio-card on-card"><input type="radio" value="on" v-model="form.activity" />ON</label>
-                    <label class="radio-card off-card"><input type="radio" value="off" v-model="form.activity" /> OFF</label>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <label for="adherence">Aderenza</label>
-                <select id="adherence" v-model="form.adherence">
-                    <option value="Ottima">Ottima</option>
-                    <option value="Media">Media</option>
-                    <option value="Sgarro">Sgarro</option>
-                </select>
-            </div>
-
-            <div class="form-row">
-                <label for="steps">NEAT</label>
-                <input
-                    id="steps"
-                    type="number"
-                    placeholder="Passi giornalieri"
-                    v-model.number="form.steps"
-                />
-            </div>
-
-            <div class="form-column">
-                <label>Livello fame</label>
-                <div for="hunger" class="hunger-row">
-                    <input
-                        id="hunger"
-                        type="range"
-                        min="1"
-                        max="10"
-                        v-model.number="form.hunger"
-                    />
-                    <span class="hunger-value">{{ form.hunger }}</span>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <label for="weight">Peso corporeo</label>
-                <input
-                    id="weight"
-                    type="number"
-                    placeholder="Peso corporeo"
-                    v-model.number="form.weight"
-                />
-            </div>
-
-            <div class="form-row note-row">
-                <label for="note">Nota</label>
-                <textarea id="note" v-model="form.notes" placeholder="Aggiungi una nota"></textarea>
-            </div>
-
-            <div class="actions">
-                <button class="btn-primary btn-red" @click="closeModal"><i class="fa fa-undo" aria-hidden="true"></i>Annulla</button>
-                <button class="btn-primary" @click="saveEntry"><i class="fa fa-check" aria-hidden="true"></i>Conferma</button>
-            </div>
+          <label class="radio-card off-card">
+            <input type="radio" value="off" v-model="form.activity" />
+            OFF
+          </label>
         </div>
-    </div>
+      </div>
+
+      <div class="form-row">
+        <label for="adherence">Aderenza</label>
+        <select id="adherence" v-model="form.adherence">
+          <option value="Ottima">Ottima</option>
+          <option value="Media">Media</option>
+          <option value="Sgarro">Sgarro</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label for="steps">NEAT</label>
+        <input id="steps" type="number" v-model.number="form.steps" />
+      </div>
+
+      <div class="form-column">
+        <label>Livello fame</label>
+        <div class="hunger-row">
+          <input
+            type="range"
+            min="1"
+            max="10"
+            v-model.number="form.hunger"
+          />
+          <span class="hunger-value">{{ form.hunger }}</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label for="weight">Peso corporeo</label>
+        <input id="weight" type="number" v-model.number="form.weight" />
+      </div>
+
+      <div class="form-row note-row">
+        <label for="note">Nota</label>
+        <textarea id="note" v-model="form.notes"></textarea>
+      </div>
+      <template #actions>
+        <button class="btn-primary btn-red" @click="closeModal">
+          <i class="fa fa-undo"></i> Annulla
+        </button>
+
+        <button class="btn-primary" @click="saveEntry">
+          <i class="fa fa-check"></i>
+          Conferma
+        </button>
+      </template>
+    </AppModal>
 </template>
 
 <style scoped>
@@ -520,50 +518,6 @@ const adherenceOptions = {
   background: #d9f7df;
 }
 
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 15, 30, 0.55);
-  backdrop-filter: blur(3px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-  padding: 20px;
-}
-
-.modal {
-  width: 100%;
-  max-width: 520px;
-  background: white;
-  border-radius: 18px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.modal-header {
-  margin-bottom: 5px;
-}
-
-.modal-header h2 {
-  font-size:14pt;
-  margin: 0;
-  color: #1e1548;
-}
-
 .form-row,
 .form-column {
   display: flex;
@@ -587,19 +541,6 @@ const adherenceOptions = {
   font-size: 0.9rem;
 }
 
-.modal textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-.modal input[type="date"]:focus, 
-.modal input[type="number"]:focus,
-.modal select:focus,
-.modal textarea:focus {
-  outline: none;
-  border-color: #5b47c5;
-  box-shadow: 0 0 0 4px rgba(91,71,197,0.12);
-}
 
 .note-row {
   flex-direction: column;
@@ -831,20 +772,13 @@ const adherenceOptions = {
     align-self: flex-end;
   }
 
-  .modal {
-    max-width: 700px;
-    padding: 28px;
-    gap: 18px;
-  }
 
-  .modal-header h2 {
-    font-size: 18pt;
-  }
   .form-row {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
+    margin-bottom: 10px;
   }
 
   .form-column {
@@ -855,12 +789,6 @@ const adherenceOptions = {
   .form-column label {
     min-width: 140px;
     font-size: 0.95rem;
-  }
-
-  .modal input,
-  .modal select,
-  .modal textarea {
-    flex: 1;
   }
 
 
