@@ -93,6 +93,15 @@ const saveDraft = async () => {
 const publishProgram = async () => {
   try {
     await axios.patch(`${API_URL}/api/training-programs/publish/${program.value._id}`, {}, auth.apiConfig)
+
+    // Create a new deadline for the trainer
+    await axios.post(`${API_URL}/api/deadlines`, {
+      athleteId: program.value.athleteId._id,
+      title: `${program.value.title} - Termine Programma`,
+      dueDate: program.value.endDate,
+      notes: ''
+    }, auth.apiConfig)
+
     showToast("Programma pubblicato con successo!", "success")
     router.push('/programmi')
   } catch (error) {
