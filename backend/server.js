@@ -58,7 +58,7 @@ app.get('/', (req, res) => {
 const server = http.createServer(app);
 const io = initSocket(server);
 
-server.listen(5000, () => {
+server.listen(process.env.PORT, () => {
     console.log('Server running on port 5000 - http://localhost:5000');
 });
 

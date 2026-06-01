@@ -23,7 +23,6 @@ Nella cartella backend, creare un file `.env` che contenga queste variabili:
 PORT=5000
 MONGODB_URI=connString
 JWT_SECRET=jwtKey
-NODE_ENV=development
 ```
 
 ## Guida per l'avvio
