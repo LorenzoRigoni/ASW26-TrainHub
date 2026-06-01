@@ -237,7 +237,7 @@ const formattedDeadlines = computed(() => {
 
       <AppModal
         v-model="showDeadlineModal"
-        title="Dettaglio e Modifica Scadenza"
+        title="Modifica Scadenza"
         @close="showDeadlineModal = false"
         width="650px"
       >
@@ -286,12 +286,7 @@ const formattedDeadlines = computed(() => {
         </div>
 
         <template #actions>
-          <button class="btn-primary btn-red"  @click="showDeadlineModal = false">
-            <i class="fa fa-close"></i>
-            Chiudi
-          </button>
-
-          <button class="btn-primary"  @click="saveDeadlineChanges">
+          <button class="btn-primary btn-green"  @click="saveDeadlineChanges">
             <i class="fa fa-save"></i>
             Salva Modifiche
           </button>
@@ -347,17 +342,7 @@ const formattedDeadlines = computed(() => {
         </div>
 
         <template #actions>
-          <button
-            class="btn-primary btn-red"
-            @click="showProgramModal = false"
-          >
-            Annulla
-          </button>
-
-          <button
-            class="btn-primary"
-            @click="createProgram"
-          >
+          <button class="btn-primary"  @click="createProgram">
             Crea Programma
           </button>
         </template>
@@ -418,17 +403,8 @@ const formattedDeadlines = computed(() => {
         </div>
 
         <template #actions>
-          <button
-            class="btn-primary btn-red"
-            @click="showModal = false"
-          >
-            Annulla
-          </button>
-
-          <button
-            class="btn-primary"
-            @click="saveNewDeadline"
-          >
+          <button class="btn-primary btn-green"  @click="saveNewDeadline">
+            <i class="fa fa-save"></i>
             Salva Scadenza
           </button>
         </template>
@@ -518,4 +494,6 @@ const formattedDeadlines = computed(() => {
   border-color: #5b47c5;
   box-shadow: 0 0 0 4px rgba(91, 71, 197, 0.12);
 }
+
+
 </style>

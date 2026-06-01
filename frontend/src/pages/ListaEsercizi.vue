@@ -11,6 +11,7 @@ import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
+import AppModal from '../components/Modal.vue'
 
 const auth = useAuthStore()
 const sidebar = useSidebarStore()
@@ -203,40 +204,36 @@ onMounted(() => {
       </div>
     </main>
 
-    <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
-      <div class="modal-content">
-        <h2>{{ isEditing ? 'Modifica Esercizio' : 'Aggiungi Nuovo Esercizio' }}</h2>
-        <form @submit.prevent="handleSubmit">
-          <div class="form-group">
-            <label>Nome Esercizio*</label>
-            <input v-model="newExercise.name" required type="text" placeholder="Es: Panca Piana">
-          </div>
-
-          <div class="form-group">
-            <label>Pattern di Movimento*</label>
-            <select v-model="newExercise.movementPattern" required>
-              <option value="" disabled>Seleziona pattern</option>
-              <option v-for="p in patterns" :key="p" :value="p">{{ p }}</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Descrizione</label>
-            <textarea v-model="newExercise.description" rows="3"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label>Immagine</label>
-            <input type="file" @change="handleFileUpload" accept="image/*">
-          </div>
-
-          <div class="modal-actions">
-            <button type="button" @click="showModal = false" class="btn-primary btn-red"><i class="fa fa-close" aria-hidden="true"></i>Annulla</button>
-            <button type="submit" class="btn-primary"><i class="fa fa-check" aria-hidden="true"></i>Salva Esercizio</button>
-          </div>
-        </form>
+    <AppModal v-model="showModal" :title="isEditing ? 'Modifica Esercizio' : 'Aggiungi Nuovo Esercizio'">
+      <div class="form-group">
+        <label>Nome Esercizio*</label>
+        <input v-model="newExercise.name" required type="text" placeholder="Es: Panca Piana" />
       </div>
-    </div>
+
+      <div class="form-group">
+        <label>Pattern di Movimento*</label>
+        <select v-model="newExercise.movementPattern" required>
+          <option value="" disabled>Seleziona pattern</option>
+          <option v-for="p in patterns" :key="p" :value="p">{{ p }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Descrizione</label>
+        <textarea v-model="newExercise.description" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Immagine</label>
+        <input type="file" @change="handleFileUpload" accept="image/*" />
+      </div>
+
+      <template #actions>
+        <button class="btn-primary btn-green" @click="handleSubmit">
+          <i class="fa fa-check"></i> Salva Esercizio
+        </button>
+      </template>
+    </AppModal>
   </div>
 </template>
 
@@ -322,23 +319,6 @@ onMounted(() => {
   font-weight: 600;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.modal-content {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-}
 
 .form-group {
   margin-bottom: 1rem;
@@ -355,13 +335,6 @@ onMounted(() => {
   padding: 0.6rem;
   border: 1px solid #ccc;
   border-radius: 6px;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1.5rem;
 }
 
 .btn-action {

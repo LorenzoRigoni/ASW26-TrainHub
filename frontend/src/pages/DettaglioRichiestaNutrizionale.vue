@@ -192,7 +192,7 @@ const canEditStatus = computed(() => {
                 </div>
                 <div class="actions">
                   <button class="btn-primary btn-red" @click="goBack"><i class="fa fa-close"></i>Annulla</button>
-                  <button class="btn-primary" @click="saveRequest"><i class="fa fa-check"></i>
+                  <button  @click="saveRequest" :class="isEditMode ? 'btn-primary btn-green' : 'btn-primary'"><i class="fa fa-check"></i>
                     {{ isEditMode ? 'Salva' : 'Invia' }}
                   </button>
                 </div>
@@ -298,14 +298,9 @@ const canEditStatus = computed(() => {
 
 .actions {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: row;
   gap: 12px;
   margin-top: 24px;
-}
-
-.actions button {
-  width: 100%;
-  justify-content: center;
 }
 
 
