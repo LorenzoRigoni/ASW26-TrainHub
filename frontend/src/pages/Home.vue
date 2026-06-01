@@ -22,6 +22,8 @@ const customersList = ref([])
 const stats = ref({ activeClientsCount: 0, totalPrograms: 0, activeNutritionalPlans: 0, pendingPrograms: 0 })
 const programsList = ref([])
 const recentNotifications = ref([])
+const richiesteNutrizionista = ref([])
+const clientiNutrizionista = ref([])
 const activeProgram = ref(null)
 const sidebar = useSidebarStore()
 const router = useRouter()
@@ -113,8 +115,8 @@ const goToProgramsList = () => {
   router.push('/programmi')
 }
 
-const goToNutritionPlanRequestDetail = () => {
-  router.push('/piani-alimentari')
+const goToNutritionRequestsId = (richiesta) => {
+  router.push(`/richieste-nutrizione/dettaglio-richiesta/${richiesta}`)
 }
 
 const goToNutritionPlanDetail = () => {
@@ -158,6 +160,14 @@ const fetchData = async () => {
       }))
 
       activeProgram.value = activeRes.data.data
+    } else {
+      const [nutrClients, nutrRequests] = await Promise.all([
+        axios.get(`${API_URL}/api/users/my-clients`, auth.apiConfig),
+        axios.get(`${API_URL}/api/nutrition-requests`, auth.apiConfig)
+      ])
+      richiesteNutrizionista.value = nutrRequests.data.data
+      console.log(richiesteNutrizionista.value)
+      clientiNutrizionista.value = nutrClients.data.data
     }
   } catch(error){
     showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
@@ -366,9 +376,9 @@ onMounted(fetchData)
             >
               <ListItem
                 v-for="r in richiesteNutrizionista" :key="r.id"
-                :title="r.cliente"
-                :subtitle="`${r.tipo} · ${r.data}`"
-                @click="goToNutritionPlanRequestDetail(r.id)"
+                :title="`${r.clientId.name} ${r.clientId.surname}`"
+                :subtitle="`${r.goal} · ${new Date(r.startDate).toLocaleDateString()}`"
+                @click="goToNutritionRequestsId(r._id)"
               >
                 <template #left>
                   <div class="icon-wrap" style="background:rgba(224,92,154,0.1)">
