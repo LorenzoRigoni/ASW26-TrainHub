@@ -344,7 +344,6 @@ th {
 @media (min-width: 768px) {
 
   .split-page {
-    max-width: 1000px;
     margin: 0 auto;
     padding-bottom: 0;
   }
