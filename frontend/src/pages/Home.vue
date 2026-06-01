@@ -240,9 +240,6 @@ onMounted(fetchData)
             <h1 class="welcome-title">{{ greeting }}, {{ auth.user.name }}</h1>
             <p class="welcome-sub">Ecco il riepilogo della tua attività</p>
           </div>
-          <button v-if="auth.user.role === ROLES.CLIENTE" class="btn-primary" @click=""> 
-            <i class="fa fa-play"></i> Inizia Allenamento
-          </button>
         </div>
 
         <!-- NOTIFICATION SECTION -->

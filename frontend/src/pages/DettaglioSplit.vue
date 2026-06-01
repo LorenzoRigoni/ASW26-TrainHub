@@ -138,7 +138,36 @@ onMounted(() => {
 
 const currentSession = ref({})
 
+//per recuperare le registrazioni dell'ultima sessione
+const getLastSessionLogs = (exerciseId) => {
+  const logs = exerciseLogs.value[exerciseId] || []
 
+  if (!logs.length) return []
+
+  const lastDate = logs[logs.length - 1].date
+
+  return logs.filter(log => log.date === lastDate)
+}
+
+//Recupera i log da mostrare (per trainer tutte le registrazioni, per cliente solo ultima sessione)
+const getVisibleLogs = (exerciseId) => {
+  const logs = exerciseLogs.value[exerciseId] || []
+
+  if (isTrainer.value) {
+    return logs
+  }
+
+  return getLastSessionLogs(exerciseId)
+}
+
+//per controllare che non sia già presente una registrazione per il giorno corrente 
+const hasSessionToday = (exerciseId) => {
+  const logs = exerciseLogs.value[exerciseId] || []
+
+  const today = new Date().toISOString().split('T')[0]
+
+  return logs.some(log => log.date === today)
+}
 </script>
 
 <template>
@@ -190,25 +219,59 @@ const currentSession = ref({})
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(log, i) in currentWeekInput[row.exercise._id || row.exercise]" :key="i">
-                <td>{{ new Date(log.date).toLocaleDateString('it-IT') }}</td>
+              <!-- Ultima sessione (cliente) o tutte le registrazioni (trainer) -->
+              <tr
+                v-for="(log, i) in getVisibleLogs(row.exercise._id || row.exercise)"
+                :key="'history-' + i"
+              >
+                <td>
+                  {{ new Date(log.date).toLocaleDateString('it-IT') }}
+                </td>
+
                 <td>{{ log.load }} kg</td>
+
                 <td>{{ log.reps }}</td>
+              </tr>
+
+              <!-- Sessione di oggi -->
+              <tr
+                v-if="isClient && !hasSessionToday(row.exercise._id || row.exercise)"
+                v-for="(set, i) in currentWeekInput[row.exercise._id || row.exercise]"
+                :key="'today-' + i"
+                class="today-row"
+              >
+                <td>
+                  {{ todayDate }}
+                  <small>Serie {{ i + 1 }}</small>
+                </td>
+
+                <td>
+                  <input
+                    type="number"
+                    placeholder="Kg"
+                    v-model="set.load"
+                    :disabled="isTrainer"
+                  />
+                </td>
+
+                <td>
+                  <input
+                    type="number"
+                    placeholder="Reps"
+                    v-model="set.reps"
+                    :disabled="isTrainer"
+                  />
+                </td>
+              </tr>
+              <tr
+                v-if="isClient && hasSessionToday(row.exercise._id || row.exercise)"
+              >
+                <td colspan="3" class="completed-session">
+                  <i class="fa fa-check" aria-hidden="true"></i>Sessione di oggi già registrata 
+                </td>
               </tr>
             </tbody>
           </table>
-
-          <div v-if="isClient" class="current-session">
-            <span>{{ todayDate }}</span>
-            <input type="number" placeholder="Kg"
-              v-model="currentWeekInput[row.exercise._id || row.exercise].load"
-              :disabled="isTrainer"
-            />
-            <input type="number" placeholder="Reps"
-              v-model="currentWeekInput[row.exercise._id || row.exercise].reps"
-              :disabled="isTrainer"
-            />
-          </div>
         </div>
         </section>
 
@@ -307,46 +370,7 @@ th {
   color: #1e1548;
 }
 
-.current-session {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr;
-  gap: 16px;
-  align-items: center;
-  padding: 10px 18px;
-  background: #fff8db;
-  border-top: 1px solid #f3e5ab;
-}
 
-
-.current-session {
-  background: #fff8db;
-  border: 1px solid #f3e5ab;
-}
-
-.current-session span {
-  font-weight: 700;
-  color: #8a6d00;
-}
-
-.current-session input {
-  width: 100%;
-  min-height: 48px;
-  border: 1px solid #d1d5db;
-  border-radius: 12px;
-  padding: 8px;
-  font-size: .95rem;
-  outline: none;
-  transition: .2s ease;
-}
-
-.current-sessioninput:focus {
-  border-color: #1e1548;
-  box-shadow: 0 0 0 4px rgba(30,21,72,.08);
-}
-
-.current-session input:disabled {
-  background: #f3f4f6;
-}
 
 .save-container {
   position: fixed;
@@ -369,6 +393,32 @@ th {
   padding-bottom: 100px;
 }
 
+.today-row {
+  background: #fff8db;
+}
+
+.today-row small {
+  display: block;
+  color: #8a6d00;
+  margin-top: 4px;
+}
+
+.today-row input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 8px;
+  font-size: .95rem;
+}
+
+.completed-session {
+  text-align: center;
+  padding: 16px;
+  color: #15803d;
+  font-weight: 600;
+  background: #f0fdf4;
+}
 
 @media (min-width: 768px) {
 
