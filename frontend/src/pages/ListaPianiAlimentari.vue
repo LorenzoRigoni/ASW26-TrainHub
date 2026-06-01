@@ -173,6 +173,11 @@ const handleItemClick = (plan) => {
         </ListItem>
       </MainList>
 
+      <div v-if="nutritionPlans.length === 0" class="empty-state">
+          <i class="fa fa-folder-open-o"></i>
+          <p>Nessun piano trovato.</p>
+      </div>
+
       <AppModal v-model="showModal" title="Piano alimentare">
         <div class="form-row">
           <label for="plan-title">Titolo</label>

@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref({
+    id: localStorage.getItem('user_id') || '',
     name: localStorage.getItem('user_name') || '',
     surname: localStorage.getItem('user_surname') || '',
     role: localStorage.getItem('user_role') || '',
@@ -24,6 +25,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function setSession(userData, userToken) {
     user.value = {
+      id: userData._id,
       name: userData.name,
       surname: userData.surname,
       role: userData.role,
@@ -34,6 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
     token.value = userToken
 
+    localStorage.setItem('user_id', userData._id)
     localStorage.setItem('user_name', userData.name)
     localStorage.setItem('user_surname', userData.surname)
     localStorage.setItem('user_role', userData.role)
@@ -66,7 +69,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function logout() {
-    user.value = { name: '', surname: '', role: '', username: '', email: '', birthDate: '', profilePicture: '' }
+    user.value = { id: '', name: '', surname: '', role: '', username: '', email: '', birthDate: '', profilePicture: '' }
     token.value = ''
     localStorage.clear()
   }

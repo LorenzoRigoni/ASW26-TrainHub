@@ -14,6 +14,7 @@ import ActionCard from '../components/ActionCard.vue'
 import PanelList from '../components/HomePanelList.vue'
 import ListItem from '../components/HomeListItem.vue'
 import AIChat from '../components/AIChat.vue'
+import profileImage from '../assets/profileImage.png'
 import axios from 'axios'
 
 
@@ -180,6 +181,13 @@ const fetchData = async () => {
       ])
 
       customersList.value = clientsRes.data?.data || []
+      customersList.value.forEach((c) => {
+      if (c.profilePicture) {
+        c.profilePicture = `${API_URL}${c.profilePicture}`
+      } else {
+        c.profilePicture = profileImage
+      }
+    })
       stats.value = statsRes.data?.data || { activeClientsCount: 0, totalPrograms: 0, activeNutritionalPlans: 0, pendingPrograms: 0 }
       programsList.value = programsRes.data?.data || []
     } else if (auth.user.role === ROLES.CLIENTE) {
@@ -205,6 +213,13 @@ const fetchData = async () => {
       richiesteNutrizionista.value = nutrRequests.data.data
       nutriStats.value = statsRes.data.data
       clientiNutrizionista.value = nutrClients.data.data
+      clientiNutrizionista.value.forEach((c) => {
+      if (c.profilePicture) {
+        c.profilePicture = `${API_URL}${c.profilePicture}`
+      } else {
+        c.profilePicture = profileImage
+      }
+    })
     }
   } catch(error){
     showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
@@ -280,8 +295,8 @@ onMounted(fetchData)
                 @click="goToCustomerDetail(c.id)"
               >
                 <template #left>
-                  <div class="avatar" :style="{ background: getAvatarColor(c.name) }">
-                    {{ getInitials(c.name, c.surname) }}
+                  <div class="avatar">
+                    <img :src="c.profilePicture" alt="User profile" class="user-icon" />
                   </div>
                 </template>
                 <template #right>
@@ -559,6 +574,14 @@ onMounted(fetchData)
   margin: 0; 
   font-size: 0.75rem; 
   color: #9ca3af; 
+}
+
+.user-icon {
+  height: 50px;
+  width: auto;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10pt;
 }
 
 @media (min-width: 768px) {

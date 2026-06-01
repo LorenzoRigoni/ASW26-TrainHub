@@ -32,6 +32,7 @@ const athleteId = route.params.athleteId || ''
 const exerciseLogs = ref({})
 const currentWeekInput = ref({})
 const splitExercises = ref([])
+const splitName = ref({})
 
 const fetchData = async () => {
   loading.value = true
@@ -41,6 +42,7 @@ const fetchData = async () => {
 
     if (currentSplit && currentSplit.rows) {
       splitExercises.value = currentSplit.rows
+      splitName.value = currentSplit.name
 
       currentSplit.rows.forEach(row => {
         const exId = row.exercise._id || row.exercise
@@ -123,7 +125,7 @@ const currentSession = ref({})
             <div class="header-container">
                  <BackButton />
                 <div class="header-text">
-                    <h1>{{ currentSplitName || 'Dettaglio Allenamento' }}</h1>
+                    <h1>{{ splitName || 'Dettaglio Allenamento' }}</h1>
                     <p class="split-subtitle">  Storico allenamenti e compilazione sessione </p>
                 </div>
             </div>

@@ -40,9 +40,9 @@ const displayedUser = ref({
 
 const diaryEntries = ref([])
 
-const fetchAthleteInfo = async (id) => {
+const fetchAthleteInfo = async () => {
   try {
-    const response = await axios.get(`${API_URL}/api/users/athlete/${id}`, auth.apiConfig)
+    const response = await axios.get(`${API_URL}/api/users/athlete/${auth.user.id}`, auth.apiConfig)
     const data = response.data.data
     displayedUser.value = {
       name: data.name,
@@ -81,9 +81,7 @@ const fetchDiaryEntries = async () => {
 }
 
 onMounted(async () => {
-  if (route.params.id) {
-    await fetchAthleteInfo(route.params.id)
-  }
+  fetchAthleteInfo(route.params.id)
   fetchDiaryEntries()
 })
 

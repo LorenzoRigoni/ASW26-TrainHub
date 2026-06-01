@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { calculateDaysLeft, getErrorMessage } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
@@ -60,6 +60,18 @@ const programForm = ref({
   endDate: today
 })
 
+watch(
+  () => programForm.value.startDate,
+  (newStartDate) => {
+    if (!newStartDate) return
+
+    // The end date is one month after the start date
+    const date = new Date(newStartDate)
+    date.setMonth(date.getMonth() + 1)
+    programForm.value.endDate = date.toISOString().split('T')[0]
+  }
+)
+
 const createProgram = async () => {
   try {
     const res = await axios.post(`${API_URL}/api/training-programs/init`, {
@@ -98,11 +110,16 @@ const saveNewDeadline = async () => {
 const openProgramModal = (deadline) => {
   selectedDeadline.value = deadline
 
+  const startDate = deadline.dueDate?.split('T')[0] || today
+  const endDateObj = new Date(startDate)
+  endDateObj.setMonth(endDateObj.getMonth() + 1)
+  const endDate = endDateObj.toISOString().split('T')[0]
+
   programForm.value = {
     title: `Programma - ${deadline.athleteId?.surname || ''}`,
     sessions: 3,
-    startDate: deadline.dueDate?.split('T')[0] || today,
-    endDate: today
+    startDate: startDate,
+    endDate: endDate
   }
 
   showDeadlineModal.value = false
