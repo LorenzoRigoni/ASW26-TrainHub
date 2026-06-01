@@ -20,6 +20,7 @@ import axios from 'axios'
 const auth = useAuthStore()
 const customersList = ref([])
 const stats = ref({ activeClientsCount: 0, totalPrograms: 0, activeNutritionalPlans: 0, pendingPrograms: 0 })
+const nutriStats = ref({ activeClientsCount: 0, totalPlans: 0, activeNutritionalPlans: 0, pendingPlans: 0 })
 const programsList = ref([])
 const recentNotifications = ref([])
 const richiesteNutrizionista = ref([])
@@ -77,6 +78,41 @@ const statCardsPT = computed(() => [
     color: '#f5a623',
     bg: 'rgba(245,166,35,0.12)',
     route: '/scadenze'
+  }
+])
+
+const statCardsNutri = computed(() => [
+  {
+    label: 'Clienti Attivi',
+    value: nutriStats.value?.activeClientsCount,
+    icon: 'fa fa-users',
+    color: '#4a90d9',
+    bg: 'rgba(74,144,217,0.12)',
+    route: '/clienti'
+  },
+  {
+    label: 'Piani Creati',
+    value: nutriStats.value?.totalPlans,
+    icon: 'fa fa-list',
+    color: '#7c6af7',
+    bg: 'rgba(124,106,247,0.12)',
+    route: '/piani-alimentari'
+  },
+  {
+    label: 'Richieste Nutriz.',
+    value: nutriStats.value?.activeNutritionalPlans,
+    icon: 'fa fa-apple',
+    color: '#e05c9a',
+    bg: 'rgba(224,92,154,0.12)',
+    route: '/richieste-nutrizione'
+  },
+  {
+    label: 'In Attesa',
+    value: nutriStats.value?.pendingPlans,
+    icon: 'fa fa-clock-o',
+    color: '#f5a623',
+    bg: 'rgba(245,166,35,0.12)',
+    route: '/richieste-nutrizione'
   }
 ])
 
@@ -161,12 +197,13 @@ const fetchData = async () => {
 
       activeProgram.value = activeRes.data.data
     } else {
-      const [nutrClients, nutrRequests] = await Promise.all([
+      const [nutrClients, statsRes, nutrRequests] = await Promise.all([
         axios.get(`${API_URL}/api/users/my-clients`, auth.apiConfig),
+        axios.get(`${API_URL}/api/users/nutritionist-stats`, auth.apiConfig),
         axios.get(`${API_URL}/api/nutrition-requests`, auth.apiConfig)
       ])
       richiesteNutrizionista.value = nutrRequests.data.data
-      console.log(richiesteNutrizionista.value)
+      nutriStats.value = statsRes.data.data
       clientiNutrizionista.value = nutrClients.data.data
     }
   } catch(error){

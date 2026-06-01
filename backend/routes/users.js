@@ -5,6 +5,7 @@ const upload = require('../middleware/upload');
 const {
   getMyClients,
   getTrainerStats,
+  getNutritionistStats,
   getTrainerProgramsList,
   getAthleteDetail,
   assignTrainerToAthlete,
@@ -181,6 +182,31 @@ router.put('/:athleteId/assign-trainer', protect, authorize('trainer'), assignTr
  *         description: Nutritionist or athlete not found
  */
 router.put('/:athleteId/assign-nutritionist', protect, authorize('nutritionist'), assignNutritionistToAthlete);
+
+/**
+ * @swagger
+ * /api/users/nutritionist-stats:
+ *   get:
+ *     summary: Get the stats of the nutritionist
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Stats retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/nutritionist-stats', protect, authorize('nutritionist'), getNutritionistStats);
 
 /**
  * @swagger

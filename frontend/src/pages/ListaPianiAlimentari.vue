@@ -26,6 +26,7 @@ const planForm = ref({
   title: '',
   athleteId: '',
   notes: '',
+  pdfUrl: '',
   startDate: today,
   endDate: today
 })
@@ -35,6 +36,7 @@ const openModal = (plan) => {
     title: plan.title,
     athleteId: plan.athleteId?._id || plan.athleteId,
     notes: plan.notes || '',
+    pdfUrl: plan.pdfUrl,
     startDate: plan.startDate?.split('T')[0] || today,
     endDate: plan.endDate?.split('T')[0] || today
   }
@@ -108,7 +110,7 @@ const savePlan = async () => {
     formData.append('startDate', form.value.startDate);
     formData.append('endDate', form.value.endDate);
     formData.append('notes', form.value.notes);
-    formData.append('pdfFile', selectedFile.value); 
+    formData.append('pdfUrl', selectedFile.value); 
 
     const response = await axios.post(
       `${API_URL}/api/nutrition-plans`, 
@@ -122,7 +124,7 @@ const savePlan = async () => {
     );
 
     showModal.value = false;
-    planForm.value = { title: '', athleteId: '', notes: '', pdfFile: '', startDate: today, endDate: today };
+    planForm.value = { title: '', athleteId: '', notes: '', pdfUrl: '', startDate: today, endDate: today };
     selectedFile.value = null;
     
     showToast("Piano alimentare salvato con successo!", "success")
