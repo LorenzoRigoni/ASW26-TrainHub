@@ -128,34 +128,6 @@ const formatDate = (dateString) => {
 </template>
 
 <style scoped>
-.form-row {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
-
-.form-row label {
-  width: 120px;
-  font-weight: 600;
-  color: #333;
-}
-
-.form-row input,
-.form-row select {
-  flex: 1;
-  border: 1px solid #d8dcf0;
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-size: 0.95rem;
-}
-
-.form-row input:focus,
-.form-row select:focus {
-  outline: none;
-  border-color: #5b47c5;
-  box-shadow: 0 0 0 4px rgba(91,71,197,0.12);
-}
-
 
 .plan-subtitle {
   display: flex;

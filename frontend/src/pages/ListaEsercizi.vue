@@ -187,11 +187,11 @@ onMounted(() => {
                     </div>
 
                     <div v-if="auth.user.role === 'trainer'" class="exercise-actions" >
-                      <button class="btn-action edit" @click.stop="openEditModal(e)" title="Modifica">
+                      <button class="btn-action edit" @click.stop="openEditModal(e)" title="Modifica" aria-label="Modifica esercizio">
                         <i class="fa fa-edit"></i>
                       </button>
 
-                      <button class="btn-action delete" @click.stop="handleDelete(e._id)" title="Elimina" >
+                      <button class="btn-action delete" @click.stop="handleDelete(e._id)" title="Elimina" aria-label="Elimina esercizio" >
                         <i class="fa fa-trash"></i>
                       </button>
                     </div>
@@ -206,26 +206,26 @@ onMounted(() => {
 
     <AppModal v-model="showModal" :title="isEditing ? 'Modifica Esercizio' : 'Aggiungi Nuovo Esercizio'">
       <div class="form-group">
-        <label>Nome Esercizio*</label>
-        <input v-model="newExercise.name" required type="text" placeholder="Es: Panca Piana" />
+        <label for="exercise">Nome Esercizio*</label>
+        <input id="exercise" v-model="newExercise.name" required type="text" placeholder="Es: Panca Piana" />
       </div>
 
       <div class="form-group">
-        <label>Pattern di Movimento*</label>
-        <select v-model="newExercise.movementPattern" required>
+        <label for="pattern">Pattern di Movimento*</label>
+        <select id="pattern" v-model="newExercise.movementPattern" required>
           <option value="" disabled>Seleziona pattern</option>
           <option v-for="p in patterns" :key="p" :value="p">{{ p }}</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label>Descrizione</label>
-        <textarea v-model="newExercise.description" rows="3"></textarea>
+        <label for="description">Descrizione</label>
+        <textarea id="description" v-model="newExercise.description" rows="3"></textarea>
       </div>
 
       <div class="form-group">
-        <label>Immagine</label>
-        <input type="file" @change="handleFileUpload" accept="image/*" />
+        <label for="img">Immagine</label>
+        <input id="img" type="file" @change="handleFileUpload" accept="image/*" />
       </div>
 
       <template #actions>

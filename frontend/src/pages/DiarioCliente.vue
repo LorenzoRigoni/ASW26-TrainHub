@@ -358,21 +358,21 @@ const adherenceOptions = {
 
             <!-- DATA -->
             <div class="form-row">
-                <label>Data</label>
-                <input type="date" v-model="form.date" />
+                <label for="data">Data</label>
+                <input id="data" type="date" v-model="form.date" />
             </div>
 
             <div class="form-row">
-                <label>Attività</label>
-                <div class="radio-group">
+                <label for="activity">Attività</label>
+                <div id="activity" class="radio-group">
                     <label class="radio-card on-card"><input type="radio" value="on" v-model="form.activity" />ON</label>
                     <label class="radio-card off-card"><input type="radio" value="off" v-model="form.activity" /> OFF</label>
                 </div>
             </div>
 
             <div class="form-row">
-                <label>Aderenza</label>
-                <select v-model="form.adherence">
+                <label for="adherence">Aderenza</label>
+                <select id="adherence" v-model="form.adherence">
                     <option value="Ottima">Ottima</option>
                     <option value="Media">Media</option>
                     <option value="Sgarro">Sgarro</option>
@@ -380,8 +380,9 @@ const adherenceOptions = {
             </div>
 
             <div class="form-row">
-                <label>NEAT</label>
+                <label for="steps">NEAT</label>
                 <input
+                    id="steps"
                     type="number"
                     placeholder="Passi giornalieri"
                     v-model.number="form.steps"
@@ -390,8 +391,9 @@ const adherenceOptions = {
 
             <div class="form-column">
                 <label>Livello fame</label>
-                <div class="hunger-row">
+                <div for="hunger" class="hunger-row">
                     <input
+                        id="hunger"
                         type="range"
                         min="1"
                         max="10"
@@ -402,8 +404,9 @@ const adherenceOptions = {
             </div>
 
             <div class="form-row">
-                <label>Peso corporeo</label>
+                <label for="weight">Peso corporeo</label>
                 <input
+                    id="weight"
                     type="number"
                     placeholder="Peso corporeo"
                     v-model.number="form.weight"
@@ -411,8 +414,8 @@ const adherenceOptions = {
             </div>
 
             <div class="form-row note-row">
-                <label>Nota</label>
-                <textarea v-model="form.notes" placeholder="Aggiungi una nota"></textarea>
+                <label for="note">Nota</label>
+                <textarea id="note" v-model="form.notes" placeholder="Aggiungi una nota"></textarea>
             </div>
 
             <div class="actions">
@@ -783,6 +786,7 @@ const adherenceOptions = {
 @media (min-width: 768px) {
   .diary-header{
       display: flex;
+      justify-content: space-between;
   }
 
   .diary-table thead {
@@ -823,7 +827,7 @@ const adherenceOptions = {
   }
 
   .add-btn {
-    align-self: flex-start;
+    align-self: flex-end;
   }
 
   .modal {

@@ -169,7 +169,6 @@ onMounted(() => {
       </div>
 
       <div class= "cards">
-        <!-- Sezione info personali-->
         <ActionCard
           icon="fa fa-user"
           :clickable="false"
@@ -202,32 +201,30 @@ onMounted(() => {
                   />
               </div>
 
-              <!-- FORM -->
               <div class="profile-form">
-
                 <div class="form-group">
-                  <label>Nome</label>
-                  <input type="text" v-model="userFields.name" />
+                  <label for="name">Nome</label>
+                  <input id="name" type="text" v-model="userFields.name" />
                 </div>
 
                 <div class="form-group">
-                  <label>Cognome</label>
-                  <input type="text" v-model="userFields.surname" />
+                  <label for="surname">Cognome</label>
+                  <input id="surname" type="text" v-model="userFields.surname" />
                 </div>
 
                 <div class="form-group">
-                  <label>Username</label>
-                  <input type="email" v-model="userFields.username" />
+                  <label for="username">Username</label>
+                  <input id="username" type="text" v-model="userFields.username" />
                 </div>
 
                 <div class="form-group">
-                  <label>Email</label>
-                  <input type="email" v-model="userFields.email" />
+                  <label for="email">Email</label>
+                  <input id="email" type="email" v-model="userFields.email" />
                 </div>
 
                 <div class="form-group">
-                  <label>Ruolo</label>
-                  <input type="text" v-model="userFields.role" disabled />
+                  <label for="role">Ruolo</label>
+                  <input id="role" type="text" v-model="userFields.role" disabled />
                 </div>
               </div>
             </div>   
@@ -239,7 +236,6 @@ onMounted(() => {
           </template>
         </ActionCard>
 
-        <!-- Sezione configurazione security -->
         <ActionCard
           icon="fa fa-lock"
           :clickable="false"
@@ -255,18 +251,18 @@ onMounted(() => {
 
             <div class="form-grid">
               <div class="form-group" style="grid-column: 1 / -1;">
-                <label>Password attuale</label>
-                <input type="password" v-model="passwordFields.currentPassword" placeholder="Inserisci la password corrente per confermare" />
+                <label for="currentPassword">Password attuale</label>
+                <input id="currentPassword" type="password" v-model="passwordFields.currentPassword" placeholder="Inserisci la password corrente per confermare" />
               </div>
 
               <div class="form-group">
-                <label>Nuova password</label>
-                <input type="password" v-model="passwordFields.newPassword" />
+                <label for="newPassword">Nuova password</label>
+                <input id="newPassword" type="password" v-model="passwordFields.newPassword" />
               </div>
 
               <div class="form-group">
-                <label>Conferma password</label>
-                <input type="password" v-model="passwordFields.confirmPassword" />
+                <label for="confirmPassword">Conferma password</label>
+                <input id="confirmPassword" type="password" v-model="passwordFields.confirmPassword" />
               </div>
             </div>
             <div class="form-actions">

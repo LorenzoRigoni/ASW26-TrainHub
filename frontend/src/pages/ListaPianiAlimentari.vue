@@ -174,14 +174,14 @@ const closeModal = () => {
 
      
         <div class="form-row">
-          <label>Titolo</label>
-          <input type="text" placeholder="Nome piano" v-model="form.title"/>
+          <label for="title">Titolo</label>
+          <input id="title" type="text" placeholder="Nome piano" v-model="form.title"/>
         </div>
 
     
         <div class="form-row">
-          <label>Cliente</label>
-          <select v-model="form.athleteId">
+          <label for="client">Cliente</label>
+          <select id="client" v-model="form.athleteId">
             <option value="">Seleziona cliente</option>
             <option v-for="client in clients" :key="client.id" :value="client.id">
               {{ client.name }} {{ client.surname }}
@@ -202,18 +202,18 @@ const closeModal = () => {
 
 
         <div class="form-row">
-          <label>Data inizio</label>
-          <input type="date" v-model="form.startDate"/>
+          <label for="startDate">Data inizio</label>
+          <input id="startDate" type="date" v-model="form.startDate"/>
         </div>
 
         <div class="form-row">
-          <label>Data fine</label>
-          <input type="date" v-model="form.endDate" />
+          <label for="endDate">Data fine</label>
+          <input id="endDate" type="date" v-model="form.endDate" />
         </div>
 
         <div class="form-row full-width">
-          <label>Note</label>
-          <textarea v-model="form.notes" placeholder="Note aggiuntive per il cliente"></textarea>
+          <label for="note">Note</label>
+          <textarea id="note" v-model="form.notes" placeholder="Note aggiuntive per il cliente"></textarea>
         </div>
 
         <div class="modal-actions">

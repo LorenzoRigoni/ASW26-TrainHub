@@ -304,18 +304,20 @@ const formattedDeadlines = computed(() => {
         width="580px"
       >
         <div class="form-row">
-          <label>Nome Programma</label>
+          <label for="programName">Nome Programma</label>
 
           <input
+            id="programName"
             type="text"
             v-model="programForm.title"
           />
         </div>
 
         <div class="form-row">
-          <label>Split</label>
+          <label for="split">Split</label>
 
           <input
+            id="split"
             type="number"
             min="1"
             max="7"
@@ -324,18 +326,20 @@ const formattedDeadlines = computed(() => {
         </div>
 
         <div class="form-row">
-          <label>Data Inizio</label>
+          <label for="startDate">Data Inizio</label>
 
           <input
+            id="startDate"
             type="date"
             v-model="programForm.startDate"
           />
         </div>
 
         <div class="form-row">
-          <label>Fine Validità</label>
+          <label for="endDate">Fine Validità</label>
 
           <input
+            id="endDate"
             type="date"
             v-model="programForm.endDate"
           />
@@ -354,9 +358,10 @@ const formattedDeadlines = computed(() => {
         width="520px"
       >
         <div class="form-row">
-          <label>Titolo</label>
+          <label for="titleProgram">Titolo</label>
 
           <input
+            id="titleProgram"
             type="text"
             v-model="newDeadline.title"
             placeholder="Es: Nuova Scheda"
@@ -364,9 +369,9 @@ const formattedDeadlines = computed(() => {
         </div>
 
         <div class="form-row">
-          <label>Atleta</label>
+          <label for="athleteId">Atleta</label>
 
-          <select v-model="newDeadline.athleteId">
+          <select id="athleteId" v-model="newDeadline.athleteId">
             <option disabled value="">
               Scegli atleta...
             </option>
@@ -383,9 +388,10 @@ const formattedDeadlines = computed(() => {
         </div>
 
         <div class="form-row">
-          <label>Data</label>
+          <label for="dueDate">Data</label>
 
           <input
+            id="dueDate"
             type="date"
             v-model="newDeadline.dueDate"
             :min="today"
@@ -393,9 +399,10 @@ const formattedDeadlines = computed(() => {
         </div>
 
         <div class="form-row">
-          <label>Note</label>
+          <label for="note">Note</label>
 
           <input
+            id="note"
             type="text"
             v-model="newDeadline.notes"
             placeholder="Es: Ipertrofia"

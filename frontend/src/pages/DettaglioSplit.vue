@@ -149,39 +149,39 @@ const currentSession = ref({})
         </div>
 
         <div class="table-wrapper">
-            <div class="table-header">
-              <span>Data</span>
-              <span>Kg</span>
-              <span>Reps</span>
-            </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Kg</th>
+                <th>Reps</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(log, i) in exerciseLogs[row.exercise._id || row.exercise]" :key="i">
+                <td>{{ new Date(log.date).toLocaleDateString('it-IT') }}</td>
+                <td>{{ log.load }} kg</td>
+                <td>{{ log.reps }}</td>
+              </tr>
+            </tbody>
+          </table>
 
-            <div v-for="(log, i) in exerciseLogs[row.exercise._id || row.exercise]" :key="i" class="table-row" >
-            <span>{{new Date(log.date).toLocaleDateString('it-IT') }}</span>
-            <span>{{ log.load }} kg</span>
-            <span>{{ log.reps }}</span>
-            </div>
-
-            
-            <div  v-if="isClient" :key="'today-' + i"  class="table-row current-session" >
-              <span>{{ todayDate }}</span>
-              <input 
-                type="number" 
-                placeholder="Kg" 
-                v-model="currentWeekInput[row.exercise._id || row.exercise].load"
-                :disabled="isTrainer"
-              />
-              <input 
-                type="number" 
-                placeholder="Reps"
-                v-model="currentWeekInput[row.exercise._id || row.exercise].reps"
-                :disabled="isTrainer" 
-              />
-            </div>
+          <div v-if="isClient" class="current-session">
+            <span>{{ todayDate }}</span>
+            <input type="number" placeholder="Kg"
+              v-model="currentWeekInput[row.exercise._id || row.exercise].load"
+              :disabled="isTrainer"
+            />
+            <input type="number" placeholder="Reps"
+              v-model="currentWeekInput[row.exercise._id || row.exercise].reps"
+              :disabled="isTrainer"
+            />
+          </div>
         </div>
         </section>
 
         <div v-if="isClient" class="save-container">
-           <button class="btn-primary save-btn" @click="saveAllProgress">
+           <button class="btn-primary save-btn btn-green" @click="saveAllProgress">
                 <i class="fa fa-save"></i>
                 <span> Salva</span>
             </button>
@@ -252,34 +252,38 @@ const currentSession = ref({})
   gap: 10px;
 }
 
-.table-header {
-  display: none;
+
+table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.table-row {
+thead tr {
+  background: #eef2ff;
+}
+
+th, td {
+  padding: 14px 18px;
+  text-align: left;
+  border-top: 1px solid #edf2f7;
+  font-size: 0.95rem;
+}
+
+th {
+  font-weight: 700;
+  color: #1e1548;
+}
+
+.current-session {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  background: #f8fafc;
-  border-radius: 14px;
-  padding: 14px;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 18px;
+  background: #fff8db;
+  border-top: 1px solid #f3e5ab;
 }
 
-
-.table-row span:nth-child(1)::before {
-  content: "Data: ";
-  font-weight: 600;
-}
-
-.table-row span:nth-child(2)::before {
-  content: "Carico: ";
-  font-weight: 600;
-}
-
-.table-row span:nth-child(3)::before {
-  content: "Reps: ";
-  font-weight: 600;
-}
 
 .current-session {
   background: #fff8db;
@@ -291,23 +295,23 @@ const currentSession = ref({})
   color: #8a6d00;
 }
 
-.table-row input {
+.current-session input {
   width: 100%;
   min-height: 48px;
   border: 1px solid #d1d5db;
   border-radius: 12px;
-  padding: 12px;
+  padding: 8px;
   font-size: .95rem;
   outline: none;
   transition: .2s ease;
 }
 
-.table-row input:focus {
+.current-sessioninput:focus {
   border-color: #1e1548;
   box-shadow: 0 0 0 4px rgba(30,21,72,.08);
 }
 
-.table-row input:disabled {
+.current-session input:disabled {
   background: #f3f4f6;
 }
 
@@ -361,29 +365,23 @@ const currentSession = ref({})
   .table-header {
     display: grid;
     grid-template-columns: 1.2fr 1fr 1fr;
-
     padding: 14px 18px;
-
     font-weight: 700;
     background: #eef2ff;
     color: #1e1548;
   }
 
-  .table-row {
+  .current-session {
     display: grid;
     grid-template-columns: 1.2fr 1fr 1fr;
-
     gap: 16px;
     align-items: center;
-
-    background: transparent;
     border-radius: 0;
     padding: 16px 18px;
-
     border-top: 1px solid #edf2f7;
   }
 
-  .table-row span::before {
+  .current-session span::before {
     content: none !important;
   }
 
@@ -391,19 +389,17 @@ const currentSession = ref({})
     position: static;
     padding: 0;
     margin-top: 28px;
-
     border: none;
     background: transparent;
     backdrop-filter: none;
-
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
   }
 
   .save-btn {
-    width: auto;
+    width: 20%;
+    font-size: 12pt;
   }
-
  
 }
 </style>

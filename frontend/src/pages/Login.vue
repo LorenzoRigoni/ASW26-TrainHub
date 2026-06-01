@@ -43,13 +43,13 @@ const login = async () => {
 
             <form @submit.prevent="login" class="login-form">
                 <div class="input-group">
-                <label>Username</label>
-                <input type="text" v-model="username" />
+                <label for="username">Username</label>
+                <input id="username" type="text" v-model="username" />
                 </div>
 
                 <div class="input-group">
-                <label>Password</label>
-                <input type="password" v-model="password" />
+                <label for="password">Password</label>
+                <input id="password" type="password" v-model="password" />
                 </div>
 
                 <button type="submit" class="login-btn">Login</button>

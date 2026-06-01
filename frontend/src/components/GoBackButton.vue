@@ -6,7 +6,7 @@ const goBack = () => router.back()
 </script>
 
 <template>
-  <button class="back-btn" @click="goBack">
+  <button class="back-btn" @click="goBack" aria-label="Torna alla pagina precedente">
     <i class="fa fa-arrow-left"></i>
   </button>
 </template>

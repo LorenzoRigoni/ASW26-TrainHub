@@ -126,13 +126,13 @@ const canEditStatus = computed(() => {
                   <div class="col col-left">
 
                     <div class="form-row">
-                      <label>Titolo</label>
-                      <input type="text" v-model="form.title" :disabled="!canEditForm" />
+                      <label for="title">Titolo</label>
+                      <input id="title" type="text" v-model="form.title" :disabled="!canEditForm" />
                     </div>
 
                     <div class="form-row">
-                      <label>Cliente</label>
-                      <select v-model="form.clientId" :disabled="isEditMode || !canEditForm">
+                      <label for="clientId">Cliente</label>
+                      <select id="clientId" v-model="form.clientId" :disabled="isEditMode || !canEditForm">
                         <option value="" disabled>Seleziona cliente</option>
                         <option v-for="c in clients" :key="c.id" :value="c.id">
                           {{ c.name }} {{ c.surname }}
@@ -141,8 +141,8 @@ const canEditStatus = computed(() => {
                     </div>
 
                     <div class="form-row">
-                      <label>Obiettivo</label>
-                      <select v-model="form.goal" :disabled="!canEditForm">
+                      <label for="goal" >Obiettivo</label>
+                      <select id="goal" v-model="form.goal" :disabled="!canEditForm">
                         <option value="" disabled>Seleziona obiettivo</option>
                         <option value="Definizione">Definizione</option>
                         <option value="Mantenimento">Mantenimento</option>
@@ -151,8 +151,8 @@ const canEditStatus = computed(() => {
                     </div>
 
                     <div class="form-row">
-                      <label>Nutrizionista</label>
-                      <select v-model="form.nutritionistId" :disabled="!canEditForm">
+                      <label for="nutritionistId">Nutrizionista</label>
+                      <select id="nutritionistId" v-model="form.nutritionistId" :disabled="!canEditForm">
                         <option value="" disabled>Seleziona nutrizionista</option>
                         <option v-for="n in nutritionists" :key="n._id" :value="n._id">
                           {{ n.name }} {{ n.surname }}
@@ -161,8 +161,8 @@ const canEditStatus = computed(() => {
                     </div>
 
                     <div class="form-row" v-if="isEditMode">
-                      <label>Stato</label>
-                      <select v-model="form.status" :disabled="!canEditStatus">
+                      <label for="status">Stato</label>
+                      <select id="status" v-model="form.status" :disabled="!canEditStatus">
                         <option value="In attesa">In attesa</option>
                         <option value="In elaborazione">In elaborazione</option>
                         <option value="Completata">Completata</option>
@@ -173,20 +173,19 @@ const canEditStatus = computed(() => {
                   </div>
 
                   <div class="col col-right">
-
                     <div class="form-row">
-                      <label>Data inizio</label>
-                      <input type="date" v-model="form.startDate" :disabled="!canEditForm" />
+                      <label for="startDate">Data inizio</label>
+                      <input id="startDate" type="date" v-model="form.startDate" :disabled="!canEditForm" />
                     </div>
 
                     <div class="form-row">
-                      <label>Data fine</label>
-                      <input type="date" v-model="form.endDate" :disabled="!canEditForm" />
+                      <label for="endDate">Data fine</label>
+                      <input id="endDate" type="date" v-model="form.endDate" :disabled="!canEditForm" />
                     </div>
 
                     <div class="form-row grow">
-                      <label>Note</label>
-                      <textarea v-model="form.notes" :disabled="!canEditForm"></textarea>
+                      <label for="notes">Note</label>
+                      <textarea id="notes" v-model="form.notes" :disabled="!canEditForm"></textarea>
                     </div>
                   </div>
                 </div>
