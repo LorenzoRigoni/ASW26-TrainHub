@@ -246,7 +246,7 @@ onMounted(fetchData)
         </div>
 
         <!-- NOTIFICATION SECTION -->
-        <div v-if="recentNotifications.length > 0" class="notif-section">
+        <div v-if="recentNotifications.length > 0 && auth.user.role !== ROLES.CLIENTE" class="notif-section">
           <PanelList
             title="Nuove Notifiche"
             link-label="Vedi tutte"
@@ -380,6 +380,26 @@ onMounted(fetchData)
           </div>
 
           <div class="panels-grid">
+            <PanelList
+              v-if="recentNotifications.length > 0"
+              title="Nuove Notifiche"
+              link-label="Vedi tutte"
+              @link-click="router.push('/home/notifiche')"
+            >
+              <ListItem
+                v-for="n in recentNotifications" :key="n._id"
+                :title="n.title"
+                :subtitle="n.message"
+                @click="router.push('/home/notifiche')"
+              >
+                <template #left>
+                  <div class="icon-wrap notif-icon-wrap">
+                    <i :class="getNotifIcon(n.type)"></i>
+                  </div>
+                </template>
+              </ListItem>
+            </PanelList>
+
             <PanelList
               title="Le tue Schede"
               link-label="Vedi tutte"

@@ -12,6 +12,7 @@ import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
 import AppModal from '../components/Modal.vue'
+import AIChat from '../components/AIChat.vue'
 
 const auth = useAuthStore()
 const sidebar = useSidebarStore()
@@ -105,11 +106,11 @@ const savePlan = async () => {
 
   try {
     const formData = new FormData();
-    formData.append('title', form.value.title);
-    formData.append('athleteId', form.value.athleteId);
-    formData.append('startDate', form.value.startDate);
-    formData.append('endDate', form.value.endDate);
-    formData.append('notes', form.value.notes);
+    formData.append('title', planForm.value.title);
+    formData.append('athleteId', planForm.value.athleteId);
+    formData.append('startDate', planForm.value.startDate);
+    formData.append('endDate', planForm.value.endDate);
+    formData.append('notes', planForm.value.notes);
     formData.append('pdfUrl', selectedFile.value); 
 
     const response = await axios.post(
@@ -208,6 +209,7 @@ const handleItemClick = (plan) => {
           </button>
         </template>
       </AppModal>
+      <AIChat />
     </main>
   </div>
 </template>
@@ -341,5 +343,4 @@ const handleItemClick = (plan) => {
     padding: 28px;
   }
 }
-
 </style>

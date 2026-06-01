@@ -11,6 +11,7 @@ import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import BackButton from '../components/GoBackButton.vue'
+import AIChat from '../components/AIChat.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -189,6 +190,7 @@ const currentSession = ref({})
             </button>
         </div>
       </div>
+      <AIChat />
     </main>
   </div>
 </template>
