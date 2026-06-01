@@ -1,12 +1,6 @@
 const User = require('../models/user')
 const { handleError } = require('./controllerHelpers');
 
-/**
- * Register of the user.
- * 
- * @param {*} req 
- * @param {*} res 
- */
 exports.register = async (req, res) => {
     try {
         const { username, password, role, name, surname, dateOfBirth } = req.body;
@@ -49,13 +43,6 @@ exports.register = async (req, res) => {
     }
 };
 
-/**
- * Login of the user.
- * 
- * @param {*} req 
- * @param {*} res 
- * @returns 
- */
 exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -95,12 +82,6 @@ exports.login = async (req, res) => {
     }
 };
 
-/**
- * Get information of the user.
- * 
- * @param {*} req 
- * @param {*} res 
- */
 exports.getUserInfo = async (req, res) => {
     try {
         const loggedUser = await User.findById(req.user.id)
@@ -126,12 +107,6 @@ exports.getUserInfo = async (req, res) => {
     }
 };
 
-/**
- * Update personal info.
- * 
- * @param {*} req 
- * @param {*} res 
- */
 exports.updateProfile = async (req, res) => {
     try {
         const fieldsToUpdate = {
@@ -172,12 +147,6 @@ exports.updateProfile = async (req, res) => {
     }
 };
 
-/**
- * Update the password.
- * 
- * @param {*} req 
- * @param {*} res 
- */
 exports.updatePassword = async (req, res) => {
     try {
         const { oldPassword, newPassword } = req.body;
@@ -219,12 +188,6 @@ exports.updatePassword = async (req, res) => {
     }
 };
 
-/**
- * Logout.
- * 
- * @param {*} req 
- * @param {*} res 
- */
 exports.logout = async (req, res) => {
     res.status(200).json({
         success: true,
@@ -232,7 +195,6 @@ exports.logout = async (req, res) => {
         data: {}
     });
 };
-
 
 const sendTokenResponse = (user, statusCode, res, message) => {
     const token = user.getJwtToken(); 

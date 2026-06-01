@@ -1,4 +1,3 @@
-const WorkoutProgress = require('../models/workoutProgress');
 const BodyDiary = require('../models/bodyDiary');
 const { createNotification } = require('./notificationController');
 const { handleError, badRequest, notFound, forbidden, requiredFields, getUserResource, getUserResources } = require('./controllerHelpers');
@@ -12,114 +11,6 @@ const parseDayRange = (date) => {
 
     return { start, end };
 };
-
-exports.getMyWorkoutProgress = async (req, res) => {
-    try {
-        const data = await getUserResources(WorkoutProgress, req.user.id);
-
-        res.status(200).json({ success: true, count: data.length, data });
-    } catch (error) {
-        handleError(res, error, 'Error fetching workout progress');
-    }
-};
-
-exports.getWorkoutProgressById = async (req, res) => {
-    try {
-        const { resource, error } = await getUserResource(WorkoutProgress, req.params.id, req.user.id);
-
-        if (error === 'NOT_FOUND') return notFound(res);
-        if (error === 'FORBIDDEN') return forbidden(res);
-
-        res.status(200).json({ success: true, data: resource });
-    } catch (err) {
-        handleError(res, err, 'Error fetching workout progress');
-    }
-};
-
-exports.getWorkoutProgressByDate = async (req, res) => {
-    try {
-        const { start, end } = parseDayRange(req.params.date);
-
-        const data = await getUserResources(WorkoutProgress, req.user.id, {
-            date: { $gte: start, $lte: end }
-        });
-
-        res.status(200).json({ success: true, count: data.length, data });
-    } catch (error) {
-        handleError(res, error, 'Error fetching workout progress by date');
-    }
-};
-
-exports.createWorkoutProgress = async (req, res) => {
-    try {
-        const { programId, splitId, rowId, exerciseName, sets, notes } = req.body;
-
-        if (!requiredFields(req.body, ['programId', 'splitId', 'rowId', 'exerciseName', 'sets'])) {
-            return badRequest(res);
-        }
-
-        const workout = await WorkoutProgress.create({
-            athleteId: req.user.id,
-            programId,
-            splitId,
-            rowId,
-            exerciseName,
-            sets,
-            notes: notes || ''
-        });
-
-        await createNotification(
-            req.user.id,
-            'workout_created',
-            'Workout creato',
-            'È stato creato un nuovo workout per te.',
-            workout._id,
-            'WorkoutProgress'
-        );
-
-        res.status(201).json({ success: true, data: workout });
-    } catch (error) {
-        handleError(res, error, 'Error creating workout progress');
-    }
-};
-
-exports.updateWorkoutProgress = async (req, res) => {
-    try {
-        const { resource, error } = await getUserResource(WorkoutProgress, req.params.id, req.user.id);
-
-        if (error === 'NOT_FOUND') return notFound(res);
-        if (error === 'FORBIDDEN') return forbidden(res);
-
-        const { exerciseName, sets, notes } = req.body;
-
-        if (exerciseName) resource.exerciseName = exerciseName;
-        if (sets) resource.sets = sets;
-        if (notes !== undefined) resource.notes = notes;
-
-        await resource.save();
-
-        res.status(200).json({ success: true, data: resource });
-    } catch (error) {
-        handleError(res, error, 'Error updating workout progress');
-    }
-};
-
-exports.deleteWorkoutProgress = async (req, res) => {
-    try {
-        const { resource, error } = await getUserResource(WorkoutProgress, req.params.id, req.user.id);
-
-        if (error === 'NOT_FOUND') return notFound(res);
-        if (error === 'FORBIDDEN') return forbidden(res);
-
-        await resource.deleteOne();
-
-        res.status(200).json({ success: true, message: 'Deleted' });
-    } catch (error) {
-        handleError(res, error, 'Error deleting workout progress');
-    }
-};
-
-// ==================== Body Diary ====================
 
 exports.getMyBodyDiary = async (req, res) => {
     try {
@@ -183,7 +74,7 @@ exports.createBodyDiary = async (req, res) => {
 
         // Normalize date to 00:00:00 for the current day or provided date
         const targetDate = date ? new Date(date) : new Date();
-        targetDate.setHours(0, 0, 0, 0);
+        targetDate.setUTCHours(0, 0, 0, 0);
 
         // Check if an entry already exists for this date and athlete
         const existingEntry = await BodyDiary.findOne({

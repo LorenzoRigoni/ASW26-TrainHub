@@ -48,8 +48,14 @@ const fetchData = async () => {
       currentSplit.rows.forEach(row => {
         const exId = row.exercise._id || row.exercise
         if (!exerciseLogs.value[exId]) exerciseLogs.value[exId] = []
+        
         if (!currentWeekInput.value[exId]) {
-          currentWeekInput.value[exId] = { load: '', reps: '', notes: '' }
+          const numSets = row.sets || 3
+          const setsArray = []
+          for (let i = 0; i < numSets; i++) {
+            setsArray.push({ load: '', reps: '', notes: '' })
+          }
+          currentWeekInput.value[exId] = setsArray
         }
       })
     }
@@ -78,22 +84,45 @@ const fetchData = async () => {
 
 const saveAllProgress = async () => {
   try {
-    const savePromises = Object.keys(currentWeekInput.value).map(async (exId) => {
-      const input = currentWeekInput.value[exId]
-      if (input.load !== '' || input.reps !== '') {
-        return axios.post(`${API_URL}/api/exercise-logs/${programId}/${splitId}`, {
-          exerciseId: exId,
-          load: Number(input.load),
-          reps: Number(input.reps),
-          notes: input.notes
-        }, auth.apiConfig)
+    const savePromises = []
+
+    for (const exId of Object.keys(currentWeekInput.value)) {
+      const setsArray = currentWeekInput.value[exId]
+      const exerciseRow = splitExercises.value.find(row => (row.exercise._id || row.exercise) === exId)
+      const exerciseName = exerciseRow?.exercise?.name || "Esercizio"
+
+      for (let i = 0; i < setsArray.length; i++) {
+        const set = setsArray[i]
+        
+        if (set.load === '' || set.reps === '' || set.load === null || set.reps === null) {
+          showToast(`Compilare il carico e le reps per la Serie ${i + 1} di: ${exerciseName}`, "error")
+          return
+        }
       }
+    }
+
+    Object.keys(currentWeekInput.value).forEach((exId) => {
+      const setsArray = currentWeekInput.value[exId]
+      
+      setsArray.forEach((set, index) => {
+        const setIdentifier = `[Set ${index + 1}]`
+        const finalNotes = set.notes ? `${setIdentifier} ${set.notes}` : setIdentifier
+
+        const promise = axios.post(`${API_URL}/api/exercise-logs/${programId}/${splitId}`, {
+          exerciseId: exId,
+          load: Number(set.load),
+          reps: Number(set.reps),
+          notes: finalNotes
+        }, auth.apiConfig)
+        
+        savePromises.push(promise)
+      })
     })
 
     await Promise.all(savePromises)
     
     Object.keys(currentWeekInput.value).forEach(key => {
-      currentWeekInput.value[key] = { load: '', reps: '', notes: '' }
+      currentWeekInput.value[key] = currentWeekInput.value[key].map(() => ({ load: '', reps: '', notes: '' }))
     })
 
     showToast("Progressi salvati correttamente!", "success")
@@ -161,7 +190,7 @@ const currentSession = ref({})
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(log, i) in exerciseLogs[row.exercise._id || row.exercise]" :key="i">
+              <tr v-for="(log, i) in currentWeekInput[row.exercise._id || row.exercise]" :key="i">
                 <td>{{ new Date(log.date).toLocaleDateString('it-IT') }}</td>
                 <td>{{ log.load }} kg</td>
                 <td>{{ log.reps }}</td>

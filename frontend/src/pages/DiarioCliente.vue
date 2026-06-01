@@ -166,18 +166,16 @@ const saveEntry = async () => {
   }
 }
 
-// ultime 7 registrazioni per tabella
 const latestEntries = computed(() => {
   return [...diaryEntries.value]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 7)
+    .slice(0, 30)
 })
 
-// ultime 7 per grafici (poi diventeranno 30)
 const chartEntries = computed(() => {
   return [...diaryEntries.value]
     .sort((a, b) => new Date(a.date) - new Date(b.date))
-    .slice(-7)
+    .slice(-30)
 })
 
 const weightChartData = computed(() => ({
@@ -330,7 +328,7 @@ const adherenceOptions = {
 
               <div class="chart-card">
                 <h3>Andamento del peso</h3>
-                <p>Ultimi 7 giorni</p>
+                <p>Ultimi 30 giorni</p>
 
                 <Line
                   :data="weightChartData"
@@ -340,7 +338,7 @@ const adherenceOptions = {
 
               <div class="chart-card">
                 <h3>Aderenza piano alimentare</h3>
-                <p>Ultimi 7 giorni</p>
+                <p>Ultimi 30 giorni</p>
 
                 <Line
                   :data="adherenceChartData"
@@ -352,7 +350,7 @@ const adherenceOptions = {
           </div>
         </main>
     </div>
-    <div v-if="showModal" class="modal-overlay">
+    <div v-if="showModal && auth.user.role === ROLES.CLIENTE" class="modal-overlay">
         <div class="modal">
 
             <div class="modal-header">

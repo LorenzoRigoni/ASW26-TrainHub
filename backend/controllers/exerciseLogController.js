@@ -37,11 +37,14 @@ exports.createOrUpdateLog = async (req, res) => {
         const endOfDay = new Date();
         endOfDay.setHours(23, 59, 59, 999);
 
+        const setTag = notes.match(/^\[Set \d+\]/) ? notes.match(/^\[Set \d+\]/)[0] : '';
+
         let log = await ExerciseLog.findOne({
             athleteId: req.user.id,
             trainingProgramId: programId,
             splitId: splitId,
             exerciseId: exerciseId,
+            notes: { $regex: `^\\${setTag}` },
             date: { $gte: startOfDay, $lte: endOfDay }
         });
 

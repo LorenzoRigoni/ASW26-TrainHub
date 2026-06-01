@@ -121,12 +121,6 @@ exports.getTrainerProgramsList = async (req, res) => {
     }
 };
 
-/**
- * Assign trainer to athlete.
- * 
- * @param {*} req 
- * @param {*} res 
- */
 exports.assignTrainerToAthlete = async (req, res) => {
     try {
         const { athleteId } = req.params;
@@ -164,12 +158,6 @@ exports.assignTrainerToAthlete = async (req, res) => {
     }
 };
 
-/**
- * Assign nutritionist to athlete.
- * 
- * @param {*} req 
- * @param {*} res 
- */
 exports.assignNutritionistToAthlete = async (req, res) => {
     try {
         const { athleteId } = req.params;
@@ -255,12 +243,6 @@ exports.getNutritionistStats = async (req, res) => {
     }
 };
 
-/**
- * Get all the trainers.
- * 
- * @param {*} req 
- * @param {*} res 
- */
 exports.getAllTrainers = async (req, res) => {
     try {
         const trainers = await User.find({ role: 'trainer' })
@@ -277,12 +259,6 @@ exports.getAllTrainers = async (req, res) => {
     }
 };
 
-/**
- * Get all the nutritionists.
- * 
- * @param {*} req 
- * @param {*} res 
- */
 exports.getAllNutritionists = async (req, res) => {
     try {
         const nutritionists = await User.find({ role: 'nutritionist' })
