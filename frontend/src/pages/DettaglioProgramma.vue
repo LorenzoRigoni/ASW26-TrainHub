@@ -11,6 +11,7 @@ import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import SplitListItem from '../components/SplitListItem.vue'
+import BackButton from '../components/GoBackButton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -73,8 +74,11 @@ const goToSplit = (split, program) => {
             </div>
 
             <template v-else-if="program">
-                <div class="header-text">
-                    <h1 class="program-title">{{ program.title }}</h1>
+                <div class="header-container">
+                  <BackButton />
+                  <div class="header-text">
+                      <h1 class="program-title">{{ program.title }}</h1>
+                  </div>
                 </div>
                 
                 <div class="program-container">

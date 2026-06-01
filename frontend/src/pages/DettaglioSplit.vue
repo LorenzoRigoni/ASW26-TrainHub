@@ -10,6 +10,7 @@ import { useSidebarStore } from '../stores/sidebar.js'
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
+import BackButton from '../components/GoBackButton.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -105,9 +106,7 @@ onMounted(() => {
 
 const currentSession = ref({})
 
-const goBack = () => {
-  router.back()
-}
+
 </script>
 
 <template>
@@ -121,10 +120,8 @@ const goBack = () => {
 
       <div class="split-page">
         <div class="page-header">
-            <div class="header-left">
-                <button class="back-btn" @click="goBack">
-                    <i class="fa fa-arrow-left"></i>
-                </button>
+            <div class="header-container">
+                 <BackButton />
                 <div class="header-text">
                     <h1>{{ currentSplitName || 'Dettaglio Allenamento' }}</h1>
                     <p class="split-subtitle">  Storico allenamenti e compilazione sessione </p>
@@ -203,27 +200,6 @@ const goBack = () => {
 
 .split-page {
   width: 100%;
-}
-
-.header-left {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.back-btn {
-  width: 44px;
-  height: 44px;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  background: white;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: .2s ease;
-}
-
-.back-btn:active {
-  transform: scale(.96);
 }
 
 .split-subtitle {
@@ -428,9 +404,6 @@ const goBack = () => {
     width: auto;
   }
 
-  .back-btn:hover {
-    transform: translateX(-2px);
-    background: #f8fafc;
-  }
+ 
 }
 </style>

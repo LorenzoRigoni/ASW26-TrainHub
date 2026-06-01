@@ -13,6 +13,7 @@ import defaultAvatar from '../assets/profileImage.png'
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
+import BackButton from '../components/GoBackButton.vue'
 
 ChartJS.register(
   CategoryScale,
@@ -254,10 +255,16 @@ const adherenceOptions = {
 
 <template>
      <div id="app">
-        <Navbar @toggle-sidebar="toggleSidebar" />
-        <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
-        <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+        <Navbar @toggle-sidebar="sidebar.toggle" />
+        <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+        <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
           <div class="diary">
+            <div class="header-container">
+              <BackButton />
+              <div class="header-text">
+                <h1 class="title"> Diario</h1>
+              </div>
+            </div>
             <div class="diary-header">
               <div class="client-info">
                 <div class="avatar-wrapper">
@@ -702,7 +709,6 @@ const adherenceOptions = {
   border-radius: 28px;
   padding: 28px 34px;
   display: flow-root;
-  justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 28px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.06);

@@ -10,6 +10,7 @@ import { useSidebarStore } from '../stores/sidebar.js'
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
+import BackButton from '../components/GoBackButton.vue'
 
 
 const route = useRoute()
@@ -108,11 +109,12 @@ const publishProgram = async () => {
       <div v-if="loading" class="loader">Caricamento in corso...</div>
 
       <template v-else-if="program">
-        <div class="header-text">
-            <h1 class="title">
-              {{ program.title || 'Nessun titolo inserito' }}
-            </h1>
-          <p class="subtitle">Stai modificando la bozza per l'atleta. Ricorda di salvare prima di uscire.</p>
+        <div class="header-container">
+          <BackButton />
+          <div class="header-text">
+            <h1 class="title"> {{ program.title || 'Nessun titolo inserito' }}</h1>
+            <p class="subtitle">Stai modificando la bozza per l'atleta. Ricorda di salvare prima di uscire.</p>
+          </div>
         </div>
 
         <div v-for="split in program.splits" :key="split._id" class="split">

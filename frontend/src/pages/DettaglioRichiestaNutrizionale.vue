@@ -10,6 +10,7 @@ import { ROLES, getErrorMessage } from '../utils/utils.js'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import axios from 'axios'
+import BackButton from '../components/GoBackButton.vue'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -113,9 +114,12 @@ const canEditStatus = computed(() => {
             </div>
             
             <template v-else>
-              <div class="header-text">
-                  <h1>{{ pageTitle }}</h1>
-                  <p>Visualizza e modifica i dettagli della richiesta nutrizionale.</p>
+              <div class="header-container">
+                <BackButton />
+                <div class="header-text">
+                    <h1>{{ pageTitle }}</h1>
+                    <p>Visualizza e modifica i dettagli della richiesta nutrizionale.</p>
+                </div>
               </div>
               <div class="form-card">
                 <div class="form-grid">
