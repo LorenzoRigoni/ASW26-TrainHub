@@ -1,11 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
 import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
 import { API_URL } from '../utils/config.js'
+import { useSidebarStore } from '../stores/sidebar.js'
+
+import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
@@ -13,11 +15,7 @@ import ListItem from '../components/MainListItem.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
-const sidebarOpen = ref(true)
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
+const sidebar = useSidebarStore()
 
 const clients = ref([])
 const nutritionists = ref([])
@@ -68,14 +66,12 @@ const formatDate = (dateString) => {
 }
 
 </script>
+
 <template>
   <div id="app">
-
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen"  :role="auth.user.role"  @close="sidebarOpen = false" />
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div class="page-header">
         <div class="header-text">
           <h1>Richieste piani alimentari</h1>
@@ -132,34 +128,6 @@ const formatDate = (dateString) => {
 </template>
 
 <style scoped>
-.form-row {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
-
-.form-row label {
-  width: 120px;
-  font-weight: 600;
-  color: #333;
-}
-
-.form-row input,
-.form-row select {
-  flex: 1;
-  border: 1px solid #d8dcf0;
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-size: 0.95rem;
-}
-
-.form-row input:focus,
-.form-row select:focus {
-  outline: none;
-  border-color: #5b47c5;
-  box-shadow: 0 0 0 4px rgba(91,71,197,0.12);
-}
-
 
 .plan-subtitle {
   display: flex;

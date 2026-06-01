@@ -4,17 +4,19 @@ import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { useRoute, useRouter} from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { useSidebarStore } from '../stores/sidebar.js'
 import { API_URL } from '../utils/config.js'
-import axios from 'axios'
 
+import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import SplitListItem from '../components/SplitListItem.vue'
+import BackButton from '../components/GoBackButton.vue'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
-const sidebarOpen = ref(true)
+const sidebar = useSidebarStore()
 const program = ref(null)
 const loading = ref(true)
 
@@ -52,10 +54,6 @@ const fetchData = async () => {
 
 onMounted(fetchData)
 
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
-
 const goToSplit = (split, program) => {
   const splitIdentificator = split._id || split.splitId
   if (auth.user.role === 'trainer') {
@@ -68,17 +66,19 @@ const goToSplit = (split, program) => {
 
 <template>
     <div id="app">
-        <Navbar @toggle-sidebar="toggleSidebar" />
-        <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
-        
-        <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+        <Navbar @toggle-sidebar="sidebar.toggle" />
+        <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+        <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
             <div v-if="loading" class="loader-container">
                 <i class="fa fa-spinner fa-spin"></i> Caricamento programma...
             </div>
 
             <template v-else-if="program">
-                <div class="header-text">
-                    <h1 class="program-title">{{ program.title }}</h1>
+                <div class="header-container">
+                  <BackButton />
+                  <div class="header-text">
+                      <h1 class="program-title">{{ program.title }}</h1>
+                  </div>
                 </div>
                 
                 <div class="program-container">

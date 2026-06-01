@@ -4,11 +4,11 @@ import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore} from '../stores/auth.js'
-import axios from 'axios'
+import { useSidebarStore } from '../stores/sidebar.js'
 import { API_URL } from '../utils/config.js'
 
 import profileImage from '../assets/profileImage.png'
-
+import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
@@ -16,22 +16,16 @@ import ListItem from '../components/MainListItem.vue'
 import ActionCard from '../components/ActionCard.vue'
 
 const auth = useAuthStore()
-const sidebarOpen = ref(true)
+const sidebar = useSidebarStore()
 const loading = ref(false)
 const fileInput = ref(null)
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
-
 const showModal = ref(false)
-
 const today = new Date().toISOString().split('T')[0]
-
 const router = useRouter()
 const emit = defineEmits(['apri-richiesta'])
-
 const previewImage = ref(profileImage)
 const selectedFile = ref(null)
+const passLoading = ref(false)
 
 const userFields = ref({
   name: '',
@@ -46,7 +40,6 @@ const passwordFields = ref({
   newPassword: '',
   confirmPassword: ''
 })
-const passLoading = ref(false)
 
 const fetchUserData = async () => {
   try {
@@ -165,12 +158,9 @@ onMounted(() => {
 
 <template>
   <div id="app">
-
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen"  :role="auth.user.role" @close="sidebarOpen = false" />
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div class="header">
         <div class="header-text">
            <h1>Impostazioni</h1>
@@ -179,7 +169,6 @@ onMounted(() => {
       </div>
 
       <div class= "cards">
-        <!-- Sezione info personali-->
         <ActionCard
           icon="fa fa-user"
           :clickable="false"
@@ -199,7 +188,7 @@ onMounted(() => {
 
                 <img :src="previewImage" class="avatar" style="cursor: pointer;" @click="triggerFileSelect" />
 
-                  <button class="secondary-btn" @click="triggerFileSelect">
+                  <button class="secondary-button" @click="triggerFileSelect">
                     Cambia foto
                   </button>
 
@@ -212,32 +201,30 @@ onMounted(() => {
                   />
               </div>
 
-              <!-- FORM -->
               <div class="profile-form">
-
                 <div class="form-group">
-                  <label>Nome</label>
-                  <input type="text" v-model="userFields.name" />
+                  <label for="name">Nome</label>
+                  <input id="name" type="text" v-model="userFields.name" />
                 </div>
 
                 <div class="form-group">
-                  <label>Cognome</label>
-                  <input type="text" v-model="userFields.surname" />
+                  <label for="surname">Cognome</label>
+                  <input id="surname" type="text" v-model="userFields.surname" />
                 </div>
 
                 <div class="form-group">
-                  <label>Username</label>
-                  <input type="email" v-model="userFields.username" />
+                  <label for="username">Username</label>
+                  <input id="username" type="text" v-model="userFields.username" />
                 </div>
 
                 <div class="form-group">
-                  <label>Email</label>
-                  <input type="email" v-model="userFields.email" />
+                  <label for="email">Email</label>
+                  <input id="email" type="email" v-model="userFields.email" />
                 </div>
 
                 <div class="form-group">
-                  <label>Ruolo</label>
-                  <input type="text" v-model="userFields.role" disabled />
+                  <label for="role">Ruolo</label>
+                  <input id="role" type="text" v-model="userFields.role" disabled />
                 </div>
               </div>
             </div>   
@@ -249,7 +236,6 @@ onMounted(() => {
           </template>
         </ActionCard>
 
-        <!-- Sezione configurazione security -->
         <ActionCard
           icon="fa fa-lock"
           :clickable="false"
@@ -265,18 +251,18 @@ onMounted(() => {
 
             <div class="form-grid">
               <div class="form-group" style="grid-column: 1 / -1;">
-                <label>Password attuale</label>
-                <input type="password" v-model="passwordFields.currentPassword" placeholder="Inserisci la password corrente per confermare" />
+                <label for="currentPassword">Password attuale</label>
+                <input id="currentPassword" type="password" v-model="passwordFields.currentPassword" placeholder="Inserisci la password corrente per confermare" />
               </div>
 
               <div class="form-group">
-                <label>Nuova password</label>
-                <input type="password" v-model="passwordFields.newPassword" />
+                <label for="newPassword">Nuova password</label>
+                <input id="newPassword" type="password" v-model="passwordFields.newPassword" />
               </div>
 
               <div class="form-group">
-                <label>Conferma password</label>
-                <input type="password" v-model="passwordFields.confirmPassword" />
+                <label for="confirmPassword">Conferma password</label>
+                <input id="confirmPassword" type="password" v-model="passwordFields.confirmPassword" />
               </div>
             </div>
             <div class="form-actions">
@@ -298,7 +284,6 @@ onMounted(() => {
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 15px;
-  margin-top: 15px;
   gap: 1rem;
   flex-wrap: wrap;
   padding: 0 5px 0 5px;
@@ -319,7 +304,6 @@ onMounted(() => {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
   margin-bottom:  15pt;
 }
 
@@ -336,6 +320,7 @@ onMounted(() => {
   padding: 10pt;
   font-size: 0.95rem;
   background: white;
+  width: 90%;
 }
 
 .form-group input:focus {
@@ -364,7 +349,7 @@ onMounted(() => {
 }
 
 .profile-layout {
-  display: flex;
+  display: flow-root;
   align-items: flex-start;
   margin-top: 2rem;
 }
@@ -377,8 +362,8 @@ onMounted(() => {
 }
 
 .avatar {
-  width: 170px;
-  height: 170px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   object-fit: cover;
   border: 5px solid white;
@@ -389,28 +374,27 @@ onMounted(() => {
 }
 
 .profile-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem 1.5rem; 
   width: 100%;
+  display: flow-root;
 }
 
 
-@media (max-width: 768px) {
+@media (min-width: 768px) {
 
   .profile-layout {
-    flex-direction: column;
-    align-items: center;
+    display: flex;
+    align-items: flex-start;
   }
 
   .profile-form {
-    width: 100%;
-    display: flow-root;
+     display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1.5rem; 
   }
 
   .avatar {
-    width: 140px;
-    height: 140px;
+    width: 170px;
+    height: 170px;
   }
 }
 </style>

@@ -4,6 +4,8 @@ import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
 import { getErrorMessage } from '../utils/utils.js'
 import { API_URL } from '../utils/config.js'
+import { useSidebarStore } from '../stores/sidebar.js' 
+
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -11,13 +13,9 @@ import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
 
 const auth = useAuthStore()
-const sidebarOpen = ref(true)
+const sidebar = useSidebarStore()
 const notifications = ref([])
 const loading = ref(true)
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
 
 const getNotificationDetails = (type) => {
   switch (type) {
@@ -86,9 +84,9 @@ const hideNotification = async (notification) => {
 
 <template>
   <div id="app">
-    <Navbar @toggle-sidebar="toggleSidebar" />
-    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role"  @close="sidebarOpen = false"/>
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div class="page-header">
         <div class="header-text">
           <h1>Notifiche</h1>
@@ -143,7 +141,6 @@ const hideNotification = async (notification) => {
         <p>Non hai ancora nessuna notifica.</p>
       </div>
     </main>
-    <Footer />
   </div>
 </template>
 

@@ -2,21 +2,24 @@
 import { ref, onMounted, watch } from 'vue'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
-import axios from 'axios'
 import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { API_URL } from '../utils/config.js'
+import { useSidebarStore } from '../stores/sidebar.js'
+
+import axios from 'axios'
 import MainList from '../components/MainList.vue'
 import MainListItem from '../components/MainListItem.vue'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
+import AppModal from '../components/Modal.vue'
 
 const auth = useAuthStore()
+const sidebar = useSidebarStore()
+
 const exercises = ref([])
 const loading = ref(true)
-const sidebarOpen = ref(true)
 const selectedPattern = ref('')
 const showModal = ref(false)
-
 const isEditing = ref(false)
 const currentExerciseId = ref(null)
 
@@ -32,10 +35,6 @@ const patterns = [
   'Spinta verticale', 'Accosciata', 'Estensione anca', 
   'Complementare tirata', 'Complementare spinta'
 ]
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
 
 const handleFileUpload = (e) => {
   newExercise.value.image = e.target.files[0]
@@ -133,11 +132,9 @@ onMounted(() => {
 
 <template>
   <div id="app">
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div class="lista-esercizi">
         <div class="header-container">
           <div class="header-text">
@@ -190,11 +187,11 @@ onMounted(() => {
                     </div>
 
                     <div v-if="auth.user.role === 'trainer'" class="exercise-actions" >
-                      <button class="btn-action edit" @click.stop="openEditModal(e)" title="Modifica">
+                      <button class="btn-action edit" @click.stop="openEditModal(e)" title="Modifica" aria-label="Modifica esercizio">
                         <i class="fa fa-edit"></i>
                       </button>
 
-                      <button class="btn-action delete" @click.stop="handleDelete(e._id)" title="Elimina" >
+                      <button class="btn-action delete" @click.stop="handleDelete(e._id)" title="Elimina" aria-label="Elimina esercizio" >
                         <i class="fa fa-trash"></i>
                       </button>
                     </div>
@@ -207,40 +204,36 @@ onMounted(() => {
       </div>
     </main>
 
-    <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
-      <div class="modal-content">
-        <h2>{{ isEditing ? 'Modifica Esercizio' : 'Aggiungi Nuovo Esercizio' }}</h2>
-        <form @submit.prevent="handleSubmit">
-          <div class="form-group">
-            <label>Nome Esercizio*</label>
-            <input v-model="newExercise.name" required type="text" placeholder="Es: Panca Piana">
-          </div>
-
-          <div class="form-group">
-            <label>Pattern di Movimento*</label>
-            <select v-model="newExercise.movementPattern" required>
-              <option value="" disabled>Seleziona pattern</option>
-              <option v-for="p in patterns" :key="p" :value="p">{{ p }}</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Descrizione</label>
-            <textarea v-model="newExercise.description" rows="3"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label>Immagine</label>
-            <input type="file" @change="handleFileUpload" accept="image/*">
-          </div>
-
-          <div class="modal-actions">
-            <button type="button" @click="showModal = false" class="btn-primary btn-red"><i class="fa fa-close" aria-hidden="true"></i>Annulla</button>
-            <button type="submit" class="btn-primary"><i class="fa fa-check" aria-hidden="true"></i>Salva Esercizio</button>
-          </div>
-        </form>
+    <AppModal v-model="showModal" :title="isEditing ? 'Modifica Esercizio' : 'Aggiungi Nuovo Esercizio'">
+      <div class="form-group">
+        <label for="exercise">Nome Esercizio*</label>
+        <input id="exercise" v-model="newExercise.name" required type="text" placeholder="Es: Panca Piana" />
       </div>
-    </div>
+
+      <div class="form-group">
+        <label for="pattern">Pattern di Movimento*</label>
+        <select id="pattern" v-model="newExercise.movementPattern" required>
+          <option value="" disabled>Seleziona pattern</option>
+          <option v-for="p in patterns" :key="p" :value="p">{{ p }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Descrizione</label>
+        <textarea id="description" v-model="newExercise.description" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="img">Immagine</label>
+        <input id="img" type="file" @change="handleFileUpload" accept="image/*" />
+      </div>
+
+      <template #actions>
+        <button class="btn-primary btn-green" @click="handleSubmit">
+          <i class="fa fa-check"></i> Salva Esercizio
+        </button>
+      </template>
+    </AppModal>
   </div>
 </template>
 
@@ -248,14 +241,12 @@ onMounted(() => {
 
 .exercise-row {
   display: flex;
-  align-items: flex-start;
-  gap: 1.5rem;
-  margin-top: 12px;
+  margin-top: 5px;
   width: 100%;
 }
 
 .exercise-content {
-  display: flex;
+  display: flow-root;
   gap: 1rem;
   align-items: flex-start;
   width: 100%;
@@ -328,23 +319,6 @@ onMounted(() => {
   font-weight: 600;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.modal-content {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-}
 
 .form-group {
   margin-bottom: 1rem;
@@ -361,13 +335,6 @@ onMounted(() => {
   padding: 0.6rem;
   border: 1px solid #ccc;
   border-radius: 6px;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1.5rem;
 }
 
 .btn-action {
@@ -407,4 +374,14 @@ onMounted(() => {
   margin-top: 0.3rem;
 }
 
+.actions{
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .exercise-content {
+    display: flex;
+  }
+
+}
 </style>

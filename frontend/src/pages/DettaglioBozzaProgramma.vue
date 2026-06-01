@@ -1,29 +1,27 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { ROLES, getErrorMessage } from '../utils/utils.js'
+import { ref, onMounted } from 'vue'
+import { getErrorMessage } from '../utils/utils.js'
 import { useRouter, useRoute } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
 import { API_URL } from '../utils/config.js'
+import { useSidebarStore } from '../stores/sidebar.js'
 
 import axios from 'axios'
-
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
-
-import MainList from '../components/MainList.vue'
-import ListItem from '../components/MainListItem.vue'
+import BackButton from '../components/GoBackButton.vue'
 
 
 const route = useRoute()
 const router = useRouter()
 
 const auth = useAuthStore()
+const sidebar = useSidebarStore()
 
 const program = ref(null)
 const exercisesDb = ref([])
 const loading = ref(true)
-const sidebarOpen = ref(true)
 
 const fetchData = async () => {
   try {
@@ -102,32 +100,29 @@ const publishProgram = async () => {
   }
 }
 
-const toggleSidebar = () => { 
-  sidebarOpen.value = !sidebarOpen.value 
-}
-
 </script>
 <template>
   <div id="app">
-    <Navbar @toggle-sidebar="toggleSidebar" />
-    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div v-if="loading" class="loader">Caricamento in corso...</div>
 
       <template v-else-if="program">
-        <div class="header-text">
-            <h1 class="title">
-              {{ program.title || 'Nessun titolo inserito' }}
-            </h1>
-          <p class="subtitle">Stai modificando la bozza per l'atleta. Ricorda di salvare prima di uscire.</p>
+        <div class="header-container">
+          <BackButton />
+          <div class="header-text">
+            <h1 class="title"> {{ program.title || 'Nessun titolo inserito' }}</h1>
+            <p class="subtitle">Stai modificando la bozza per l'atleta. Ricorda di salvare prima di uscire.</p>
+          </div>
         </div>
 
         <div v-for="split in program.splits" :key="split._id" class="split">
           <div class="split-header">
             <div class="input-group" style="flex: 1; max-width: 250px;">
-              <label>Nome Split</label>
+              <label :for="`split-${split._id}`">Nome Split</label>
               <input 
+                :id="`split-${split._id}`"
                 v-model="split.name" 
                 placeholder="Es. Split A / Upper" 
                 style="font-size: 14pt; font-weight: bold; height: 40px; background: #fff; border-radius: 10px;"
@@ -141,8 +136,8 @@ const toggleSidebar = () => {
 
           <div v-for="(row, index) in split.rows" :key="index" class="exercise-row">
             <div class="input-group exercise-select">
-              <label>Esercizio</label>
-              <select v-model="row.exercise">
+              <label :for="`exercise-${split._id}-${index}`">Esercizio</label>
+              <select :id="`exercise-${split._id}-${index}`" v-model="row.exercise">
                 <option value="" disabled>Scegli...</option>
                 <option v-for="ex in exercisesDb" :key="ex._id" :value="ex._id">
                   {{ ex.name }} ({{ ex.movementPattern }})
@@ -151,26 +146,26 @@ const toggleSidebar = () => {
             </div>
 
             <div class="input-group technique-field">
-              <label>Tecnica</label>
-              <input v-model="row.technique" placeholder="es. Drop set" />
+              <label :for="`technique-${split._id}-${index}`">Tecnica</label>
+              <input :id="`technique-${split._id}-${index}`" v-model="row.technique" placeholder="es. Drop set" />
             </div>
 
             <div class="input-group small-input">
-              <label>Serie</label>
-              <input type="number" v-model.number="row.sets" />
+              <label :for="`serie-${split._id}-${index}`">Serie</label>
+              <input :id="`serie-${split._id}-${index}`" type="number" v-model.number="row.sets" />
             </div>
 
             <div class="input-group small-input">
-              <label>Rep</label>
-              <input type="number" v-model.number="row.reps" />
+              <label :for="`rep-${split._id}-${index}`">Rep</label>
+              <input :id="`rep-${split._id}-${index}`" type="number" v-model.number="row.reps" />
             </div>
 
             <div class="input-group small-input">
-              <label>Rest (s)</label>
-              <input type="number" v-model.number="row.rest" />
+              <label :for="`rest-${split._id}-${index}`">Rest (s)</label>
+              <input :id="`rest-${split._id}-${index}`" type="number" v-model.number="row.rest" />
             </div>
 
-            <button @click="removeExercise(split, index)" class="delete-button">
+            <button @click="removeExercise(split, index)" class="delete-button" aria-label="Elimina esercizio">
               <i class="fa fa-trash-o"></i>
             </button>
           </div>

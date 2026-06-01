@@ -3,8 +3,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { getErrorMessage } from '../utils/utils.js'
-import axios from 'axios'
 import { API_URL } from '../utils/config.js'
+import axios from 'axios'
 
 const username = ref('')
 const password = ref('')
@@ -43,13 +43,13 @@ const login = async () => {
 
             <form @submit.prevent="login" class="login-form">
                 <div class="input-group">
-                <label>Username</label>
-                <input type="text" v-model="username" />
+                <label for="username">Username</label>
+                <input id="username" type="text" v-model="username" />
                 </div>
 
                 <div class="input-group">
-                <label>Password</label>
-                <input type="password" v-model="password" />
+                <label for="password">Password</label>
+                <input id="password" type="password" v-model="password" />
                 </div>
 
                 <button type="submit" class="login-btn">Login</button>
@@ -63,32 +63,26 @@ const login = async () => {
 </template>
 
 <style scoped>
-
 .login-page {
   height: 100vh;
   background: #1e1548; 
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: 'Century Gothic', 'Century Gothic', Futura, sans-serif;
 }
-
 
 .login-card {
   background: #d9d9d9;
   padding: 40px 50px;
   border-radius: 15px;
-  width: 350px;
   text-align: center;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
-
 
 .logo img {
   width: 250px;
   margin-bottom: 25px;
 }
-
 
 .login-form {
   display: flex;
@@ -145,5 +139,11 @@ const login = async () => {
   color: red;
   margin-top: 10px;
   font-size: 13px;
+}
+
+@media (min-width: 768px) {
+  .login-card {
+  width: 40%;
+  }
 }
 </style>

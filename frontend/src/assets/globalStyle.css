@@ -1,20 +1,35 @@
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  font-family: 'Century Gothic', 'Century Gothic', Futura, sans-serif;
+}
+
 .main-content {
   margin-top: 60px;
-  padding: 16px;
-  padding-bottom: 50px;
+  padding: 10px;
   min-height: calc(100vh - 60px);
   background: #f4f6f9;
   transition: margin-left .3s ease;
 }
 
 
-@media (min-width: 769px) {
+@media (min-width: 768px) {
   .main-content {
-    padding: 24px;
+    padding: 14px;
   }
 
   .main-content.sidebar-open {
     margin-left: 280px;
+  }
+
+  .actions{
+    display: flex;
+    justify-content: flex-end;
   }
 }
 
@@ -134,11 +149,15 @@
 
 .actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
   gap: 14px;
   margin-top: 32px;
   flex-wrap: wrap;
+}
+
+.actions button {
+  justify-content: center;
 }
 
 .avatar {
@@ -177,15 +196,11 @@
 }
 
 
-
-
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+.header-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
 }
 
-html, body {
-  overflow-x: hidden;
-  font-family: 'Century Gothic', 'Century Gothic', Futura, sans-serif;
-}
+
+

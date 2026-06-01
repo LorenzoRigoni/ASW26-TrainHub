@@ -1,9 +1,10 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { calculateDaysLeft, getErrorMessage } from '../utils/utils.js'
 import { useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { useSidebarStore } from '../stores/sidebar.js'
 import { API_URL } from '../utils/config.js'
 
 import axios from 'axios'
@@ -16,7 +17,7 @@ import AppModal from '../components/Modal.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
-const sidebarOpen = ref(true)
+const sidebar = useSidebarStore()
 const showModal = ref(false)
 const loading = ref(true)
 const deadlines = ref([])
@@ -59,6 +60,18 @@ const programForm = ref({
   endDate: today
 })
 
+watch(
+  () => programForm.value.startDate,
+  (newStartDate) => {
+    if (!newStartDate) return
+
+    // The end date is one month after the start date
+    const date = new Date(newStartDate)
+    date.setMonth(date.getMonth() + 1)
+    programForm.value.endDate = date.toISOString().split('T')[0]
+  }
+)
+
 const createProgram = async () => {
   try {
     const res = await axios.post(`${API_URL}/api/training-programs/init`, {
@@ -94,18 +107,19 @@ const saveNewDeadline = async () => {
   }
 }
 
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
-
 const openProgramModal = (deadline) => {
   selectedDeadline.value = deadline
+
+  const startDate = deadline.dueDate?.split('T')[0] || today
+  const endDateObj = new Date(startDate)
+  endDateObj.setMonth(endDateObj.getMonth() + 1)
+  const endDate = endDateObj.toISOString().split('T')[0]
 
   programForm.value = {
     title: `Programma - ${deadline.athleteId?.surname || ''}`,
     sessions: 3,
-    startDate: deadline.dueDate?.split('T')[0] || today,
-    endDate: today
+    startDate: startDate,
+    endDate: endDate
   }
 
   showDeadlineModal.value = false
@@ -194,11 +208,9 @@ const formattedDeadlines = computed(() => {
 </script>
 <template>
   <div id="app">
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div class="lista-scadenze">
         <div class="page-header">
           <div class="header-text">
@@ -242,7 +254,7 @@ const formattedDeadlines = computed(() => {
 
       <AppModal
         v-model="showDeadlineModal"
-        title="Dettaglio e Modifica Scadenza"
+        title="Modifica Scadenza"
         @close="showDeadlineModal = false"
         width="650px"
       >
@@ -291,12 +303,7 @@ const formattedDeadlines = computed(() => {
         </div>
 
         <template #actions>
-          <button class="btn-primary btn-red"  @click="showDeadlineModal = false">
-            <i class="fa fa-close"></i>
-            Chiudi
-          </button>
-
-          <button class="btn-primary"  @click="saveDeadlineChanges">
+          <button class="btn-primary btn-green"  @click="saveDeadlineChanges">
             <i class="fa fa-save"></i>
             Salva Modifiche
           </button>
@@ -314,18 +321,20 @@ const formattedDeadlines = computed(() => {
         width="580px"
       >
         <div class="form-row">
-          <label>Nome Programma</label>
+          <label for="programName">Nome Programma</label>
 
           <input
+            id="programName"
             type="text"
             v-model="programForm.title"
           />
         </div>
 
         <div class="form-row">
-          <label>Split</label>
+          <label for="split">Split</label>
 
           <input
+            id="split"
             type="number"
             min="1"
             max="7"
@@ -334,35 +343,27 @@ const formattedDeadlines = computed(() => {
         </div>
 
         <div class="form-row">
-          <label>Data Inizio</label>
+          <label for="startDate">Data Inizio</label>
 
           <input
+            id="startDate"
             type="date"
             v-model="programForm.startDate"
           />
         </div>
 
         <div class="form-row">
-          <label>Fine Validità</label>
+          <label for="endDate">Fine Validità</label>
 
           <input
+            id="endDate"
             type="date"
             v-model="programForm.endDate"
           />
         </div>
 
         <template #actions>
-          <button
-            class="btn-primary btn-red"
-            @click="showProgramModal = false"
-          >
-            Annulla
-          </button>
-
-          <button
-            class="btn-primary"
-            @click="createProgram"
-          >
+          <button class="btn-primary"  @click="createProgram">
             Crea Programma
           </button>
         </template>
@@ -374,9 +375,10 @@ const formattedDeadlines = computed(() => {
         width="520px"
       >
         <div class="form-row">
-          <label>Titolo</label>
+          <label for="titleProgram">Titolo</label>
 
           <input
+            id="titleProgram"
             type="text"
             v-model="newDeadline.title"
             placeholder="Es: Nuova Scheda"
@@ -384,9 +386,9 @@ const formattedDeadlines = computed(() => {
         </div>
 
         <div class="form-row">
-          <label>Atleta</label>
+          <label for="athleteId">Atleta</label>
 
-          <select v-model="newDeadline.athleteId">
+          <select id="athleteId" v-model="newDeadline.athleteId">
             <option disabled value="">
               Scegli atleta...
             </option>
@@ -403,9 +405,10 @@ const formattedDeadlines = computed(() => {
         </div>
 
         <div class="form-row">
-          <label>Data</label>
+          <label for="dueDate">Data</label>
 
           <input
+            id="dueDate"
             type="date"
             v-model="newDeadline.dueDate"
             :min="today"
@@ -413,9 +416,10 @@ const formattedDeadlines = computed(() => {
         </div>
 
         <div class="form-row">
-          <label>Note</label>
+          <label for="note">Note</label>
 
           <input
+            id="note"
             type="text"
             v-model="newDeadline.notes"
             placeholder="Es: Ipertrofia"
@@ -423,17 +427,8 @@ const formattedDeadlines = computed(() => {
         </div>
 
         <template #actions>
-          <button
-            class="btn-primary btn-red"
-            @click="showModal = false"
-          >
-            Annulla
-          </button>
-
-          <button
-            class="btn-primary"
-            @click="saveNewDeadline"
-          >
+          <button class="btn-primary btn-green"  @click="saveNewDeadline">
+            <i class="fa fa-save"></i>
             Salva Scadenza
           </button>
         </template>
@@ -523,4 +518,6 @@ const formattedDeadlines = computed(() => {
   border-color: #5b47c5;
   box-shadow: 0 0 0 4px rgba(91, 71, 197, 0.12);
 }
+
+
 </style>

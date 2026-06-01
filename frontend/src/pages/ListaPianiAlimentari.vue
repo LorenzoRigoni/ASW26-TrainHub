@@ -4,34 +4,44 @@ import axios from 'axios'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
 import { API_URL } from '../utils/config.js'
-import { getErrorMessage } from '../utils/utils.js'
+import { ROLES, getErrorMessage } from '../utils/utils.js'
+import { useSidebarStore } from '../stores/sidebar.js'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
 import MainList from '../components/MainList.vue'
 import ListItem from '../components/MainListItem.vue'
+import AppModal from '../components/Modal.vue'
 
 const auth = useAuthStore()
-const sidebarOpen = ref(true)
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
+const sidebar = useSidebarStore()
 
 const nutritionPlans = ref([])
 const clients = ref([])
 const showModal = ref(false)
-
 const today = new Date().toISOString().split('T')[0]
+const selectedFile = ref(null)
 
-const form = ref({
+const planForm = ref({
   title: '',
   athleteId: '',
   notes: '',
+  pdfUrl: '',
   startDate: today,
   endDate: today
 })
 
-const selectedFile = ref(null)
+const openModal = (plan) => {
+  planForm.value = {
+    title: plan.title,
+    athleteId: plan.athleteId?._id || plan.athleteId,
+    notes: plan.notes || '',
+    pdfUrl: plan.pdfUrl,
+    startDate: plan.startDate?.split('T')[0] || today,
+    endDate: plan.endDate?.split('T')[0] || today
+  }
+  showModal.value = true
+}
 
 const handleFileChange = (event) => {
   selectedFile.value = event.target.files[0]
@@ -100,7 +110,7 @@ const savePlan = async () => {
     formData.append('startDate', form.value.startDate);
     formData.append('endDate', form.value.endDate);
     formData.append('notes', form.value.notes);
-    formData.append('pdfFile', selectedFile.value); 
+    formData.append('pdfUrl', selectedFile.value); 
 
     const response = await axios.post(
       `${API_URL}/api/nutrition-plans`, 
@@ -114,7 +124,7 @@ const savePlan = async () => {
     );
 
     showModal.value = false;
-    form.value = { title: '', athleteId: '', notes: '', pdfFile: '', startDate: today, endDate: today };
+    planForm.value = { title: '', athleteId: '', notes: '', pdfUrl: '', startDate: today, endDate: today };
     selectedFile.value = null;
     
     showToast("Piano alimentare salvato con successo!", "success")
@@ -129,30 +139,23 @@ const downloadPdf = (plan) => {
   window.open(fileUrl, '_blank')
 }
 
-const openModal = () => {
-  showModal.value = true
-}
-
-const closeModal = () => {
-  showModal.value = false
+const handleItemClick = (plan) => {
+  if (auth.user.role === ROLES.NUTRIZIONISTA) {
+    openModal(plan)
+  } else {
+    downloadPdf(plan)
+  }
 }
 </script>
 <template>
   <div id="app">
-
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen"  :role="auth.user.role"  @close="sidebarOpen = false"/>
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div class="page-header">
         <div class="header-text">
           <h1>Piani alimentari</h1>
         </div>
-        <button class="btn-primary" @click="openModal" v-if="auth.user.role === 'nutritionist'">
-          <i class="fa fa-plus"></i>
-          Carica piano alimentare
-        </button>
       </div>
 
       <MainList>
@@ -164,69 +167,48 @@ const closeModal = () => {
             ? `${plan.athleteId?.name} ${plan.athleteId?.surname} - Periodo dal ${formatDate(plan.startDate)} al ${formatDate(plan.endDate)}` 
             : `Dott. ${plan.nutritionistId?.name} ${plan.nutritionistId?.surname} - Periodo dal ${formatDate(plan.startDate)} al ${formatDate(plan.endDate)}`"
           :status="calculateStatus(plan.startDate, plan.endDate).text"
-          @click="downloadPdf(plan)"
+          @click="handleItemClick(plan)"
           style="cursor: pointer;"
         >
         </ListItem>
       </MainList>
-    </main>
 
-    <div v-if="showModal" class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header">
-          <h2>Carica piano alimentare</h2>
-        </div>
-
-     
-        <div class="form-row">
-          <label>Titolo</label>
-          <input type="text" placeholder="Nome piano" v-model="form.title"/>
-        </div>
-
-    
-        <div class="form-row">
-          <label>Cliente</label>
-          <select v-model="form.athleteId">
-            <option value="">Seleziona cliente</option>
-            <option v-for="client in clients" :key="client.id" :value="client.id">
-              {{ client.name }} {{ client.surname }}
-            </option>
-          </select>
-        </div>
-
-        <div class="form-row full-width">
-          <label for="pdf-file">Allega PDF del Piano</label>
-          <input 
-            type="file" 
-            id="pdfFile" 
-            accept="application/pdf" 
-            @change="handleFileChange" 
-            required
-          />
-        </div>
-
-
-        <div class="form-row">
-          <label>Data inizio</label>
-          <input type="date" v-model="form.startDate"/>
-        </div>
-
-        <div class="form-row">
-          <label>Data fine</label>
-          <input type="date" v-model="form.endDate" />
-        </div>
-
-        <div class="form-row full-width">
-          <label>Note</label>
-          <textarea v-model="form.notes" placeholder="Note aggiuntive per il cliente"></textarea>
-        </div>
-
-        <div class="modal-actions">
-          <button class="btn-primary btn-red" @click="closeModal">Annulla</button>
-          <button class="btn-primary" @click="savePlan">Crea piano</button>
-        </div>
+      <div v-if="nutritionPlans.length === 0" class="empty-state">
+          <i class="fa fa-folder-open-o"></i>
+          <p>Nessun piano trovato.</p>
       </div>
-    </div>
+
+      <AppModal v-model="showModal" title="Piano alimentare">
+        <div class="form-row">
+          <label for="plan-title">Titolo</label>
+          <input id="plan-title" type="text" v-model="planForm.title" />
+        </div>
+
+        <div class="form-row">
+          <label for="plan-startDate">Data inizio</label>
+          <input id="plan-startDate" type="date" v-model="planForm.startDate" />
+        </div>
+
+        <div class="form-row">
+          <label for="plan-endDate">Data fine</label>
+          <input id="plan-endDate" type="date" v-model="planForm.endDate" />
+        </div>
+
+        <div class="form-row">
+          <label for="plan-notes">Note</label>
+          <textarea id="plan-notes" v-model="planForm.notes"></textarea>
+        </div>
+
+        <template #actions>
+          <button class="btn-primary btn-red" @click="showModal = false">
+            <i class="fa fa-close"></i> Chiudi
+          </button>
+          <button class="btn-primary" @click="downloadPdf(planForm)">
+            <i class="fa fa-download"></i> Scarica PDF
+          </button>
+        </template>
+      </AppModal>
+    </main>
   </div>
 </template>
 
@@ -245,7 +227,7 @@ const closeModal = () => {
 
 .modal {
   width: 100%;
-  max-width: 520px;
+  max-width: 100%;
   background: white;
   border-radius: 20px;
   padding: 28px;
@@ -261,13 +243,14 @@ const closeModal = () => {
 }
 
 .form-row {
-  display: flex;
-  align-items: center;
-  gap: 18px;
+   display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
 }
 
 .form-row label {
-  width: 120px;
+  width: auto;
   font-weight: 600;
   color: #333;
 }
@@ -275,7 +258,7 @@ const closeModal = () => {
 .form-row input,
 .form-row select,
 .form-row textarea {
-  flex: 1;
+  width: 100%;
   border: 1px solid #d8dcf0;
   border-radius: 12px;
   padding: 10px 14px;
@@ -342,47 +325,20 @@ const closeModal = () => {
   font-style: italic;
 }
 
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0 !important;
-    padding: 16px;
-  }
-
-  .page-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .page-header button {
-    width: 100%;
-    max-width: none;
-  }
-
-  .modal {
-    width: calc(100% - 24px);
-    max-width: 100%;
-    padding: 20px;
-  }
-
+@media (min-width: 768px) {
   .form-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+    flex-direction: row;
+    align-items: center;
+    gap: 18px;
   }
 
   .form-row label {
-    width: auto;
+    width: 120px;
   }
 
-  .modal-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .btn-primary,
-  .btn-danger {
-    width: 100%;
-    justify-content: center;
+  .modal {
+    max-width: 520px;
+    padding: 28px;
   }
 }
 

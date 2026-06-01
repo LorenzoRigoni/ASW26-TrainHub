@@ -133,16 +133,17 @@ onBeforeUnmount(() => {
 .modal-actions {
   margin-top: 24px;
   display: flex;
-  justify-content: flex-end;
+  flex-direction: row;
   gap: 12px;
 }
+
 
 .close-btn {
   border: none;
   background: transparent;
   cursor: pointer;
   font-size: 18px;
-  color: #666;
+  color: #c22f2f;
 }
 
 .close-btn:hover {
@@ -162,6 +163,13 @@ onBeforeUnmount(() => {
     transform:
       translateY(0)
       scale(1);
+  }
+}
+
+@media (min-width: 768px) {
+  .modal-actions {
+    flex-direction: row;
+    justify-content: flex-end;
   }
 }
 </style>

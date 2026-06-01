@@ -1,16 +1,19 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import axios from 'axios'
 import { useRoute } from 'vue-router'
 import { API_URL } from '../utils/config.js'
 import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
-import Navbar from '../components/NavBar.vue'
-import SideMenu from '../components/SideMenu.vue'
+import { useSidebarStore } from '../stores/sidebar.js'
 import {Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend} from 'chart.js'
 import { Line } from 'vue-chartjs'
+
 import defaultAvatar from '../assets/profileImage.png'
+import axios from 'axios'
+import Navbar from '../components/NavBar.vue'
+import SideMenu from '../components/SideMenu.vue'
+import BackButton from '../components/GoBackButton.vue'
 
 ChartJS.register(
   CategoryScale,
@@ -23,8 +26,7 @@ ChartJS.register(
 )
 
 const route = useRoute()
-const sidebarOpen = ref(true)
-
+const sidebar = useSidebarStore()
 const auth = useAuthStore()
 
 const displayedUser = ref({ 
@@ -36,15 +38,11 @@ const displayedUser = ref({
   image: auth.user.image
 })
 
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
-
 const diaryEntries = ref([])
 
-const fetchAthleteInfo = async (id) => {
+const fetchAthleteInfo = async () => {
   try {
-    const response = await axios.get(`${API_URL}/api/users/athlete/${id}`, auth.apiConfig)
+    const response = await axios.get(`${API_URL}/api/users/athlete/${auth.user.id}`, auth.apiConfig)
     const data = response.data.data
     displayedUser.value = {
       name: data.name,
@@ -83,9 +81,7 @@ const fetchDiaryEntries = async () => {
 }
 
 onMounted(async () => {
-  if (route.params.id) {
-    await fetchAthleteInfo(route.params.id)
-  }
+  fetchAthleteInfo(route.params.id)
   fetchDiaryEntries()
 })
 
@@ -257,10 +253,16 @@ const adherenceOptions = {
 
 <template>
      <div id="app">
-        <Navbar @toggle-sidebar="toggleSidebar" />
-        <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
-        <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+        <Navbar @toggle-sidebar="sidebar.toggle" />
+        <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+        <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
           <div class="diary">
+            <div class="header-container">
+              <BackButton />
+              <div class="header-text">
+                <h1 class="title"> Diario</h1>
+              </div>
+            </div>
             <div class="diary-header">
               <div class="client-info">
                 <div class="avatar-wrapper">
@@ -354,21 +356,21 @@ const adherenceOptions = {
 
             <!-- DATA -->
             <div class="form-row">
-                <label>Data</label>
-                <input type="date" v-model="form.date" />
+                <label for="data">Data</label>
+                <input id="data" type="date" v-model="form.date" />
             </div>
 
             <div class="form-row">
-                <label>Attività</label>
-                <div class="radio-group">
+                <label for="activity">Attività</label>
+                <div id="activity" class="radio-group">
                     <label class="radio-card on-card"><input type="radio" value="on" v-model="form.activity" />ON</label>
                     <label class="radio-card off-card"><input type="radio" value="off" v-model="form.activity" /> OFF</label>
                 </div>
             </div>
 
             <div class="form-row">
-                <label>Aderenza</label>
-                <select v-model="form.adherence">
+                <label for="adherence">Aderenza</label>
+                <select id="adherence" v-model="form.adherence">
                     <option value="Ottima">Ottima</option>
                     <option value="Media">Media</option>
                     <option value="Sgarro">Sgarro</option>
@@ -376,8 +378,9 @@ const adherenceOptions = {
             </div>
 
             <div class="form-row">
-                <label>NEAT</label>
+                <label for="steps">NEAT</label>
                 <input
+                    id="steps"
                     type="number"
                     placeholder="Passi giornalieri"
                     v-model.number="form.steps"
@@ -386,8 +389,9 @@ const adherenceOptions = {
 
             <div class="form-column">
                 <label>Livello fame</label>
-                <div class="hunger-row">
+                <div for="hunger" class="hunger-row">
                     <input
+                        id="hunger"
                         type="range"
                         min="1"
                         max="10"
@@ -398,8 +402,9 @@ const adherenceOptions = {
             </div>
 
             <div class="form-row">
-                <label>Peso corporeo</label>
+                <label for="weight">Peso corporeo</label>
                 <input
+                    id="weight"
                     type="number"
                     placeholder="Peso corporeo"
                     v-model.number="form.weight"
@@ -407,8 +412,8 @@ const adherenceOptions = {
             </div>
 
             <div class="form-row note-row">
-                <label>Nota</label>
-                <textarea v-model="form.notes" placeholder="Aggiungi una nota"></textarea>
+                <label for="note">Nota</label>
+                <textarea id="note" v-model="form.notes" placeholder="Aggiungi una nota"></textarea>
             </div>
 
             <div class="actions">
@@ -704,8 +709,7 @@ const adherenceOptions = {
   background: #1e1548;
   border-radius: 28px;
   padding: 28px 34px;
-  display: flex;
-  justify-content: space-between;
+  display: flow-root;
   align-items: flex-start;
   margin-bottom: 28px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.06);
@@ -760,13 +764,16 @@ const adherenceOptions = {
 }
 
 .add-btn {
-  align-self: flex-start;
+  background-color: white;
+  color: black;
+  margin-top: 7px;
+  padding: 5pt;
 }
 
 .actions {
   display: flex;
   flex-direction: row;
-    margin:0;
+  margin:0;
 }
 
 .actions button {
@@ -775,6 +782,10 @@ const adherenceOptions = {
 }
 
 @media (min-width: 768px) {
+  .diary-header{
+      display: flex;
+      justify-content: space-between;
+  }
 
   .diary-table thead {
     display: table-header-group;
@@ -814,7 +825,7 @@ const adherenceOptions = {
   }
 
   .add-btn {
-    align-self: center;
+    align-self: flex-end;
   }
 
   .modal {

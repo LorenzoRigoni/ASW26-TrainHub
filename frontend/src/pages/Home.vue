@@ -5,6 +5,7 @@ import { getInitials, getAvatarColor, ROLES, getErrorMessage } from '../utils/ut
 import { API_URL } from '../utils/config.js'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { useSidebarStore } from '../stores/sidebar.js'
 
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
@@ -13,17 +14,20 @@ import ActionCard from '../components/ActionCard.vue'
 import PanelList from '../components/HomePanelList.vue'
 import ListItem from '../components/HomeListItem.vue'
 import AIChat from '../components/AIChat.vue'
+import profileImage from '../assets/profileImage.png'
 import axios from 'axios'
 
 
 const auth = useAuthStore()
 const customersList = ref([])
 const stats = ref({ activeClientsCount: 0, totalPrograms: 0, activeNutritionalPlans: 0, pendingPrograms: 0 })
+const nutriStats = ref({ activeClientsCount: 0, totalPlans: 0, activeNutritionalPlans: 0, pendingPlans: 0 })
 const programsList = ref([])
 const recentNotifications = ref([])
+const richiesteNutrizionista = ref([])
+const clientiNutrizionista = ref([])
 const activeProgram = ref(null)
-const sidebarOpen = ref(true)
-
+const sidebar = useSidebarStore()
 const router = useRouter()
 
 const greeting = computed(() => {
@@ -78,6 +82,41 @@ const statCardsPT = computed(() => [
   }
 ])
 
+const statCardsNutri = computed(() => [
+  {
+    label: 'Clienti Attivi',
+    value: nutriStats.value?.activeClientsCount,
+    icon: 'fa fa-users',
+    color: '#4a90d9',
+    bg: 'rgba(74,144,217,0.12)',
+    route: '/clienti'
+  },
+  {
+    label: 'Piani Creati',
+    value: nutriStats.value?.totalPlans,
+    icon: 'fa fa-list',
+    color: '#7c6af7',
+    bg: 'rgba(124,106,247,0.12)',
+    route: '/piani-alimentari'
+  },
+  {
+    label: 'Richieste Nutriz.',
+    value: nutriStats.value?.activeNutritionalPlans,
+    icon: 'fa fa-apple',
+    color: '#e05c9a',
+    bg: 'rgba(224,92,154,0.12)',
+    route: '/richieste-nutrizione'
+  },
+  {
+    label: 'In Attesa',
+    value: nutriStats.value?.pendingPlans,
+    icon: 'fa fa-clock-o',
+    color: '#f5a623',
+    bg: 'rgba(245,166,35,0.12)',
+    route: '/richieste-nutrizione'
+  }
+])
+
 const getNotifIcon = (type) => {
   switch (type) {
     case 'program_created':
@@ -113,16 +152,12 @@ const goToProgramsList = () => {
   router.push('/programmi')
 }
 
-const goToNutritionPlanRequestDetail = () => {
-  router.push('/programmi')
+const goToNutritionRequestsId = (richiesta) => {
+  router.push(`/richieste-nutrizione/dettaglio-richiesta/${richiesta}`)
 }
 
 const goToNutritionPlanDetail = () => {
   router.push('/programmi')
-}
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
 }
 
 const fetchData = async () => {
@@ -146,6 +181,13 @@ const fetchData = async () => {
       ])
 
       customersList.value = clientsRes.data?.data || []
+      customersList.value.forEach((c) => {
+      if (c.profilePicture) {
+        c.profilePicture = `${API_URL}${c.profilePicture}`
+      } else {
+        c.profilePicture = profileImage
+      }
+    })
       stats.value = statsRes.data?.data || { activeClientsCount: 0, totalPrograms: 0, activeNutritionalPlans: 0, pendingPrograms: 0 }
       programsList.value = programsRes.data?.data || []
     } else if (auth.user.role === ROLES.CLIENTE) {
@@ -162,6 +204,22 @@ const fetchData = async () => {
       }))
 
       activeProgram.value = activeRes.data.data
+    } else {
+      const [nutrClients, statsRes, nutrRequests] = await Promise.all([
+        axios.get(`${API_URL}/api/users/my-clients`, auth.apiConfig),
+        axios.get(`${API_URL}/api/users/nutritionist-stats`, auth.apiConfig),
+        axios.get(`${API_URL}/api/nutrition-requests`, auth.apiConfig)
+      ])
+      richiesteNutrizionista.value = nutrRequests.data.data
+      nutriStats.value = statsRes.data.data
+      clientiNutrizionista.value = nutrClients.data.data
+      clientiNutrizionista.value.forEach((c) => {
+      if (c.profilePicture) {
+        c.profilePicture = `${API_URL}${c.profilePicture}`
+      } else {
+        c.profilePicture = profileImage
+      }
+    })
     }
   } catch(error){
     showToast("Errore nel caricamento dei dati: " + getErrorMessage(error), "error")
@@ -173,11 +231,9 @@ onMounted(fetchData)
 
 <template>
   <div id="app">
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="sidebarOpen" :role = "auth.user.role" @close="sidebarOpen = false" />
-
-    <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div class="dashboard-home">
         <div class="page-header">
           <div class="header-text">
@@ -239,8 +295,8 @@ onMounted(fetchData)
                 @click="goToCustomerDetail(c.id)"
               >
                 <template #left>
-                  <div class="avatar" :style="{ background: getAvatarColor(c.name) }">
-                    {{ getInitials(c.name, c.surname) }}
+                  <div class="avatar">
+                    <img :src="c.profilePicture" alt="User profile" class="user-icon" />
                   </div>
                 </template>
                 <template #right>
@@ -372,9 +428,9 @@ onMounted(fetchData)
             >
               <ListItem
                 v-for="r in richiesteNutrizionista" :key="r.id"
-                :title="r.cliente"
-                :subtitle="`${r.tipo} · ${r.data}`"
-                @click="goToNutritionPlanRequestDetail(r.id)"
+                :title="`${r.clientId.name} ${r.clientId.surname}`"
+                :subtitle="`${r.goal} · ${new Date(r.startDate).toLocaleDateString()}`"
+                @click="goToNutritionRequestsId(r._id)"
               >
                 <template #left>
                   <div class="icon-wrap" style="background:rgba(224,92,154,0.1)">
@@ -425,27 +481,6 @@ onMounted(fetchData)
   background-color: #f4f6f9;
 }
 
-.dashboard-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.welcome-title { 
-  font-size: 1.75rem; 
-  font-weight: 700; 
-  color: #1e1548; 
-  margin: 0 0 0.25rem; 
-}
-
-.welcome-sub   { 
-  margin: 0; 
-  color: #6b7280; 
-  font-size: 0.95rem; 
-}
-
 .notif-section {
   margin-bottom: 2rem;
 }
@@ -455,48 +490,18 @@ onMounted(fetchData)
   color: #e05c9a;
 }
 
-.btn-primary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background-color: #1e1548;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 0.65rem 1.4rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(30,21,72,0.25);
-  transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
-}
-.btn-primary:hover {
-  background-color: #2d2070;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(30,21,72,0.35);
-}
-
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
-  margin-bottom: 1.75rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
-.stats-grid--3   { 
-  grid-template-columns: repeat(3, 1fr); 
-}
 
-.action-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-  margin-bottom: 1.75rem;
-}
 .panels-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 1.25rem;
 }
 
@@ -571,22 +576,31 @@ onMounted(fetchData)
   color: #9ca3af; 
 }
 
-@media (max-width: 1024px) {
-  .stats-grid, .stats-grid--3  { grid-template-columns: repeat(2, 1fr); }
-  .action-cards-grid            { grid-template-columns: repeat(2, 1fr); }
+.user-icon {
+  height: 50px;
+  width: auto;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10pt;
 }
 
-@media (max-width: 768px) {
-  .dashboard-home    { padding: 1.25rem 1rem 5rem; }
-  .stats-grid,
-  .stats-grid--3     { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-  .action-cards-grid { grid-template-columns: 1fr; }
-  .panels-grid       { grid-template-columns: 1fr; }
-  .welcome-title     { font-size: 1.35rem; }
+@media (min-width: 768px) {
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 1.75rem;
 }
 
-@media (max-width: 480px) {
-  .btn-primary span { display: none; }
-  .btn-primary      { padding: 0.65rem 1rem; }
+.panels-grid {
+  display: grid;
+  grid-template-columns:1fr 1fr;
+}
+
+ .action-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
 }
 </style>

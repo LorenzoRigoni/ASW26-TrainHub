@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const TrainingProgram = require('../models/trainingProgram');
 const NutritionPlan = require('../models/nutritionPlan');
+const NutritionRequest = require('../models/nutritionRequest');
 const Deadline = require('../models/deadline')
 const path = require('path');
 const fs = require('fs');
@@ -203,6 +204,54 @@ exports.assignNutritionistToAthlete = async (req, res) => {
 
     } catch (error) {
         handleError(res, error, 'Errore nell\'assegnazione del nutrizionista');
+    }
+};
+
+exports.getNutritionistStats = async (req, res) => {
+    try {
+        const nutritionistId = req.user.id;
+
+        const totalPlans = await NutritionPlan.countDocuments({ nutritionistId: nutritionistId });
+
+        const pendingPlans = await NutritionRequest.countDocuments({ 
+            nutritionistId: nutritionistId, 
+            status: 'In attesa'
+        });
+
+        const clients = await User.find({ assignedNutritionistId: nutritionistId });
+        let activeClientsCount = 0;
+        const currentMonth = new Date().getMonth();
+
+        for (const client of clients) {
+            const hasActive = await TrainingProgram.findOne({
+                athleteId: client._id,
+                programStatus: 'active',
+                updatedAt: { 
+                    $gte: new Date(new Date().getFullYear(), currentMonth, 1) 
+                }
+            });
+            if (hasActive) activeClientsCount++;
+        }
+
+        const myClients = await User.find({ assignedNutritionistId: nutritionistId }).select('_id');
+        const clientIds = myClients.map(c => c._id);
+
+        const activeNutritionalPlans = await NutritionPlan.countDocuments({
+            athleteId: { $in: clientIds },
+            planStatus: 'active'
+        });
+
+        res.status(200).json({
+            success: true,
+            data: {
+                activeClientsCount,
+                totalPlans: totalPlans,
+                activeNutritionalPlans,
+                pendingPlans: pendingPlans
+            }
+        });
+    } catch (error) {
+        handleError(res, error, 'Errore nel recupero delle statistiche');
     }
 };
 

@@ -3,20 +3,24 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
-import axios from 'axios'
+import { useSidebarStore } from '../stores/sidebar.js'
 import { API_URL } from '../utils/config.js'
 import { ROLES, getErrorMessage } from '../utils/utils.js'
+
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
+import axios from 'axios'
+import BackButton from '../components/GoBackButton.vue'
+import AppModal from '../components/Modal.vue'
 
 const auth = useAuthStore()
-
 const route = useRoute()
 const router = useRouter()
-
-const sidebarOpen = ref(true)
+const sidebar = useSidebarStore()
 const requestId = computed(() => route.params.id)
 const isEditMode = computed(() => !!requestId.value)
+const showPlanModal = ref(false)
+const selectedFile = ref(null)
 
 const form = ref({
   title: '',
@@ -28,6 +32,45 @@ const form = ref({
   endDate: '',
   notes: ''
 })
+
+const planForm = ref({
+  title: '',
+  athleteId: '',
+  notes: '',
+  startDate: '',
+  endDate: ''
+})
+
+const handleFileChange = (event) => {
+  selectedFile.value = event.target.files[0]
+}
+
+const savePlan = async () => {
+  if (!selectedFile.value) {
+    showToast("Selezionare un piano", "error")
+    return
+  }
+  try {
+    const formData = new FormData()
+    formData.append('title', planForm.value.title)
+    formData.append('athleteId', planForm.value.athleteId)
+    formData.append('startDate', planForm.value.startDate)
+    formData.append('endDate', planForm.value.endDate)
+    formData.append('notes', planForm.value.notes)
+    formData.append('pdfFile', selectedFile.value)
+
+    await axios.post(`${API_URL}/api/nutrition-plans`, formData, {
+      headers: { ...auth.apiConfig.headers, 'Content-Type': 'multipart/form-data' }
+    })
+
+    showPlanModal.value = false
+    planForm.value = { title: '', athleteId: '', notes: '', startDate: '', endDate: '' }
+    selectedFile.value = null
+    showToast("Piano alimentare salvato con successo!", "success")
+  } catch (error) {
+    showToast("Errore nel salvataggio: " + getErrorMessage(error), "error")
+  }
+}
 
 const clients = ref([])
 const nutritionists = ref([])
@@ -67,10 +110,6 @@ const fetchData = async () => {
 
 onMounted(fetchData)
 
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
-
 const goBack = () => {
   router.push('/richieste-nutrizione')
 }
@@ -109,31 +148,33 @@ const canEditStatus = computed(() => {
 
 <template>
      <div id="app">
-        <Navbar @toggle-sidebar="toggleSidebar" />
-        <SideMenu :isOpen="sidebarOpen" :role="auth.user.role" @close="sidebarOpen = false" />
-        
-        <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
+        <Navbar @toggle-sidebar="sidebar.toggle" />
+        <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+        <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
             <div v-if="loading" class="loader-container">
               <i class="fa fa-spinner fa-spin"></i> Caricamento...
             </div>
             
             <template v-else>
-              <div class="header-text">
-                  <h1>{{ pageTitle }}</h1>
-                  <p>Visualizza e modifica i dettagli della richiesta nutrizionale.</p>
+              <div class="header-container">
+                <BackButton />
+                <div class="header-text">
+                    <h1>{{ pageTitle }}</h1>
+                    <p>Visualizza e modifica i dettagli della richiesta nutrizionale.</p>
+                </div>
               </div>
               <div class="form-card">
                 <div class="form-grid">
                   <div class="col col-left">
 
                     <div class="form-row">
-                      <label>Titolo</label>
-                      <input type="text" v-model="form.title" :disabled="!canEditForm" />
+                      <label for="title">Titolo</label>
+                      <input id="title" type="text" v-model="form.title" :disabled="!canEditForm" />
                     </div>
 
                     <div class="form-row">
-                      <label>Cliente</label>
-                      <select v-model="form.clientId" :disabled="isEditMode || !canEditForm">
+                      <label for="clientId">Cliente</label>
+                      <select id="clientId" v-model="form.clientId" :disabled="isEditMode || !canEditForm">
                         <option value="" disabled>Seleziona cliente</option>
                         <option v-for="c in clients" :key="c.id" :value="c.id">
                           {{ c.name }} {{ c.surname }}
@@ -142,8 +183,8 @@ const canEditStatus = computed(() => {
                     </div>
 
                     <div class="form-row">
-                      <label>Obiettivo</label>
-                      <select v-model="form.goal" :disabled="!canEditForm">
+                      <label for="goal" >Obiettivo</label>
+                      <select id="goal" v-model="form.goal" :disabled="!canEditForm">
                         <option value="" disabled>Seleziona obiettivo</option>
                         <option value="Definizione">Definizione</option>
                         <option value="Mantenimento">Mantenimento</option>
@@ -152,8 +193,8 @@ const canEditStatus = computed(() => {
                     </div>
 
                     <div class="form-row">
-                      <label>Nutrizionista</label>
-                      <select v-model="form.nutritionistId" :disabled="!canEditForm">
+                      <label for="nutritionistId">Nutrizionista</label>
+                      <select id="nutritionistId" v-model="form.nutritionistId" :disabled="!canEditForm">
                         <option value="" disabled>Seleziona nutrizionista</option>
                         <option v-for="n in nutritionists" :key="n._id" :value="n._id">
                           {{ n.name }} {{ n.surname }}
@@ -162,8 +203,8 @@ const canEditStatus = computed(() => {
                     </div>
 
                     <div class="form-row" v-if="isEditMode">
-                      <label>Stato</label>
-                      <select v-model="form.status" :disabled="!canEditStatus">
+                      <label for="status">Stato</label>
+                      <select id="status" v-model="form.status" :disabled="!canEditStatus">
                         <option value="In attesa">In attesa</option>
                         <option value="In elaborazione">In elaborazione</option>
                         <option value="Completata">Completata</option>
@@ -174,30 +215,80 @@ const canEditStatus = computed(() => {
                   </div>
 
                   <div class="col col-right">
-
                     <div class="form-row">
-                      <label>Data inizio</label>
-                      <input type="date" v-model="form.startDate" :disabled="!canEditForm" />
+                      <label for="startDate">Data inizio</label>
+                      <input id="startDate" type="date" v-model="form.startDate" :disabled="!canEditForm" />
                     </div>
 
                     <div class="form-row">
-                      <label>Data fine</label>
-                      <input type="date" v-model="form.endDate" :disabled="!canEditForm" />
+                      <label for="endDate">Data fine</label>
+                      <input id="endDate" type="date" v-model="form.endDate" :disabled="!canEditForm" />
                     </div>
 
                     <div class="form-row grow">
-                      <label>Note</label>
-                      <textarea v-model="form.notes" :disabled="!canEditForm"></textarea>
+                      <label for="notes">Note</label>
+                      <textarea id="notes" v-model="form.notes" :disabled="!canEditForm"></textarea>
                     </div>
                   </div>
                 </div>
                 <div class="actions">
-                  <button class="btn-primary btn-red" @click="goBack"><i class="fa fa-close"></i>Annulla</button>
-                  <button class="btn-primary" @click="saveRequest"><i class="fa fa-check"></i>
-                    {{ isEditMode ? 'Salva' : 'Invia' }}
+                  <button class="btn-primary btn-red" @click="goBack">
+                    <i class="fa fa-close"></i>Annulla
+                  </button>
+                  <button v-if="canEditForm" @click="saveRequest" :class="isEditMode ? 'btn-primary btn-green' : 'btn-primary'">
+                    <i class="fa fa-check"></i> {{ isEditMode ? 'Salva' : 'Invia' }}
+                  </button>
+                  <button v-if="canEditStatus" class="btn-primary" @click="showPlanModal = true">
+                    <i class="fa fa-plus"></i> Carica piano
                   </button>
                 </div>
               </div>
+
+              <AppModal v-model="showPlanModal" title="Carica piano alimentare">
+                <div class="form-row">
+                  <label for="plan-title">Titolo</label>
+                  <input id="plan-title" type="text" placeholder="Nome piano" v-model="planForm.title" />
+                </div>
+
+                <div class="form-row">
+                  <label for="plan-client">Cliente</label>
+                  <select id="plan-client" v-model="planForm.athleteId">
+                    <option value="">Seleziona cliente</option>
+                    <option v-for="c in clients" :key="c.id" :value="c.id">
+                      {{ c.name }} {{ c.surname }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-row">
+                  <label for="plan-pdf">Allega PDF del Piano</label>
+                  <input id="plan-pdf" type="file" accept="application/pdf" @change="handleFileChange" required />
+                </div>
+
+                <div class="form-row">
+                  <label for="plan-startDate">Data inizio</label>
+                  <input id="plan-startDate" type="date" v-model="planForm.startDate" />
+                </div>
+
+                <div class="form-row">
+                  <label for="plan-endDate">Data fine</label>
+                  <input id="plan-endDate" type="date" v-model="planForm.endDate" />
+                </div>
+
+                <div class="form-row">
+                  <label for="plan-notes">Note</label>
+                  <textarea id="plan-notes" v-model="planForm.notes" placeholder="Note aggiuntive per il cliente"></textarea>
+                </div>
+
+                <template #actions>
+                  <button class="btn-primary btn-red" @click="showPlanModal = false">
+                    <i class="fa fa-close"></i> Annulla
+                  </button>
+                  <button class="btn-primary btn-green" @click="savePlan">
+                    <i class="fa fa-check"></i> Salva
+                  </button>
+                </template>
+              </AppModal>
             </template>
         </main>
      </div>
@@ -299,14 +390,9 @@ const canEditStatus = computed(() => {
 
 .actions {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: row;
   gap: 12px;
   margin-top: 24px;
-}
-
-.actions button {
-  width: 100%;
-  justify-content: center;
 }
 
 

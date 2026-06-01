@@ -5,18 +5,17 @@ import { ROLES, getErrorMessage } from '../utils/utils.js'
 import { useRoute, useRouter } from 'vue-router'
 import { showToast } from '../utils/toast.js'
 import { useAuthStore } from '../stores/auth.js'
+import { useSidebarStore } from '../stores/sidebar.js'
+
 import axios from 'axios'
 import Navbar from '../components/NavBar.vue'
 import SideMenu from '../components/SideMenu.vue'
+import BackButton from '../components/GoBackButton.vue'
 
 const router = useRouter()
 const route = useRoute()
-
 const auth = useAuthStore()
-
-const handleResize = () => {
-  sidebarOpen.value = window.innerWidth >= 769
-}
+const sidebar = useSidebarStore()
 
 const isClient = computed(() => auth.user.role === 'client')
 const isTrainer = computed(() => auth.user.role === 'trainer')
@@ -26,10 +25,6 @@ const todayDate = computed(() =>
   new Date().toLocaleDateString('it-IT')
 )
 
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
-
 const programId = route.params.programId
 const splitId = route.params.splitId
 const athleteId = route.params.athleteId || ''
@@ -37,6 +32,7 @@ const athleteId = route.params.athleteId || ''
 const exerciseLogs = ref({})
 const currentWeekInput = ref({})
 const splitExercises = ref([])
+const splitName = ref({})
 
 const fetchData = async () => {
   loading.value = true
@@ -46,6 +42,7 @@ const fetchData = async () => {
 
     if (currentSplit && currentSplit.rows) {
       splitExercises.value = currentSplit.rows
+      splitName.value = currentSplit.name
 
       currentSplit.rows.forEach(row => {
         const exId = row.exercise._id || row.exercise
@@ -106,37 +103,29 @@ const saveAllProgress = async () => {
 }
 
 onMounted(() => {
-  handleResize()
-  window.addEventListener('resize', handleResize)
   fetchData()
 })
 
 const currentSession = ref({})
 
-const goBack = () => {
-  router.back()
-}
+
 </script>
 
 <template>
   <div id="app">
-    <Navbar @toggle-sidebar="toggleSidebar" />
-
-    <SideMenu :isOpen="ui.sidebarOpen" :role="auth.user.role"  @close="sidebarOpen = false"/>
-
-    <main class="main-content" :class="{ 'sidebar-open': ui.sidebarOpen }" >
+    <Navbar @toggle-sidebar="sidebar.toggle" />
+    <SideMenu :isOpen="sidebar.isOpen" :role="auth.user.role" @close="sidebar.close" />
+    <main class="main-content" :class="{ 'sidebar-open': sidebar.isOpen }">
       <div v-if="loading" class="loader-container">
         <i class="fa fa-spinner fa-spin"></i> Caricamento dati...
       </div>
 
       <div class="split-page">
         <div class="page-header">
-            <div class="header-left">
-                <button class="back-btn" @click="goBack">
-                    <i class="fa fa-arrow-left"></i>
-                </button>
+            <div class="header-container">
+                 <BackButton />
                 <div class="header-text">
-                    <h1>{{ currentSplitName || 'Dettaglio Allenamento' }}</h1>
+                    <h1>{{ splitName || 'Dettaglio Allenamento' }}</h1>
                     <p class="split-subtitle">  Storico allenamenti e compilazione sessione </p>
                 </div>
             </div>
@@ -162,39 +151,39 @@ const goBack = () => {
         </div>
 
         <div class="table-wrapper">
-            <div class="table-header">
-              <span>Data</span>
-              <span>Kg</span>
-              <span>Reps</span>
-            </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Kg</th>
+                <th>Reps</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(log, i) in exerciseLogs[row.exercise._id || row.exercise]" :key="i">
+                <td>{{ new Date(log.date).toLocaleDateString('it-IT') }}</td>
+                <td>{{ log.load }} kg</td>
+                <td>{{ log.reps }}</td>
+              </tr>
+            </tbody>
+          </table>
 
-            <div v-for="(log, i) in exerciseLogs[row.exercise._id || row.exercise]" :key="i" class="table-row" >
-            <span>{{new Date(log.date).toLocaleDateString('it-IT') }}</span>
-            <span>{{ log.load }} kg</span>
-            <span>{{ log.reps }}</span>
-            </div>
-
-            
-            <div  v-if="isClient" :key="'today-' + i"  class="table-row current-session" >
-              <span>{{ todayDate }}</span>
-              <input 
-                type="number" 
-                placeholder="Kg" 
-                v-model="currentWeekInput[row.exercise._id || row.exercise].load"
-                :disabled="isTrainer"
-              />
-              <input 
-                type="number" 
-                placeholder="Reps"
-                v-model="currentWeekInput[row.exercise._id || row.exercise].reps"
-                :disabled="isTrainer" 
-              />
-            </div>
+          <div v-if="isClient" class="current-session">
+            <span>{{ todayDate }}</span>
+            <input type="number" placeholder="Kg"
+              v-model="currentWeekInput[row.exercise._id || row.exercise].load"
+              :disabled="isTrainer"
+            />
+            <input type="number" placeholder="Reps"
+              v-model="currentWeekInput[row.exercise._id || row.exercise].reps"
+              :disabled="isTrainer"
+            />
+          </div>
         </div>
         </section>
 
         <div v-if="isClient" class="save-container">
-           <button class="btn-primary save-btn" @click="saveAllProgress">
+           <button class="btn-primary save-btn btn-green" @click="saveAllProgress">
                 <i class="fa fa-save"></i>
                 <span> Salva</span>
             </button>
@@ -213,27 +202,6 @@ const goBack = () => {
 
 .split-page {
   width: 100%;
-}
-
-.header-left {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.back-btn {
-  width: 44px;
-  height: 44px;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  background: white;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: .2s ease;
-}
-
-.back-btn:active {
-  transform: scale(.96);
 }
 
 .split-subtitle {
@@ -286,34 +254,38 @@ const goBack = () => {
   gap: 10px;
 }
 
-.table-header {
-  display: none;
+
+table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.table-row {
+thead tr {
+  background: #eef2ff;
+}
+
+th, td {
+  padding: 14px 18px;
+  text-align: left;
+  border-top: 1px solid #edf2f7;
+  font-size: 0.95rem;
+}
+
+th {
+  font-weight: 700;
+  color: #1e1548;
+}
+
+.current-session {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  background: #f8fafc;
-  border-radius: 14px;
-  padding: 14px;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 18px;
+  background: #fff8db;
+  border-top: 1px solid #f3e5ab;
 }
 
-
-.table-row span:nth-child(1)::before {
-  content: "Data: ";
-  font-weight: 600;
-}
-
-.table-row span:nth-child(2)::before {
-  content: "Carico: ";
-  font-weight: 600;
-}
-
-.table-row span:nth-child(3)::before {
-  content: "Reps: ";
-  font-weight: 600;
-}
 
 .current-session {
   background: #fff8db;
@@ -325,23 +297,23 @@ const goBack = () => {
   color: #8a6d00;
 }
 
-.table-row input {
+.current-session input {
   width: 100%;
   min-height: 48px;
   border: 1px solid #d1d5db;
   border-radius: 12px;
-  padding: 12px;
+  padding: 8px;
   font-size: .95rem;
   outline: none;
   transition: .2s ease;
 }
 
-.table-row input:focus {
+.current-sessioninput:focus {
   border-color: #1e1548;
   box-shadow: 0 0 0 4px rgba(30,21,72,.08);
 }
 
-.table-row input:disabled {
+.current-session input:disabled {
   background: #f3f4f6;
 }
 
@@ -395,29 +367,23 @@ const goBack = () => {
   .table-header {
     display: grid;
     grid-template-columns: 1.2fr 1fr 1fr;
-
     padding: 14px 18px;
-
     font-weight: 700;
     background: #eef2ff;
     color: #1e1548;
   }
 
-  .table-row {
+  .current-session {
     display: grid;
     grid-template-columns: 1.2fr 1fr 1fr;
-
     gap: 16px;
     align-items: center;
-
-    background: transparent;
     border-radius: 0;
     padding: 16px 18px;
-
     border-top: 1px solid #edf2f7;
   }
 
-  .table-row span::before {
+  .current-session span::before {
     content: none !important;
   }
 
@@ -425,22 +391,17 @@ const goBack = () => {
     position: static;
     padding: 0;
     margin-top: 28px;
-
     border: none;
     background: transparent;
     backdrop-filter: none;
-
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
   }
 
   .save-btn {
-    width: auto;
+    width: 20%;
+    font-size: 12pt;
   }
-
-  .back-btn:hover {
-    transform: translateX(-2px);
-    background: #f8fafc;
-  }
+ 
 }
 </style>
